@@ -65,7 +65,7 @@ function Inbox() {
   };
 
   return (
-    <div style={{ display: 'flex', height: 'calc(100vh - 64px)' }}>
+    <div style={{ display: 'flex', height: '100%' }}>
       <div style={{ width: 340, background: 'var(--blanco)', borderRight: '1px solid var(--gris-borde)', display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: 16, borderBottom: '1px solid var(--gris-borde)' }}>
           <input placeholder="Buscar chats..." style={{ width: '100%' }} />
