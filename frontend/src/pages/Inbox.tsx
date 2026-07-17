@@ -224,11 +224,31 @@ function Inbox() {
                 </div>
               )}
             </div>
-            <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+            <div style={{
+              flex: 1, overflowY: 'auto', padding: 16,
+              position: 'relative',
+              backgroundImage: 'url(/logotipo.png)',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'center',
+              backgroundSize: '260px auto',
+            }}>
+              <div style={{
+                position: 'absolute', inset: 0,
+                background: 'rgba(255,255,255,0.75)',
+                pointerEvents: 'none',
+              }} />
+              <div style={{ position: 'relative', zIndex: 1 }}>
               {mensajes.length === 0 ? (
-                <div style={{ textAlign: 'center', color: 'var(--gris-texto)', marginTop: 60 }}>
-                  <MessageSquare size={48} style={{ opacity: 0.2, marginBottom: 12 }} />
-                  <p>No hay mensajes en esta conversación</p>
+                <div style={{
+                  textAlign: 'center', color: 'var(--gris-texto)', marginTop: 60, position: 'relative',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300,
+                }}>
+                  <img src="/logotipo.png" alt="" style={{
+                    position: 'absolute', width: 200, opacity: 0.06, top: '50%', left: '50%',
+                    transform: 'translate(-50%, -50%)', pointerEvents: 'none',
+                  }} />
+                  <MessageSquare size={48} style={{ opacity: 0.2, marginBottom: 12, position: 'relative' }} />
+                  <p style={{ position: 'relative' }}>No hay mensajes en esta conversación</p>
                 </div>
               ) : (
                 mensajes.map(msg => (
@@ -254,6 +274,7 @@ function Inbox() {
                   </div>
                 ))
               )}
+              </div>
             </div>
             <div style={{
               padding: '12px 16px',
@@ -276,7 +297,7 @@ function Inbox() {
           </>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--gris-texto)' }}>
-            <img src="/logotipo.png" alt="" style={{ width: 160, opacity: 0.15, marginBottom: 20 }} />
+            <img src="/logotipo.png" alt="" style={{ width: 220, opacity: 0.12, marginBottom: 24 }} />
             <p style={{ fontSize: 16, fontWeight: 500 }}>Selecciona un chat para empezar</p>
             <p style={{ fontSize: 13, marginTop: 4 }}>Los mensajes nuevos aparecerán aquí</p>
           </div>
