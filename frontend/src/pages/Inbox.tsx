@@ -82,6 +82,9 @@ function Inbox() {
   const clientesFiltrados = clientes.filter(c => {
     if (filtro === 'urgentes') return c.urgencia === 'Alta';
     if (filtro === 'bot') return c.resumen_busqueda;
+    if (filtro === 'whatsapp') return c.canal_origen === 'whatsapp';
+    if (filtro === 'instagram') return c.canal_origen === 'instagram';
+    if (filtro === 'facebook') return c.canal_origen === 'facebook';
     return true;
   });
 
@@ -106,22 +109,41 @@ function Inbox() {
             <input placeholder="Buscar chats..." style={{ width: '100%', paddingLeft: 36 }} />
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 4, padding: '10px 16px', borderBottom: '1px solid var(--gris-borde)' }}>
-          {[
-            { key: 'todos', label: 'Todos' },
-            { key: 'urgentes', label: 'Urgentes' },
-            { key: 'bot', label: 'Bot' },
-          ].map(f => (
-            <button key={f.key} onClick={() => setFiltro(f.key)}
-              style={{
-                padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                background: filtro === f.key ? 'var(--rojo-primario)' : 'var(--gris-fondo)',
-                color: filtro === f.key ? '#fff' : 'var(--gris-texto)',
-                border: filtro === f.key ? 'none' : '1px solid var(--gris-borde)',
-              }}>
-              {f.label}
-            </button>
-          ))}
+        <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--gris-borde)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            {[
+              { key: 'todos', label: 'Todos' },
+              { key: 'urgentes', label: 'Urgentes' },
+              { key: 'bot', label: 'Bot' },
+            ].map(f => (
+              <button key={f.key} onClick={() => setFiltro(f.key)}
+                style={{
+                  padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                  background: filtro === f.key ? 'var(--rojo-primario)' : 'var(--gris-fondo)',
+                  color: filtro === f.key ? '#fff' : 'var(--gris-texto)',
+                  border: filtro === f.key ? 'none' : '1px solid var(--gris-borde)',
+                }}>
+                {f.label}
+              </button>
+            ))}
+          </div>
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            {[
+              { key: 'whatsapp', label: 'WhatsApp' },
+              { key: 'instagram', label: 'Instagram' },
+              { key: 'facebook', label: 'Facebook' },
+            ].map(f => (
+              <button key={f.key} onClick={() => setFiltro(f.key)}
+                style={{
+                  padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                  background: filtro === f.key ? 'var(--azul-primario)' : 'var(--gris-fondo)',
+                  color: filtro === f.key ? '#fff' : 'var(--gris-texto)',
+                  border: filtro === f.key ? 'none' : '1px solid var(--gris-borde)',
+                }}>
+                {f.label}
+              </button>
+            ))}
+          </div>
         </div>
         <div style={{ flex: 1, overflowY: 'auto' }}>
           {loading ? <SkeletonChats /> : (
