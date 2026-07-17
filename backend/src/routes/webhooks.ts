@@ -6,6 +6,7 @@ const router = Router();
 
 const VERIFY_TOKEN = process.env.FB_VERIFY_TOKEN || 'romicars_verify_2026';
 const N8N_RECEIVE_URL = process.env.N8N_RECEIVE_URL || 'https://n8n.supricom.com.ve/webhook/receive-message';
+const FB_PAGE_TOKEN = process.env.FB_PAGE_TOKEN || '';
 
 router.get('/facebook', (req: Request, res: Response) => {
   const mode = req.query['hub.mode'];
@@ -32,6 +33,21 @@ router.post('/facebook', async (req: Request, res: Response) => {
       for (const event of entry.messaging || []) {
         const sender = event.sender?.id;
         const message = event.message?.text;
+        const timestamp = event.timestamp ? new Date(event.timestamp).toISOString() : new Date().toISOString();
+        const conversacionId = `fb_${sender}`;
+
+        let name = '';
+        if (sender && FB_PAGE_TOKEN) {
+          try {
+            const fbResp = await fetch(
+              `https://graph.facebook.com/v22.0/${sender}?fields=name&access_token=${FB_PAGE_TOKEN}`
+            );
+            const fbData = await fbResp.json() as any;
+            name = fbData.name || '';
+          } catch {
+            name = '';
+          }
+        }
 
         if (sender && message) {
           await fetch(N8N_RECEIVE_URL, {
@@ -41,8 +57,9 @@ router.post('/facebook', async (req: Request, res: Response) => {
               sender,
               message,
               channel: 'facebook',
-              timestamp: new Date().toISOString(),
-              name: '',
+              timestamp,
+              name,
+              conversacionId,
             }),
           });
         }

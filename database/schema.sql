@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS clientes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100),
     telefono VARCHAR(20) UNIQUE,
+    facebook_psid VARCHAR(100) UNIQUE,
+    instagram_psid VARCHAR(100) UNIQUE,
     canal_origen ENUM('whatsapp', 'instagram', 'facebook') DEFAULT 'whatsapp',
     marca_carro VARCHAR(50),
     modelo_carro VARCHAR(50),
@@ -78,3 +80,8 @@ CREATE INDEX idx_clientes_modelo ON clientes(modelo_carro);
 CREATE INDEX idx_mensajes_cliente ON mensajes(cliente_id);
 CREATE INDEX idx_mensajes_fecha ON mensajes(fecha_envio);
 CREATE INDEX idx_clientes_promos ON clientes(acepta_promos);
+
+-- Migración para bases existentes (agregar columnas de PSID)
+-- ALTER TABLE clientes
+--   ADD COLUMN facebook_psid VARCHAR(100) UNIQUE AFTER telefono,
+--   ADD COLUMN instagram_psid VARCHAR(100) UNIQUE AFTER facebook_psid;

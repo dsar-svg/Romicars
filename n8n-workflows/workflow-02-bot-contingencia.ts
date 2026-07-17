@@ -145,7 +145,7 @@ const guardarMensajeBot = node({
       },
     },
   },
-  credentials: { mySql: newCredential('MySQL AutoParts') },
+  credentials: { mySql: newCredential('MySQL Demo') },
   output: [{ id: 1 }],
 });
 
@@ -164,7 +164,7 @@ const actualizarResumen = node({
       },
     },
   },
-  credentials: { mySql: newCredential('MySQL AutoParts') },
+  credentials: { mySql: newCredential('MySQL Demo') },
   output: [{ updated: true }],
 });
 

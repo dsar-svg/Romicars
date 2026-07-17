@@ -139,7 +139,7 @@ const actualizarLog = node({
       },
     },
   },
-  credentials: { mySql: newCredential('MySQL AutoParts') },
+  credentials: { mySql: newCredential('MySQL Demo') },
   output: [{ success: true }],
 });
 
