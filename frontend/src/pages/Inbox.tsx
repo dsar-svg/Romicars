@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Search, Send, Phone, MessageSquare, AlertTriangle } from 'lucide-react';
+import { Search, Send, Phone, MessageSquare, AlertTriangle, User, ChevronRight } from 'lucide-react';
 import { clientesApi, mensajesApi } from '../services/api';
 import { connectSocket } from '../services/socket';
 import { toast } from '../components/Toast';
+import ClientPanel from '../components/ClientPanel';
 import type { Cliente, Mensaje } from '../types';
 
 const canalIcono: Record<string, string> = {
@@ -37,6 +38,7 @@ function Inbox() {
   const [nuevoMensaje, setNuevoMensaje] = useState('');
   const [filtro, setFiltro] = useState('todos');
   const [loading, setLoading] = useState(true);
+  const [showPanel, setShowPanel] = useState(false);
 
   useEffect(() => {
     const socket = connectSocket();
@@ -67,16 +69,20 @@ function Inbox() {
     });
   }, [clienteId]);
 
-  const enviarMensaje = () => {
+  const enviarMensaje = async () => {
     if (!nuevoMensaje.trim() || !selectedCliente) return;
-    const socket = connectSocket();
-    socket.emit('message:send', {
-      cliente_id: selectedCliente.id,
-      contenido: nuevoMensaje,
-      remitente: 'agente',
-    });
-    setNuevoMensaje('');
-    toast('success', 'Mensaje enviado');
+    try {
+      const msg = await mensajesApi.enviar({
+        cliente_id: selectedCliente.id,
+        contenido: nuevoMensaje,
+        remitente: 'agente',
+      });
+      setMensajes(prev => [...prev, msg]);
+      setNuevoMensaje('');
+      toast('success', 'Mensaje enviado');
+    } catch {
+      toast('error', 'Error al enviar mensaje');
+    }
   };
 
   const clientesFiltrados = clientes.filter(c => {
@@ -199,6 +205,7 @@ function Inbox() {
         </div>
       </div>
 
+      <div style={{ display: 'flex', flex: 1 }}>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--blanco)' }}>
         {selectedCliente ? (
           <>
@@ -207,23 +214,38 @@ function Inbox() {
               borderBottom: '1px solid var(--gris-borde)',
               background: 'var(--gris-fondo)',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{
-                  width: 40, height: 40, borderRadius: '50%',
-                  background: 'linear-gradient(135deg, var(--azul-primario), var(--azul-oscuro))',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 16, fontWeight: 700, color: '#fff', flexShrink: 0,
-                }}>
-                  {(selectedCliente.nombre || selectedCliente.telefono).charAt(0).toUpperCase()}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{
+                    width: 40, height: 40, borderRadius: '50%',
+                    background: 'linear-gradient(135deg, var(--azul-primario), var(--azul-oscuro))',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 16, fontWeight: 700, color: '#fff', flexShrink: 0,
+                  }}>
+                    {(selectedCliente.nombre || selectedCliente.telefono).charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: 16, color: 'var(--azul-oscuro)', fontWeight: 600 }}>
+                      {selectedCliente.nombre || selectedCliente.telefono}
+                    </h3>
+                    <span style={{ fontSize: 13, color: 'var(--gris-texto)' }}>
+                      {selectedCliente.canal_origen}
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <h3 style={{ fontSize: 16, color: 'var(--azul-oscuro)', fontWeight: 600 }}>
-                    {selectedCliente.nombre || selectedCliente.telefono}
-                  </h3>
-                  <span style={{ fontSize: 13, color: 'var(--gris-texto)' }}>
-                    {selectedCliente.canal_origen}
-                  </span>
-                </div>
+                <button
+                  onClick={() => setShowPanel(!showPanel)}
+                  style={{
+                    padding: '6px 10px', borderRadius: 8, fontSize: 12,
+                    background: showPanel ? 'var(--azul-primario)' : 'var(--gris-fondo)',
+                    color: showPanel ? '#fff' : 'var(--gris-texto)',
+                    border: '1px solid var(--gris-borde)',
+                    display: 'flex', alignItems: 'center', gap: 4,
+                  }}
+                >
+                  <User size={14} />
+                  Ficha
+                </button>
               </div>
               {selectedCliente.resumen_busqueda && (
                 <div className="fade-in" style={{
@@ -325,6 +347,9 @@ function Inbox() {
           </div>
         )}
       </div>
+      {showPanel && selectedCliente && (
+        <ClientPanel cliente={selectedCliente} onClose={() => setShowPanel(false)} />
+      )}
     </div>
   );
 }

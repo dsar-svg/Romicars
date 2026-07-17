@@ -1,0 +1,97 @@
+import { Router, Request, Response } from 'express';
+import { query } from '../database';
+import { getIO } from '../socket';
+
+const router = Router();
+
+const VERIFY_TOKEN = process.env.FB_VERIFY_TOKEN || 'romicars_verify_2026';
+const N8N_RECEIVE_URL = process.env.N8N_RECEIVE_URL || 'https://n8n.supricom.com.ve/webhook/receive-message';
+
+router.get('/facebook', (req: Request, res: Response) => {
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+
+  if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+    console.log('Webhook Facebook verificado correctamente');
+    res.status(200).send(challenge);
+  } else {
+    res.status(403).send('Verificación fallida');
+  }
+});
+
+router.post('/facebook', async (req: Request, res: Response) => {
+  try {
+    const body = req.body;
+    if (body.object !== 'page') {
+      res.sendStatus(400);
+      return;
+    }
+
+    for (const entry of body.entry || []) {
+      for (const event of entry.messaging || []) {
+        const sender = event.sender?.id;
+        const message = event.message?.text;
+
+        if (sender && message) {
+          await fetch(N8N_RECEIVE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sender,
+              message,
+              channel: 'facebook',
+              timestamp: new Date().toISOString(),
+              name: '',
+            }),
+          });
+        }
+      }
+    }
+
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('Error en webhook Facebook:', error);
+    res.sendStatus(200);
+  }
+});
+
+router.post('/n8n', async (req: Request, res: Response) => {
+  try {
+    const { tipo, clienteId, mensaje } = req.body;
+
+    if (tipo === 'nuevo_mensaje' && clienteId) {
+      const mensajes = await query(
+        'SELECT * FROM mensajes WHERE cliente_id = ? ORDER BY fecha_envio DESC LIMIT 1',
+        [clienteId]
+      ) as any[];
+      const ultimo = mensajes[0];
+
+      const clientes = await query('SELECT * FROM clientes WHERE id = ?', [clienteId]) as any[];
+      const cliente = clientes[0];
+
+      if (ultimo && cliente) {
+        getIO().to(`chat:${clienteId}`).emit('message:new', ultimo);
+        getIO().emit('chat:updated', { cliente_id: clienteId, cliente });
+      }
+    }
+
+    if (tipo === 'resumen_actualizado' && clienteId) {
+      const clientes = await query('SELECT * FROM clientes WHERE id = ?', [clienteId]) as any[];
+      if (clientes[0]) {
+        getIO().emit('cliente:updated', clientes[0]);
+      }
+    }
+
+    if (tipo === 'campania_log' && req.body.campaniaId) {
+      getIO().emit('campania:updated', { campaniaId: req.body.campaniaId, estado: req.body.estado });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error en webhook n8n:', error);
+    res.status(500).json({ error: 'Error al procesar webhook' });
+  }
+});
+
+export default router;
