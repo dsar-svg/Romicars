@@ -9,6 +9,10 @@
 - [x] Identidad visual (Rojo/Azul/Blanco)
 - [x] Logo y favicon en frontend/public/
 - [x] Primer commit y push a GitHub (rama `Dario1`)
+- [x] Dockerfile backend (Node.js multi-stage)
+- [x] Dockerfile frontend (Vite + Nginx)
+- [x] docker-compose.yml (MySQL + backend + frontend)
+- [x] Nginx config para SPA con proxy al backend
 
 ---
 
@@ -105,6 +109,26 @@
 - [ ] Configurar Meta Business Suite / API Graph
 - [ ] Webhooks de recepción de mensajes
 - [ ] Unificar en el mismo inbox del frontend
+
+---
+
+## Despliegue con Docker / EasyPanel
+
+La aplicación está lista para desplegarse con Docker Compose:
+
+```bash
+docker compose up -d
+```
+
+Esto levanta:
+1. **MySQL 8.0** — puerto `3306`, volumen persistente, schema auto-ejecutado
+2. **Backend** — Node.js 24, puerto `3001`
+3. **Frontend** — Nginx, puerto `80`, proxy `/api/` y `/socket.io/` al backend
+
+En **EasyPanel** puedes crear 3 servicios:
+1. **App** desde GitHub (rama `Dario1`) con ruta `/backend`, buildpack Node.js, puerto `3001`
+2. **App** desde GitHub (rama `Dario1`) con ruta `/frontend`, buildpack Dockerfile, puerto `80`
+3. **MySQL** con base de datos `autoparts_flow`
 
 ---
 
