@@ -351,6 +351,7 @@ function Inbox() {
         <ClientPanel cliente={selectedCliente} onClose={() => setShowPanel(false)} />
       )}
     </div>
+    </div>
   );
 }
 
