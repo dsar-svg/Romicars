@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Search, Send, Phone, MessageSquare, AlertTriangle } from 'lucide-react';
 import { clientesApi, mensajesApi } from '../services/api';
 import { connectSocket } from '../services/socket';
+import { toast } from '../components/Toast';
 import type { Cliente, Mensaje } from '../types';
 
 const canalIcono: Record<string, string> = {
@@ -9,6 +11,22 @@ const canalIcono: Record<string, string> = {
   instagram: '/icons.svg#instagram',
   facebook: '/icons.svg#facebook',
 };
+
+function SkeletonChats() {
+  return (
+    <div style={{ padding: 16 }}>
+      {[1,2,3,4,5].map(i => (
+        <div key={i} style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'center' }}>
+          <div className="skeleton" style={{ width: 40, height: 40, borderRadius: '50%' }} />
+          <div style={{ flex: 1 }}>
+            <div className="skeleton" style={{ width: '60%', height: 14, marginBottom: 8 }} />
+            <div className="skeleton" style={{ width: '80%', height: 12 }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function Inbox() {
   const { clienteId } = useParams();
@@ -18,11 +36,15 @@ function Inbox() {
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
   const [nuevoMensaje, setNuevoMensaje] = useState('');
   const [filtro, setFiltro] = useState('todos');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const socket = connectSocket();
 
-    clientesApi.getAll().then(setClientes);
+    clientesApi.getAll().then(data => {
+      setClientes(data);
+      setLoading(false);
+    });
 
     socket.on('message:new', (mensaje: Mensaje) => {
       setMensajes(prev => [...prev, mensaje]);
@@ -34,8 +56,15 @@ function Inbox() {
   useEffect(() => {
     if (!clienteId) return;
     const id = Number(clienteId);
-    clientesApi.getById(id).then(setSelectedCliente);
-    mensajesApi.getByCliente(id).then(setMensajes);
+    setLoading(true);
+    Promise.all([
+      clientesApi.getById(id),
+      mensajesApi.getByCliente(id),
+    ]).then(([cliente, msgs]) => {
+      setSelectedCliente(cliente);
+      setMensajes(msgs);
+      setLoading(false);
+    });
   }, [clienteId]);
 
   const enviarMensaje = () => {
@@ -47,6 +76,7 @@ function Inbox() {
       remitente: 'agente',
     });
     setNuevoMensaje('');
+    toast('success', 'Mensaje enviado');
   };
 
   const clientesFiltrados = clientes.filter(c => {
@@ -66,11 +96,17 @@ function Inbox() {
 
   return (
     <div style={{ display: 'flex', height: '100%' }}>
-      <div style={{ width: 340, background: 'var(--blanco)', borderRight: '1px solid var(--gris-borde)', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: 16, borderBottom: '1px solid var(--gris-borde)' }}>
-          <input placeholder="Buscar chats..." style={{ width: '100%' }} />
+      <div style={{
+        width: 360, background: 'var(--blanco)', borderRight: '1px solid var(--gris-borde)',
+        display: 'flex', flexDirection: 'column', flexShrink: 0,
+      }}>
+        <div style={{ padding: '16px 16px 12px', borderBottom: '1px solid var(--gris-borde)' }}>
+          <div style={{ position: 'relative' }}>
+            <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--gris-texto)' }} />
+            <input placeholder="Buscar chats..." style={{ width: '100%', paddingLeft: 36 }} />
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 4, padding: '8px 16px', borderBottom: '1px solid var(--gris-borde)', overflowX: 'auto' }}>
+        <div style={{ display: 'flex', gap: 4, padding: '10px 16px', borderBottom: '1px solid var(--gris-borde)' }}>
           {[
             { key: 'todos', label: 'Todos' },
             { key: 'urgentes', label: 'Urgentes' },
@@ -78,94 +114,146 @@ function Inbox() {
           ].map(f => (
             <button key={f.key} onClick={() => setFiltro(f.key)}
               style={{
-                padding: '4px 12px', borderRadius: 12, fontSize: 12, fontWeight: 600,
+                padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
                 background: filtro === f.key ? 'var(--rojo-primario)' : 'var(--gris-fondo)',
                 color: filtro === f.key ? '#fff' : 'var(--gris-texto)',
+                border: filtro === f.key ? 'none' : '1px solid var(--gris-borde)',
               }}>
               {f.label}
             </button>
           ))}
         </div>
         <div style={{ flex: 1, overflowY: 'auto' }}>
-          {clientesFiltrados.map(cliente => (
-            <div key={cliente.id}
-              onClick={() => navigate(`/inbox/${cliente.id}`)}
-              style={{
-                padding: '14px 16px',
-                borderBottom: '1px solid var(--gris-fondo)',
-                cursor: 'pointer',
-                background: selectedCliente?.id === cliente.id ? 'var(--azul-claro)' : 'transparent',
-                borderLeft: selectedCliente?.id === cliente.id ? '3px solid var(--azul-primario)' : '3px solid transparent',
-              }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                <strong style={{ fontSize: 14, color: 'var(--gris-oscuro)' }}>
-                  {cliente.nombre || cliente.telefono}
-                </strong>
-                <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                  <svg width={12} height={12}>
-                    <use href={canalIcono[cliente.canal_origen] || '/icons.svg#chat'} />
-                  </svg>
-                  <div style={{
-                    width: 8, height: 8, borderRadius: '50%',
-                    background: getUrgenciaColor(cliente.urgencia),
-                  }} />
+          {loading ? <SkeletonChats /> : (
+            clientesFiltrados.length === 0 ? (
+              <div style={{ padding: 40, textAlign: 'center', color: 'var(--gris-texto)', fontSize: 14 }}>
+                <MessageSquare size={32} style={{ opacity: 0.3, marginBottom: 8 }} />
+                <p>No hay chats {filtro !== 'todos' && 'con este filtro'}</p>
+              </div>
+            ) : (
+              clientesFiltrados.map(cliente => (
+                <div key={cliente.id}
+                  onClick={() => navigate(`/inbox/${cliente.id}`)}
+                  className="slide-in"
+                  style={{
+                    padding: '14px 16px',
+                    borderBottom: '1px solid var(--gris-fondo)',
+                    cursor: 'pointer',
+                    background: selectedCliente?.id === cliente.id ? 'var(--azul-claro)' : 'transparent',
+                    borderLeft: selectedCliente?.id === cliente.id ? '3px solid var(--azul-primario)' : '3px solid transparent',
+                    transition: 'background 0.2s',
+                  }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{
+                        width: 36, height: 36, borderRadius: '50%',
+                        background: `linear-gradient(135deg, var(--azul-primario), var(--azul-oscuro))`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 14, fontWeight: 700, color: '#fff', flexShrink: 0,
+                      }}>
+                        {(cliente.nombre || cliente.telefono).charAt(0).toUpperCase()}
+                      </div>
+                      <strong style={{ fontSize: 14, color: 'var(--gris-oscuro)' }}>
+                        {cliente.nombre || cliente.telefono}
+                      </strong>
+                    </div>
+                    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                      <svg width={12} height={12}>
+                        <use href={canalIcono[cliente.canal_origen] || '/icons.svg#chat'} />
+                      </svg>
+                      <div style={{
+                        width: 8, height: 8, borderRadius: '50%',
+                        background: getUrgenciaColor(cliente.urgencia),
+                      }} />
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--gris-texto)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingLeft: 44 }}>
+                    {cliente.ultimo_mensaje || 'Sin mensajes'}
+                  </div>
                 </div>
-              </div>
-              <div style={{ fontSize: 13, color: 'var(--gris-texto)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {cliente.ultimo_mensaje || 'Sin mensajes'}
-              </div>
-            </div>
-          ))}
+              ))
+            )
+          )}
         </div>
       </div>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--blanco)' }}>
         {selectedCliente ? (
           <>
-            <div style={{
+            <div className="fade-in" style={{
               padding: '16px 24px',
               borderBottom: '1px solid var(--gris-borde)',
               background: 'var(--gris-fondo)',
             }}>
-              <h3 style={{ fontSize: 18, color: 'var(--azul-oscuro)' }}>
-                {selectedCliente.nombre || selectedCliente.telefono}
-              </h3>
-              {selectedCliente.resumen_busqueda && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{
-                  marginTop: 8, padding: 12, background: 'var(--azul-claro)',
-                  borderRadius: 8, fontSize: 13, borderLeft: '3px solid var(--azul-primario)',
+                  width: 40, height: 40, borderRadius: '50%',
+                  background: 'linear-gradient(135deg, var(--azul-primario), var(--azul-oscuro))',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 16, fontWeight: 700, color: '#fff', flexShrink: 0,
                 }}>
-                  <strong>Resumen de IA:</strong> {selectedCliente.resumen_busqueda}
+                  {(selectedCliente.nombre || selectedCliente.telefono).charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h3 style={{ fontSize: 16, color: 'var(--azul-oscuro)', fontWeight: 600 }}>
+                    {selectedCliente.nombre || selectedCliente.telefono}
+                  </h3>
+                  <span style={{ fontSize: 13, color: 'var(--gris-texto)' }}>
+                    {selectedCliente.canal_origen}
+                  </span>
+                </div>
+              </div>
+              {selectedCliente.resumen_busqueda && (
+                <div className="fade-in" style={{
+                  marginTop: 12, padding: '12px 16px', background: 'var(--azul-claro)',
+                  borderRadius: 'var(--radius)', fontSize: 13,
+                  borderLeft: '3px solid var(--azul-primario)',
+                  display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
+                }}>
+                  <AlertTriangle size={16} style={{ color: 'var(--azul-primario)', flexShrink: 0 }} />
+                  <strong>Resumen IA:</strong> {selectedCliente.resumen_busqueda}
                   {selectedCliente.urgencia && (
-                    <span style={{ marginLeft: 12, color: getUrgenciaColor(selectedCliente.urgencia), fontWeight: 600 }}>
-                      Urgencia: {selectedCliente.urgencia}
+                    <span style={{
+                      marginLeft: 'auto', padding: '2px 10px', borderRadius: 12,
+                      color: '#fff', fontSize: 11, fontWeight: 600,
+                      background: getUrgenciaColor(selectedCliente.urgencia),
+                    }}>
+                      {selectedCliente.urgencia}
                     </span>
                   )}
                 </div>
               )}
             </div>
             <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
-              {mensajes.map(msg => (
-                <div key={msg.id} style={{
-                  marginBottom: 8, padding: '10px 14px',
-                  background: msg.remitente === 'bot'
-                    ? 'var(--gris-fondo)'
-                    : msg.remitente === 'agente'
-                      ? 'var(--rojo-claro)'
-                      : 'var(--blanco)',
-                  border: msg.remitente === 'bot' ? '1px dashed var(--gris-borde)' : '1px solid var(--gris-borde)',
-                  borderRadius: '12px 12px 12px 0',
-                  maxWidth: '75%',
-                  marginLeft: msg.remitente === 'agente' ? 'auto' : 0,
-                  fontSize: 14,
-                  lineHeight: 1.4,
-                }}>
-                  {msg.contenido}
-                  <div style={{ fontSize: 11, color: 'var(--gris-texto)', marginTop: 4, textAlign: 'right' }}>
-                    {new Date(msg.fecha_envio).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
-                  </div>
+              {mensajes.length === 0 ? (
+                <div style={{ textAlign: 'center', color: 'var(--gris-texto)', marginTop: 60 }}>
+                  <MessageSquare size={48} style={{ opacity: 0.2, marginBottom: 12 }} />
+                  <p>No hay mensajes en esta conversación</p>
                 </div>
-              ))}
+              ) : (
+                mensajes.map(msg => (
+                  <div key={msg.id} className="fade-in" style={{
+                    marginBottom: 8, padding: '10px 14px',
+                    background: msg.remitente === 'bot'
+                      ? 'var(--gris-fondo)'
+                      : msg.remitente === 'agente'
+                        ? 'var(--rojo-claro)'
+                        : 'var(--blanco)',
+                    border: msg.remitente === 'bot' ? '1px dashed var(--gris-borde)' : '1px solid var(--gris-borde)',
+                    borderRadius: msg.remitente === 'agente' ? '12px 12px 0 12px' : '12px 12px 12px 0',
+                    maxWidth: '75%',
+                    marginLeft: msg.remitente === 'agente' ? 'auto' : 0,
+                    fontSize: 14,
+                    lineHeight: 1.4,
+                    boxShadow: msg.remitente === 'agente' ? '0 1px 4px rgba(211,47,47,0.15)' : '0 1px 2px rgba(0,0,0,0.05)',
+                  }}>
+                    {msg.contenido}
+                    <div style={{ fontSize: 11, color: 'var(--gris-texto)', marginTop: 4, textAlign: 'right' }}>
+                      {new Date(msg.fecha_envio).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
             <div style={{
               padding: '12px 16px',
@@ -174,19 +262,23 @@ function Inbox() {
               gap: 8,
               background: 'var(--gris-fondo)',
             }}>
-              <input value={nuevoMensaje} onChange={e => setNuevoMensaje(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && enviarMensaje()}
-                placeholder="Escribe un mensaje..."
-                style={{ flex: 1 }} />
-              <button onClick={enviarMensaje} className="btn-primary" style={{ padding: '10px 24px' }}>
+              <div style={{ flex: 1, position: 'relative' }}>
+                <input value={nuevoMensaje} onChange={e => setNuevoMensaje(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && enviarMensaje()}
+                  placeholder="Escribe un mensaje..."
+                  style={{ width: '100%', paddingRight: 40 }} />
+              </div>
+              <button onClick={enviarMensaje} className="btn-primary" style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Send size={16} />
                 Enviar
               </button>
             </div>
           </>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--gris-texto)' }}>
-            <img src="/logotipo.png" alt="" style={{ width: 80, opacity: 0.3, marginBottom: 16 }} />
-            <p>Selecciona un chat para empezar</p>
+            <img src="/logotipo.png" alt="" style={{ width: 160, opacity: 0.15, marginBottom: 20 }} />
+            <p style={{ fontSize: 16, fontWeight: 500 }}>Selecciona un chat para empezar</p>
+            <p style={{ fontSize: 13, marginTop: 4 }}>Los mensajes nuevos aparecerán aquí</p>
           </div>
         )}
       </div>
