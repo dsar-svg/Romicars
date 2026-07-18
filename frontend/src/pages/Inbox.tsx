@@ -42,7 +42,8 @@ function Inbox() {
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
   const [nuevoMensaje, setNuevoMensaje] = useState('');
-  const [filtro, setFiltro] = useState('todos');
+  const [canalFiltro, setCanalFiltro] = useState('todos');
+  const [estadoFiltro, setEstadoFiltro] = useState('todos');
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [showPanel, setShowPanel] = useState(false);
@@ -90,11 +91,9 @@ function Inbox() {
   };
 
   const clientesFiltrados = clientes.filter(c => {
-    if (filtro === 'urgentes' && c.urgencia !== 'Alta') return false;
-    if (filtro === 'bot' && !c.resumen_busqueda) return false;
-    if (filtro === 'whatsapp' && c.canal_origen !== 'whatsapp') return false;
-    if (filtro === 'instagram' && c.canal_origen !== 'instagram') return false;
-    if (filtro === 'facebook' && c.canal_origen !== 'facebook') return false;
+    if (canalFiltro !== 'todos' && c.canal_origen !== canalFiltro) return false;
+    if (estadoFiltro === 'urgentes' && c.urgencia !== 'Alta') return false;
+    if (estadoFiltro === 'bot' && !c.resumen_busqueda) return false;
     if (searchTerm) {
       const s = searchTerm.toLowerCase();
       const name = (c.nombre || '').toLowerCase();
@@ -122,16 +121,17 @@ function Inbox() {
     }
   };
 
-  const filtrosRapidos = [
-    { key: 'todos', label: 'Todos', color: '#6B7280' },
-    { key: 'urgentes', label: '🔴 Urgentes', color: '#DC2626' },
-    { key: 'bot', label: '🤖 Bot', color: '#7C3AED' },
-  ];
-
   const filtrosCanales = [
+    { key: 'todos', label: 'Todos', color: '#6B7280' },
     { key: 'whatsapp', label: 'WhatsApp', color: '#25D366' },
     { key: 'instagram', label: 'Instagram', color: '#E4405F' },
     { key: 'facebook', label: 'Facebook', color: '#1877F2' },
+  ];
+
+  const filtrosEstado = [
+    { key: 'todos', label: 'Todos', color: '#6B7280' },
+    { key: 'urgentes', label: '🔴 Urgentes', color: '#DC2626' },
+    { key: 'bot', label: '🤖 Con IA', color: '#7C3AED' },
   ];
 
   return (
@@ -164,18 +164,21 @@ function Inbox() {
         }}>
           <div>
             <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
-              Estado
+              Canal
             </div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-              {filtrosRapidos.map(f => (
-                <button key={f.key} onClick={() => setFiltro(f.key)}
+              {filtrosCanales.map(f => (
+                <button key={f.key} onClick={() => setCanalFiltro(f.key)}
                   style={{
                     padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                    background: filtro === f.key ? f.color : 'var(--blanco)',
-                    color: filtro === f.key ? '#fff' : 'var(--gris-texto)',
-                    border: filtro === f.key ? 'none' : '1.5px solid var(--gris-borde)',
+                    background: canalFiltro === f.key ? f.color : 'var(--blanco)',
+                    color: canalFiltro === f.key ? '#fff' : 'var(--gris-texto)',
+                    border: canalFiltro === f.key ? 'none' : '1.5px solid var(--gris-borde)',
                     cursor: 'pointer', transition: 'all 0.2s',
                   }}>
+                  {canalFiltro === f.key && f.key !== 'todos' && (
+                    <span style={{ marginRight: 4 }}>✓</span>
+                  )}
                   {f.label}
                 </button>
               ))}
@@ -183,16 +186,16 @@ function Inbox() {
           </div>
           <div>
             <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
-              Canal
+              Adicional
             </div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-              {filtrosCanales.map(f => (
-                <button key={f.key} onClick={() => setFiltro(f.key)}
+              {filtrosEstado.map(f => (
+                <button key={f.key} onClick={() => setEstadoFiltro(f.key)}
                   style={{
                     padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                    background: filtro === f.key ? f.color : 'var(--blanco)',
-                    color: filtro === f.key ? '#fff' : 'var(--gris-texto)',
-                    border: filtro === f.key ? 'none' : '1.5px solid var(--gris-borde)',
+                    background: estadoFiltro === f.key ? f.color : 'var(--blanco)',
+                    color: estadoFiltro === f.key ? '#fff' : 'var(--gris-texto)',
+                    border: estadoFiltro === f.key ? 'none' : '1.5px solid var(--gris-borde)',
                     cursor: 'pointer', transition: 'all 0.2s',
                   }}>
                   {f.label}
