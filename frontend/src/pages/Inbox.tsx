@@ -43,10 +43,8 @@ function Inbox() {
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
   const [nuevoMensaje, setNuevoMensaje] = useState('');
   const [canalFiltro, setCanalFiltro] = useState('todos');
-  const [filtroUrgentes, setFiltroUrgentes] = useState(false);
   const [filtroIA, setFiltroIA] = useState(false);
-  const [filtroInteresado, setFiltroInteresado] = useState(false);
-  const [filtroNeutro, setFiltroNeutro] = useState(false);
+  const [urgenciaFiltro, setUrgenciaFiltro] = useState('todos');
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [showPanel, setShowPanel] = useState(false);
@@ -95,10 +93,10 @@ function Inbox() {
 
   const clientesFiltrados = clientes.filter(c => {
     if (canalFiltro !== 'todos' && c.canal_origen !== canalFiltro) return false;
-    if (filtroUrgentes && c.urgencia !== 'Alta') return false;
+    if (urgenciaFiltro === 'urgentes' && c.urgencia !== 'Alta') return false;
+    if (urgenciaFiltro === 'interesado' && c.estado_venta !== 'Interesado') return false;
+    if (urgenciaFiltro === 'neutro' && c.estado_venta !== 'Lead') return false;
     if (filtroIA && !c.resumen_busqueda) return false;
-    if (filtroInteresado && c.estado_venta !== 'Interesado') return false;
-    if (filtroNeutro && c.estado_venta !== 'Lead') return false;
     if (searchTerm) {
       const s = searchTerm.toLowerCase();
       const name = (c.nombre || '').toLowerCase();
@@ -188,43 +186,23 @@ function Inbox() {
               Urgencia
             </div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-              <button onClick={() => setFiltroUrgentes(!filtroUrgentes)}
-                style={{
-                  padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                  background: filtroUrgentes ? '#DC2626' : 'var(--blanco)',
-                  color: filtroUrgentes ? '#fff' : 'var(--gris-texto)',
-                  border: filtroUrgentes ? 'none' : '1.5px solid var(--gris-borde)',
-                  cursor: 'pointer', transition: 'all 0.2s',
-                }}>
-                {filtroUrgentes ? '✓ ' : ''}🔴 Urgentes
-              </button>
-            </div>
-          </div>
-          <div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
-              Estado de venta
-            </div>
-            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-              <button onClick={() => setFiltroInteresado(!filtroInteresado)}
-                style={{
-                  padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                  background: filtroInteresado ? '#D97706' : 'var(--blanco)',
-                  color: filtroInteresado ? '#fff' : 'var(--gris-texto)',
-                  border: filtroInteresado ? 'none' : '1.5px solid var(--gris-borde)',
-                  cursor: 'pointer', transition: 'all 0.2s',
-                }}>
-                {filtroInteresado ? '✓ ' : ''}🟡 Interesado
-              </button>
-              <button onClick={() => setFiltroNeutro(!filtroNeutro)}
-                style={{
-                  padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                  background: filtroNeutro ? '#6B7280' : 'var(--blanco)',
-                  color: filtroNeutro ? '#fff' : 'var(--gris-texto)',
-                  border: filtroNeutro ? 'none' : '1.5px solid var(--gris-borde)',
-                  cursor: 'pointer', transition: 'all 0.2s',
-                }}>
-                {filtroNeutro ? '✓ ' : ''}⚪ Neutro
-              </button>
+              {[
+                { key: 'todos', label: 'Todos', color: '#6B7280' },
+                { key: 'urgentes', label: '🔴 Urgentes', color: '#DC2626' },
+                { key: 'interesado', label: '🟡 Interesado', color: '#D97706' },
+                { key: 'neutro', label: '⚪ Neutro', color: '#6B7280' },
+              ].map(f => (
+                <button key={f.key} onClick={() => setUrgenciaFiltro(f.key)}
+                  style={{
+                    padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                    background: urgenciaFiltro === f.key ? f.color : 'var(--blanco)',
+                    color: urgenciaFiltro === f.key ? '#fff' : 'var(--gris-texto)',
+                    border: urgenciaFiltro === f.key ? 'none' : '1.5px solid var(--gris-borde)',
+                    cursor: 'pointer', transition: 'all 0.2s',
+                  }}>
+                  {urgenciaFiltro === f.key && f.key !== 'todos' ? '✓ ' : ''}{f.label}
+                </button>
+              ))}
             </div>
           </div>
           <div>
