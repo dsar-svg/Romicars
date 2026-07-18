@@ -45,6 +45,8 @@ function Inbox() {
   const [canalFiltro, setCanalFiltro] = useState('todos');
   const [filtroUrgentes, setFiltroUrgentes] = useState(false);
   const [filtroIA, setFiltroIA] = useState(false);
+  const [filtroInteresado, setFiltroInteresado] = useState(false);
+  const [filtroNeutro, setFiltroNeutro] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [showPanel, setShowPanel] = useState(false);
@@ -95,6 +97,8 @@ function Inbox() {
     if (canalFiltro !== 'todos' && c.canal_origen !== canalFiltro) return false;
     if (filtroUrgentes && c.urgencia !== 'Alta') return false;
     if (filtroIA && !c.resumen_busqueda) return false;
+    if (filtroInteresado && c.estado_venta !== 'Interesado') return false;
+    if (filtroNeutro && c.estado_venta !== 'Lead') return false;
     if (searchTerm) {
       const s = searchTerm.toLowerCase();
       const name = (c.nombre || '').toLowerCase();
@@ -132,6 +136,8 @@ function Inbox() {
   const filtrosToggle = [
     { key: 'urgentes', label: '🔴 Urgentes', color: '#DC2626', active: filtroUrgentes, setter: setFiltroUrgentes },
     { key: 'ia', label: '🤖 Con IA', color: '#7C3AED', active: filtroIA, setter: setFiltroIA },
+    { key: 'interesado', label: '🟡 Interesado', color: '#D97706', active: filtroInteresado, setter: setFiltroInteresado },
+    { key: 'neutro', label: '⚪ Neutro', color: '#6B7280', active: filtroNeutro, setter: setFiltroNeutro },
   ];
 
   return (
