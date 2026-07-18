@@ -466,7 +466,7 @@ function Inbox() {
                             ? 'linear-gradient(135deg, #BD060A, #9E0508)'
                             : isBot
                               ? 'var(--msg-bot)'
-                              : 'var(--blanco)',
+                              : 'var(--msg-cliente)',
                           border: isAgent
                             ? 'none'
                             : isBot

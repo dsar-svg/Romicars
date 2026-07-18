@@ -21,6 +21,7 @@
   --bg-chat: #FAFBFC;
   --bg-filtros: #FAFBFC;
   --msg-bot: #F3F4F6;
+  --msg-cliente: #E8F0FE;
 }
 
 [data-theme="dark"] {
@@ -39,6 +40,7 @@
   --bg-chat: #1A2332;
   --bg-filtros: #1F2937;
   --msg-bot: #2D3748;
+  --msg-cliente: #1E2A4A;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
