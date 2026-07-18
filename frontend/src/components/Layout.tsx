@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { MessageSquare, LayoutDashboard, Send, Shield, Menu, ChevronLeft, Bell, LogOut } from 'lucide-react';
+import { MessageSquare, LayoutDashboard, Send, Shield, Menu, ChevronLeft, Bell, LogOut, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const navItems = [
@@ -17,6 +17,12 @@ function Layout() {
   const location = useLocation();
   const { agente, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+  const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+  }, [dark]);
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
@@ -178,10 +184,26 @@ function Layout() {
                   {agente?.rol_nombre === 'superadmin' ? 'Superadmin' : 'Agente'}
                 </div>
               </div>
-              <Bell size={16} style={{ color: 'rgba(255,255,255,0.3)', cursor: 'pointer', transition: 'color 0.2s' }}
-                onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
-                onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Sun size={13} style={{ color: dark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.6)', transition: 'color 0.2s' }} />
+                <button
+                  onClick={() => setDark(!dark)}
+                  style={{
+                    width: 28, height: 16, borderRadius: 8,
+                    background: dark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.35)',
+                    border: 'none', cursor: 'pointer', padding: 0, position: 'relative',
+                    transition: 'background 0.2s',
+                  }}
+                >
+                  <div style={{
+                    width: 12, height: 12, borderRadius: '50%',
+                    background: '#fff', position: 'absolute', top: 2,
+                    left: dark ? 14 : 2, transition: 'left 0.2s',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                  }} />
+                </button>
+                <Moon size={13} style={{ color: dark ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.2)', transition: 'color 0.2s' }} />
+              </div>
               <LogOut size={16} style={{ color: 'rgba(255,255,255,0.3)', cursor: 'pointer', transition: 'color 0.2s' }}
                 onClick={logout}
                 onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
