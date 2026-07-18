@@ -133,13 +133,6 @@ function Inbox() {
     { key: 'facebook', label: 'Facebook', color: '#1877F2' },
   ];
 
-  const filtrosToggle = [
-    { key: 'urgentes', label: '🔴 Urgentes', color: '#DC2626', active: filtroUrgentes, setter: setFiltroUrgentes },
-    { key: 'ia', label: '🤖 Con IA', color: '#7C3AED', active: filtroIA, setter: setFiltroIA },
-    { key: 'interesado', label: '🟡 Interesado', color: '#D97706', active: filtroInteresado, setter: setFiltroInteresado },
-    { key: 'neutro', label: '⚪ Neutro', color: '#6B7280', active: filtroNeutro, setter: setFiltroNeutro },
-  ];
-
   return (
     <div style={{ display: 'flex', height: '100%' }}>
       <div style={{
@@ -192,21 +185,63 @@ function Inbox() {
           </div>
           <div>
             <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
-              Adicional
+              Urgencia
             </div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-              {filtrosToggle.map(f => (
-                <button key={f.key} onClick={() => f.setter(!f.active)}
-                  style={{
-                    padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                    background: f.active ? f.color : 'var(--blanco)',
-                    color: f.active ? '#fff' : 'var(--gris-texto)',
-                    border: f.active ? 'none' : '1.5px solid var(--gris-borde)',
-                    cursor: 'pointer', transition: 'all 0.2s',
-                  }}>
-                  {f.active ? '✓ ' : ''}{f.label}
-                </button>
-              ))}
+              <button onClick={() => setFiltroUrgentes(!filtroUrgentes)}
+                style={{
+                  padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                  background: filtroUrgentes ? '#DC2626' : 'var(--blanco)',
+                  color: filtroUrgentes ? '#fff' : 'var(--gris-texto)',
+                  border: filtroUrgentes ? 'none' : '1.5px solid var(--gris-borde)',
+                  cursor: 'pointer', transition: 'all 0.2s',
+                }}>
+                {filtroUrgentes ? '✓ ' : ''}🔴 Urgentes
+              </button>
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+              Estado de venta
+            </div>
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+              <button onClick={() => setFiltroInteresado(!filtroInteresado)}
+                style={{
+                  padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                  background: filtroInteresado ? '#D97706' : 'var(--blanco)',
+                  color: filtroInteresado ? '#fff' : 'var(--gris-texto)',
+                  border: filtroInteresado ? 'none' : '1.5px solid var(--gris-borde)',
+                  cursor: 'pointer', transition: 'all 0.2s',
+                }}>
+                {filtroInteresado ? '✓ ' : ''}🟡 Interesado
+              </button>
+              <button onClick={() => setFiltroNeutro(!filtroNeutro)}
+                style={{
+                  padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                  background: filtroNeutro ? '#6B7280' : 'var(--blanco)',
+                  color: filtroNeutro ? '#fff' : 'var(--gris-texto)',
+                  border: filtroNeutro ? 'none' : '1.5px solid var(--gris-borde)',
+                  cursor: 'pointer', transition: 'all 0.2s',
+                }}>
+                {filtroNeutro ? '✓ ' : ''}⚪ Neutro
+              </button>
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+              IA
+            </div>
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+              <button onClick={() => setFiltroIA(!filtroIA)}
+                style={{
+                  padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                  background: filtroIA ? '#7C3AED' : 'var(--blanco)',
+                  color: filtroIA ? '#fff' : 'var(--gris-texto)',
+                  border: filtroIA ? 'none' : '1.5px solid var(--gris-borde)',
+                  cursor: 'pointer', transition: 'all 0.2s',
+                }}>
+                {filtroIA ? '✓ ' : ''}🤖 Con IA
+              </button>
             </div>
           </div>
         </div>
