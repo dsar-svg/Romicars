@@ -162,12 +162,12 @@ function Campañas() {
             disabled={sending}
             style={{
               padding: '12px 36px', borderRadius: 10, fontSize: 15, fontWeight: 700,
-              background: !sending ? 'linear-gradient(135deg, #D32F2F, #C62828)' : '#E5E7EB',
+              background: !sending ? 'linear-gradient(135deg, #BD060A, #9E0508)' : '#E5E7EB',
               color: !sending ? '#fff' : '#9CA3AF',
               border: 'none', cursor: sending ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', gap: 10,
               opacity: sending ? 0.7 : 1,
-              boxShadow: !sending ? '0 4px 14px rgba(211,47,47,0.3)' : 'none',
+              boxShadow: !sending ? '0 4px 14px rgba(189,6,10,0.3)' : 'none',
               transition: 'all 0.2s',
             }}
           >

@@ -39,42 +39,42 @@ export default function Login() {
       <div style={{
         position: 'absolute', top: -200, left: -200,
         width: 900, height: 900, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(211,47,47,0.15) 0%, transparent 60%)',
+        background: 'radial-gradient(circle, rgba(189,6,10,0.15) 0%, transparent 60%)',
         pointerEvents: 'none',
         animation: 'drift-slow 12s ease-in-out infinite alternate',
       }} />
       <div style={{
         position: 'absolute', bottom: -300, right: -200,
         width: 700, height: 700, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(21,101,192,0.12) 0%, transparent 60%)',
+        background: 'radial-gradient(circle, rgba(1,41,128,0.12) 0%, transparent 60%)',
         pointerEvents: 'none',
         animation: 'drift-slow 15s ease-in-out infinite alternate 3s',
       }} />
       <div style={{
         position: 'absolute', top: '30%', left: '50%',
         width: 400, height: 400, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(211,47,47,0.08) 0%, transparent 60%)',
+        background: 'radial-gradient(circle, rgba(189,6,10,0.08) 0%, transparent 60%)',
         pointerEvents: 'none',
         animation: 'drift-slow 10s ease-in-out infinite alternate 6s',
       }} />
       <div style={{
         position: 'absolute', top: '60%', left: '15%',
         width: 200, height: 200, borderRadius: '50%',
-        border: '1px solid rgba(211,47,47,0.08)',
+        border: '1px solid rgba(189,6,10,0.08)',
         pointerEvents: 'none',
         animation: 'float-up 20s linear infinite',
       }} />
       <div style={{
         position: 'absolute', top: '20%', right: '25%',
         width: 120, height: 120, borderRadius: '50%',
-        border: '1px solid rgba(21,101,192,0.08)',
+        border: '1px solid rgba(1,41,128,0.08)',
         pointerEvents: 'none',
         animation: 'float-up 25s linear infinite 5s',
       }} />
       <div style={{
         position: 'absolute', bottom: '30%', left: '30%',
         width: 80, height: 80, borderRadius: '50%',
-        border: '1px solid rgba(211,47,47,0.06)',
+        border: '1px solid rgba(189,6,10,0.06)',
         pointerEvents: 'none',
         animation: 'float-up 18s linear infinite 10s',
       }} />
@@ -161,10 +161,10 @@ export default function Login() {
             type="submit"
             disabled={loading}
             style={{
-              width: '100%', padding: 12, background: 'linear-gradient(135deg, #D32F2F, #B71C1C)',
+              width: '100%', padding: 12, background: 'linear-gradient(135deg, #BD060A, #8B0508)',
               color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700,
               cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1,
-              boxShadow: '0 4px 14px rgba(211,47,47,0.35)',
+              boxShadow: '0 4px 14px rgba(189,6,10,0.35)',
               letterSpacing: '0.3px',
             }}
           >

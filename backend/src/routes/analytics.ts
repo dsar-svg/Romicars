@@ -36,9 +36,9 @@ router.get('/', async (_req: Request, res: Response) => {
     ) as any[];
 
     const funnel = [
-      { etapa: 'Leads', valor: Number(conversion.leads) || 0, color: '#1565C0' },
+      { etapa: 'Leads', valor: Number(conversion.leads) || 0, color: '#012980' },
       { etapa: 'Interesados', valor: Number(conversion.interesados) || 0, color: '#1976D2' },
-      { etapa: 'Compraron', valor: Number(conversion.compraron) || 0, color: '#D32F2F' },
+      { etapa: 'Compraron', valor: Number(conversion.compraron) || 0, color: '#BD060A' },
       { etapa: 'No Compraron', valor: Number(conversion.no_compraron) || 0, color: '#6C757D' },
     ];
 
@@ -56,8 +56,8 @@ router.get('/', async (_req: Request, res: Response) => {
       respuesta_promedio: Math.round(Number(respuesta.promedio) / 60) || 0,
       funnel,
       traffic: [
-        { canal: 'WhatsApp', total: traffic.whatsapp, color: '#D32F2F' },
-        { canal: 'Instagram', total: traffic.instagram, color: '#1565C0' },
+        { canal: 'WhatsApp', total: traffic.whatsapp, color: '#BD060A' },
+        { canal: 'Instagram', total: traffic.instagram, color: '#012980' },
         { canal: 'Facebook', total: traffic.facebook, color: '#1976D2' },
       ],
     });

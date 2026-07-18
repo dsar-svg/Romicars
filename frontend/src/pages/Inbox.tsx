@@ -238,11 +238,11 @@ function Inbox() {
                       <div style={{
                         width: 40, height: 40, borderRadius: '50%',
                         background: cliente.urgencia === 'Alta'
-                          ? 'linear-gradient(135deg, #DC2626, #B91C1C)'
+                          ? 'linear-gradient(135deg, #DC2626, #8B0508)'
                           : 'linear-gradient(135deg, var(--azul-primario), var(--azul-oscuro))',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 15, fontWeight: 700, color: '#fff', flexShrink: 0,
-                        boxShadow: cliente.urgencia === 'Alta' ? '0 2px 8px rgba(220,38,38,0.3)' : '0 2px 6px rgba(21,101,192,0.2)',
+                        boxShadow: cliente.urgencia === 'Alta' ? '0 2px 8px rgba(220,38,38,0.3)' : '0 2px 6px rgba(1,41,128,0.2)',
                       }}>
                         {(cliente.nombre || cliente.telefono || '?').charAt(0).toUpperCase()}
                       </div>
@@ -313,10 +313,10 @@ function Inbox() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                     <div style={{
                       width: 44, height: 44, borderRadius: '50%',
-                      background: 'linear-gradient(135deg, var(--azul-primario), #0D47A1)',
+                      background: 'linear-gradient(135deg, var(--azul-primario), #001A52)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 18, fontWeight: 700, color: '#fff', flexShrink: 0,
-                      boxShadow: '0 2px 8px rgba(21,101,192,0.2)',
+                      boxShadow: '0 2px 8px rgba(1,41,128,0.2)',
                     }}>
                       {(selectedCliente.nombre || selectedCliente.telefono || '?').charAt(0).toUpperCase()}
                     </div>
@@ -398,7 +398,7 @@ function Inbox() {
                         background: msg.remitente === 'bot'
                           ? '#F3F4F6'
                           : msg.remitente === 'agente'
-                            ? 'linear-gradient(135deg, #D32F2F, #C62828)'
+? 'linear-gradient(135deg, #BD060A, #9E0508)'
                             : 'var(--blanco)',
                         border: msg.remitente === 'bot'
                           ? '1.5px dashed #D1D5DB'
@@ -413,7 +413,7 @@ function Inbox() {
                         lineHeight: 1.5,
                         color: msg.remitente === 'agente' ? '#fff' : 'var(--gris-oscuro)',
                         boxShadow: msg.remitente === 'agente'
-                          ? '0 2px 12px rgba(211,47,47,0.25)'
+                          ? '0 2px 12px rgba(189,6,10,0.25)'
                           : '0 1px 4px rgba(0,0,0,0.04)',
                       }}>
                         <div style={{
@@ -458,12 +458,12 @@ function Inbox() {
                   onClick={enviarMensaje}
                   style={{
                     padding: '12px 20px', borderRadius: 12, fontSize: 14, fontWeight: 600,
-                    background: nuevoMensaje.trim() ? 'linear-gradient(135deg, #D32F2F, #C62828)' : '#E5E7EB',
+                    background: nuevoMensaje.trim() ? 'linear-gradient(135deg, #BD060A, #9E0508)' : '#E5E7EB',
                     color: nuevoMensaje.trim() ? '#fff' : '#9CA3AF',
                     border: 'none', cursor: nuevoMensaje.trim() ? 'pointer' : 'not-allowed',
                     display: 'flex', alignItems: 'center', gap: 8,
                     transition: 'all 0.2s',
-                    boxShadow: nuevoMensaje.trim() ? '0 2px 8px rgba(211,47,47,0.25)' : 'none',
+                    boxShadow: nuevoMensaje.trim() ? '0 2px 8px rgba(189,6,10,0.25)' : 'none',
                   }}
                 >
                   <Send size={16} />

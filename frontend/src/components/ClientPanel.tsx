@@ -88,10 +88,10 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{
             width: 48, height: 48, borderRadius: '50%',
-            background: 'linear-gradient(135deg, var(--azul-primario), #0D47A1)',
+            background: 'linear-gradient(135deg, var(--azul-primario), #001A52)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 20, fontWeight: 700, color: '#fff', flexShrink: 0,
-            boxShadow: '0 2px 8px rgba(21,101,192,0.2)',
+            boxShadow: '0 2px 8px rgba(1,41,128,0.2)',
           }}>
             {(cliente.nombre || cliente.telefono || '?').charAt(0).toUpperCase()}
           </div>
@@ -205,7 +205,7 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
               historial.slice(-20).reverse().map((msg, i) => (
                 <div key={msg.id} className="fade-in" style={{
                   padding: '8px 10px', marginBottom: 6, borderRadius: 8,
-                  background: msg.remitente === 'agente' ? '#FFEBEE' : msg.remitente === 'bot' ? '#F3F4F6' : '#fff',
+                  background: msg.remitente === 'agente' ? '#FFEDED' : msg.remitente === 'bot' ? '#F3F4F6' : '#fff',
                   border: '1px solid var(--gris-borde)',
                   animationDelay: `${i * 30}ms`,
                 }}>

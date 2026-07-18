@@ -36,7 +36,7 @@ function Layout() {
           style={{
             position: 'absolute', top: 24, right: -14,
             width: 28, height: 28, borderRadius: '50%',
-            background: 'linear-gradient(135deg, #D32F2F, #B71C1C)',
+            background: 'linear-gradient(135deg, #BD060A, #8B0508)',
             color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
             border: '2px solid #fff', padding: 0, zIndex: 10,
             boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
@@ -89,7 +89,7 @@ function Layout() {
                   justifyContent: collapsed ? 'center' : 'flex-start',
                   color: active ? '#fff' : 'rgba(255,255,255,0.45)',
                   background: active
-                    ? 'linear-gradient(135deg, #D32F2F, #B71C1C)'
+                    ? 'linear-gradient(135deg, #BD060A, #8B0508)'
                     : 'transparent',
                   fontSize: 14, fontWeight: active ? 700 : 500,
                   transition: 'all 0.2s ease',
@@ -134,7 +134,7 @@ function Layout() {
                         justifyContent: collapsed ? 'center' : 'flex-start',
                         color: active ? '#fff' : 'rgba(255,255,255,0.45)',
                         background: active
-                          ? 'linear-gradient(135deg, #D32F2F, #B71C1C)'
+                          ? 'linear-gradient(135deg, #BD060A, #8B0508)'
                           : 'transparent',
                         fontSize: 14, fontWeight: active ? 700 : 500,
                         transition: 'all 0.2s ease',
@@ -157,10 +157,10 @@ function Layout() {
         }}>
           <div style={{
             width: 34, height: 34, borderRadius: '50%',
-            background: 'linear-gradient(135deg, #D32F2F, #B71C1C)',
+            background: 'linear-gradient(135deg, #BD060A, #8B0508)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 14, fontWeight: 700, flexShrink: 0,
-            boxShadow: '0 2px 6px rgba(211,47,47,0.3)',
+            boxShadow: '0 2px 6px rgba(189,6,10,0.3)',
           }}>
             {(agente?.nombre || 'A').charAt(0).toUpperCase()}
           </div>

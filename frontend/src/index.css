@@ -1,10 +1,10 @@
 :root {
-  --rojo-primario: #D32F2F;
-  --rojo-oscuro: #B71C1C;
-  --rojo-claro: #FFEBEE;
-  --azul-primario: #1565C0;
-  --azul-oscuro: #0D47A1;
-  --azul-claro: #E3F2FD;
+  --rojo-primario: #BD060A;
+  --rojo-oscuro: #8B0508;
+  --rojo-claro: #FFEDED;
+  --azul-primario: #012980;
+  --azul-oscuro: #001A52;
+  --azul-claro: #E6EEF9;
   --blanco: #FFFFFF;
   --gris-fondo: #F4F5F7;
   --gris-borde: #E2E4E8;
@@ -45,7 +45,7 @@ input, textarea, select {
 input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--rojo-primario);
-  box-shadow: 0 0 0 3px rgba(211,47,47,0.12);
+  box-shadow: 0 0 0 3px rgba(189,6,10,0.12);
 }
 button {
   cursor: pointer;
@@ -59,19 +59,19 @@ button {
 button:hover { opacity: 0.92; }
 button:active { transform: scale(0.97); }
 .btn-primary {
-  background: linear-gradient(135deg, var(--rojo-primario), #C62828);
+  background: linear-gradient(135deg, var(--rojo-primario), #9E0508);
   color: var(--blanco);
   padding: 10px 24px;
-  box-shadow: 0 2px 8px rgba(211,47,47,0.25);
+  box-shadow: 0 2px 8px rgba(189,6,10,0.25);
 }
-.btn-primary:hover { box-shadow: 0 4px 16px rgba(211,47,47,0.35); }
+.btn-primary:hover { box-shadow: 0 4px 16px rgba(189,6,10,0.35); }
 .btn-secondary {
-  background: linear-gradient(135deg, var(--azul-primario), #0D47A1);
+  background: linear-gradient(135deg, var(--azul-primario), #001A52);
   color: var(--blanco);
   padding: 10px 24px;
-  box-shadow: 0 2px 8px rgba(21,101,192,0.25);
+  box-shadow: 0 2px 8px rgba(1,41,128,0.25);
 }
-.btn-secondary:hover { box-shadow: 0 4px 16px rgba(21,101,192,0.35); }
+.btn-secondary:hover { box-shadow: 0 4px 16px rgba(1,41,128,0.35); }
 .card {
   background: var(--blanco);
   border-radius: var(--radius-lg);
@@ -162,8 +162,8 @@ button:active { transform: scale(0.97); }
   max-width: 440px;
 }
 .toast-success { background: linear-gradient(135deg, #2E7D32, #1B5E20); }
-.toast-error { background: linear-gradient(135deg, var(--rojo-primario), #B71C1C); }
-.toast-info { background: linear-gradient(135deg, var(--azul-primario), #0D47A1); }
+.toast-error { background: linear-gradient(135deg, var(--rojo-primario), #8B0508); }
+.toast-info { background: linear-gradient(135deg, var(--azul-primario), #001A52); }
 @keyframes pulse-glow {
   0%, 100% { opacity: 0.6; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.08); }

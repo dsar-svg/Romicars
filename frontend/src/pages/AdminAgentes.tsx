@@ -63,7 +63,7 @@ export default function AdminAgentes() {
         <button
           onClick={() => setShowForm(!showForm)}
           style={{
-            padding: '10px 20px', background: 'linear-gradient(135deg, #D32F2F, #B71C1C)',
+            padding: '10px 20px', background: 'linear-gradient(135deg, #BD060A, #8B0508)',
             color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600,
             cursor: 'pointer',
           }}
@@ -109,7 +109,7 @@ export default function AdminAgentes() {
             type="submit"
             disabled={loading}
             style={{
-              padding: '10px 24px', background: 'linear-gradient(135deg, #D32F2F, #B71C1C)',
+              padding: '10px 24px', background: 'linear-gradient(135deg, #BD060A, #8B0508)',
               color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600,
               cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1,
             }}
