@@ -44,12 +44,17 @@ router.post('/facebook', async (req: Request, res: Response) => {
             );
             const fbData = await fbResp.json() as any;
             name = fbData.name || '';
-          } catch {
+            if (!name) console.error('⚠️ Graph API respondió sin name:', JSON.stringify(fbData));
+          } catch (err) {
+            console.error('❌ Error al obtener nombre de Facebook:', err);
             name = '';
           }
+        } else {
+          console.warn('⚠️ No se pudo obtener nombre — sender:', sender, 'FB_PAGE_TOKEN:', !!FB_PAGE_TOKEN);
         }
 
         if (sender && message) {
+          console.log('📤 Enviando a n8n:', JSON.stringify({ sender, message, channel: 'facebook', timestamp, name, conversacionId }));
           await fetch(N8N_RECEIVE_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
