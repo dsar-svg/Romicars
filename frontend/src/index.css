@@ -28,10 +28,11 @@
   --gris-fondo: #111827;
   --gris-borde: #374151;
   --gris-texto: #9CA3AF;
-  --gris-oscuro: #F3F4F6;
+  --gris-oscuro: #E5E7EB;
   --rojo-claro: #3D0A0D;
   --azul-claro: #0C1F3D;
   --sidebar-bg: #0A0F1A;
+  --sidebar-hover: rgba(255,255,255,0.08);
   --sombra-sm: 0 1px 3px rgba(0,0,0,0.3);
   --sombra-md: 0 4px 16px rgba(0,0,0,0.4);
   --sombra-lg: 0 8px 32px rgba(0,0,0,0.5);

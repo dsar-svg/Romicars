@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Search, Send, Phone, MessageSquare, AlertTriangle, User, ChevronRight, Filter, Bot, Clock, CheckCheck } from 'lucide-react';
+import { Search, Send, MessageSquare, User, Bot, CheckCheck } from 'lucide-react';
 import { clientesApi, mensajesApi } from '../services/api';
 import { connectSocket } from '../services/socket';
 import { toast } from '../components/Toast';
@@ -336,7 +336,7 @@ function Inbox() {
               <div className="fade-in" style={{
                 padding: '16px 24px',
                 borderBottom: '1px solid var(--gris-borde)',
-                background: '#FAFBFC',
+                background: 'var(--bg-filtros)',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -385,14 +385,27 @@ function Inbox() {
                 </div>
                 {selectedCliente.resumen_busqueda && (
                   <div className="fade-in" style={{
-                    marginTop: 14, padding: '12px 16px', background: '#F0F4FF',
-                    borderRadius: 'var(--radius-lg)', fontSize: 13,
-                    border: '1px solid #DBEAFE',
-                    display: 'flex', alignItems: 'flex-start', gap: 10,
+                    margin: '14px 24px 0', padding: '16px 18px',
+                    background: 'linear-gradient(135deg, var(--azul-claro), #E6EEF9)',
+                    borderRadius: 14, fontSize: 13, lineHeight: 1.6,
+                    border: '1px solid var(--azul-primario)',
+                    borderLeft: '4px solid var(--azul-primario)',
+                    display: 'flex', alignItems: 'flex-start', gap: 12,
+                    boxShadow: '0 2px 8px rgba(1,41,128,0.1)',
                   }}>
-                    <AlertTriangle size={16} style={{ color: 'var(--azul-primario)', flexShrink: 0, marginTop: 1 }} />
+                    <div style={{
+                      width: 32, height: 32, borderRadius: '50%',
+                      background: 'linear-gradient(135deg, var(--azul-primario), #001A52)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                      boxShadow: '0 2px 6px rgba(1,41,128,0.25)',
+                    }}>
+                      <Bot size={16} style={{ color: '#fff' }} />
+                    </div>
                     <div style={{ flex: 1 }}>
-                      <strong>Resumen IA:</strong> {selectedCliente.resumen_busqueda}
+                      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--azul-primario)', marginBottom: 4, letterSpacing: '0.3px' }}>
+                        RESUMEN DE IA
+                      </div>
+                      {selectedCliente.resumen_busqueda}
                     </div>
                   </div>
                 )}
@@ -400,7 +413,7 @@ function Inbox() {
 
               <div style={{
                 flex: 1, overflowY: 'auto', padding: '16px 24px',
-                background: '#FAFBFC',
+                background: 'var(--bg-chat)',
               }}>
                 {mensajes.length === 0 ? (
                   <div style={{
@@ -414,56 +427,82 @@ function Inbox() {
                     </p>
                   </div>
                 ) : (
-                  mensajes.map((msg, i) => (
-                    <div key={msg.id} className="fade-in-up" style={{
-                      marginBottom: 10,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: msg.remitente === 'agente' || msg.remitente === 'bot' ? 'flex-end' : 'flex-start',
-                      animationDelay: `${i * 30}ms`,
-                    }}>
-                      <div style={{
-                        padding: '12px 16px',
-                        background: msg.remitente === 'bot'
-                          ? 'var(--msg-bot)'
-                          : msg.remitente === 'agente'
-? 'linear-gradient(135deg, #BD060A, #9E0508)'
-                            : 'var(--blanco)',
-                        border: msg.remitente === 'agente'
-                          ? 'none'
-                          : msg.remitente === 'bot'
-                            ? '1.5px dashed #6B7280'
-                            : '1.5px solid var(--gris-borde)',
-                        borderRadius: msg.remitente === 'agente' || msg.remitente === 'bot'
-                          ? '16px 16px 4px 16px'
-                          : '16px 16px 16px 4px',
-                        maxWidth: '70%',
-                        fontSize: 14,
-                        lineHeight: 1.5,
-                        color: msg.remitente === 'agente' ? '#fff' : 'var(--gris-oscuro)',
-                        boxShadow: msg.remitente === 'agente'
-                          ? '0 2px 12px rgba(189,6,10,0.25)'
-                          : '0 1px 4px rgba(0,0,0,0.04)',
+                  mensajes.map((msg, i) => {
+                    const isAgent = msg.remitente === 'agente';
+                    const isBot = msg.remitente === 'bot';
+                    const isRight = isAgent || isBot;
+                    return (
+                      <div key={msg.id} className="fade-in-up" style={{
+                        marginBottom: 12,
+                        display: 'flex',
+                        flexDirection: isRight ? 'row-reverse' : 'row',
+                        alignItems: 'flex-end',
+                        gap: 8,
+                        animationDelay: `${i * 30}ms`,
                       }}>
                         <div style={{
-                          fontSize: 11, fontWeight: 600, marginBottom: 4, opacity: 0.7,
-                          textTransform: 'uppercase', letterSpacing: '0.5px',
+                          width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 12, fontWeight: 700, color: '#fff',
+                          background: isAgent
+                            ? 'linear-gradient(135deg, #BD060A, #8B0508)'
+                            : isBot
+                              ? 'linear-gradient(135deg, #7C3AED, #5B21B6)'
+                              : 'linear-gradient(135deg, var(--azul-primario), #001A52)',
+                          boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
+                          overflow: 'hidden',
                         }}>
-                          {msg.remitente === 'agente' ? 'Tú' : msg.remitente === 'bot' ? 'Bot IA' : selectedCliente?.nombre || 'Cliente'}
-                        </div>
-                        <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                          {msg.contenido}
+                          {isAgent ? (
+                            <img src="/loguito.png" alt="" style={{ width: 20, height: 20, filter: 'brightness(10)' }} />
+                          ) : isBot ? (
+                            <Bot size={16} />
+                          ) : (
+                            (selectedCliente?.nombre || '?').charAt(0).toUpperCase()
+                          )}
                         </div>
                         <div style={{
-                          fontSize: 11, marginTop: 6, opacity: 0.6, textAlign: 'right',
-                          display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4,
+                          padding: '10px 14px',
+                          background: isAgent
+                            ? 'linear-gradient(135deg, #BD060A, #9E0508)'
+                            : isBot
+                              ? 'var(--msg-bot)'
+                              : 'var(--blanco)',
+                          border: isAgent
+                            ? 'none'
+                            : isBot
+                              ? '1.5px dashed #6B7280'
+                              : '1.5px solid var(--gris-borde)',
+                          borderRadius: isAgent || isBot
+                            ? '16px 16px 4px 16px'
+                            : '16px 16px 16px 4px',
+                          maxWidth: '65%',
+                          fontSize: 14,
+                          lineHeight: 1.5,
+                          color: isAgent ? '#fff' : 'var(--gris-oscuro)',
+                          boxShadow: isAgent
+                            ? '0 2px 12px rgba(189,6,10,0.25)'
+                            : '0 1px 4px rgba(0,0,0,0.04)',
                         }}>
-                          {new Date(msg.fecha_envio).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
-                          {msg.remitente === 'agente' && <CheckCheck size={12} />}
+                          <div style={{
+                            fontSize: 11, fontWeight: 600, marginBottom: 4, opacity: 0.7,
+                            textTransform: 'uppercase', letterSpacing: '0.5px',
+                          }}>
+                            {isAgent ? 'Tú' : isBot ? 'Bot IA' : selectedCliente?.nombre || 'Cliente'}
+                          </div>
+                          <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                            {msg.contenido}
+                          </div>
+                          <div style={{
+                            fontSize: 11, marginTop: 6, opacity: 0.6, textAlign: 'right',
+                            display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4,
+                          }}>
+                            {new Date(msg.fecha_envio).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                            {isAgent && <CheckCheck size={12} />}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
 
@@ -472,7 +511,7 @@ function Inbox() {
                 borderTop: '1px solid var(--gris-borde)',
                 display: 'flex',
                 gap: 10,
-                background: '#fff',
+                background: 'var(--blanco)',
               }}>
                 <div style={{ flex: 1, position: 'relative' }}>
                   <input
@@ -504,7 +543,7 @@ function Inbox() {
             <div style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               height: '100%', color: 'var(--gris-texto)',
-              background: '#FAFBFC', position: 'relative', overflow: 'hidden',
+              background: 'var(--bg-chat)', position: 'relative', overflow: 'hidden',
             }}>
               <img
                 src="/logotipo.png"
