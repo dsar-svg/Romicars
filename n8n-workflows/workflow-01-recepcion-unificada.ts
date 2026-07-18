@@ -45,7 +45,7 @@ const pushRedis = node({
     parameters: {
       operation: 'push',
       list: expr('{{ $json.conversacionId }}'),
-      messageData: expr('={ "mensaje": "' + '{{ $json.message }}' + '", "timestamp": "' + '{{ $json.timestamp }}' + '", "senderId": "' + '{{ $json.senderId }}' + '" }'),
+      messageData: expr('={ "mensaje": "' + '{{ $json.message }}' + '", "timestamp": "' + '{{ $json.timestamp }}' + '", "senderId": "' + '{{ $json.senderId }}' + '", "channel": "' + '{{ $json.channel }}' + '", "clientName": "' + '{{ $json.clientName }}' + '" }'),
       tail: true,
     },
   },
@@ -122,8 +122,9 @@ const concatMessages = node({
         assignments: [
           { id: 'concat-msg', name: 'message', value: expr('{{ $json.Mensaje.map(m => JSON.parse(m).mensaje).join("\\n") }}'), type: 'string' },
           { id: 'concat-sid', name: 'senderId', value: expr('{{ JSON.parse($json.Mensaje[0]).senderId }}'), type: 'string' },
-          { id: 'concat-chn', name: 'channel', value: expr('{{ $json.channel }}'), type: 'string' },
-          { id: 'concat-nm', name: 'clientName', value: expr('{{ $json.clientName }}'), type: 'string' },
+          { id: 'concat-chn', name: 'channel', value: expr('{{ JSON.parse($json.Mensaje[0]).channel ?? $json.channel ?? "whatsapp" }}'), type: 'string' },
+          { id: 'concat-nm', name: 'clientName', value: expr('{{ JSON.parse($json.Mensaje[0]).clientName ?? $json.clientName ?? "" }}'), type: 'string' },
+          { id: 'concat-cid', name: 'conversacionId', value: expr('{{ $json.conversacionId ?? JSON.parse($json.Mensaje[0]).conversacionId ?? $json.senderId }}'), type: 'string' },
         ],
       },
     },
