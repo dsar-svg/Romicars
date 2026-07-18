@@ -164,6 +164,11 @@ button:active { transform: scale(0.97); }
 .toast-success { background: linear-gradient(135deg, #2E7D32, #1B5E20); }
 .toast-error { background: linear-gradient(135deg, var(--rojo-primario), #B71C1C); }
 .toast-info { background: linear-gradient(135deg, var(--azul-primario), #0D47A1); }
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
 .badge {
   display: inline-flex;
   align-items: center;

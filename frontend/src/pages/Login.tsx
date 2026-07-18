@@ -1,12 +1,14 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -36,28 +38,41 @@ export default function Login() {
     }}>
       <div style={{
         position: 'absolute',
-        top: '-30%', right: '-20%',
-        width: 600, height: 600,
+        top: '-20%', left: '-10%',
+        width: 800, height: 800,
         borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(211,47,47,0.08) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(211,47,47,0.12) 0%, transparent 60%)',
         pointerEvents: 'none',
+        animation: 'pulse-glow 6s ease-in-out infinite',
       }} />
       <div style={{
         position: 'absolute',
-        bottom: '-20%', left: '-10%',
-        width: 400, height: 400,
+        bottom: '-25%', right: '-15%',
+        width: 600, height: 600,
         borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(21,101,192,0.06) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(21,101,192,0.10) 0%, transparent 60%)',
         pointerEvents: 'none',
+        animation: 'pulse-glow 8s ease-in-out infinite 2s',
+      }} />
+      <div style={{
+        position: 'absolute',
+        top: '40%', left: '60%',
+        width: 300, height: 300,
+        borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(211,47,47,0.06) 0%, transparent 60%)',
+        pointerEvents: 'none',
+        animation: 'pulse-glow 10s ease-in-out infinite 4s',
       }} />
       <div className="fade-in-up" style={{
-        background: '#fff',
+        background: 'rgba(255,255,255,0.97)',
+        backdropFilter: 'blur(20px)',
         borderRadius: 20,
         padding: 48,
         width: 420,
         maxWidth: '92vw',
         boxShadow: '0 25px 80px rgba(0,0,0,0.5)',
         position: 'relative',
+        zIndex: 1,
       }}>
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
           <img
@@ -93,14 +108,29 @@ export default function Login() {
             <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#374151' }}>
               Contraseña
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••"
-              style={{ width: '100%' }}
-              required
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                style={{ width: '100%', paddingRight: 44 }}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+                style={{
+                  position: 'absolute', right: 2, top: 2, bottom: 2,
+                  width: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: '#9CA3AF', borderRadius: 8,
+                }}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           {error && (
