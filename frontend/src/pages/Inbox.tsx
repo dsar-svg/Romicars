@@ -481,8 +481,9 @@ function Inbox() {
                 src="/logotipo.png"
                 alt=""
                 style={{
-                  position: 'absolute', opacity: 0.04, width: 320, height: 'auto',
+                  position: 'absolute', opacity: 0.1, width: 360, height: 'auto',
                   pointerEvents: 'none', userSelect: 'none',
+                  filter: 'grayscale(1)',
                 }}
               />
               <div style={{

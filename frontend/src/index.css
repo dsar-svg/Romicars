@@ -169,6 +169,19 @@ button:active { transform: scale(0.97); }
   50% { opacity: 1; transform: scale(1.08); }
 }
 
+@keyframes drift-slow {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(60px, -40px) scale(1.05); }
+  66% { transform: translate(-30px, 50px) scale(0.95); }
+  100% { transform: translate(40px, -20px) scale(1.02); }
+}
+
+@keyframes float-up {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0.6; }
+  50% { opacity: 0.3; }
+  100% { transform: translateY(-120px) rotate(180deg); opacity: 0; }
+}
+
 .badge {
   display: inline-flex;
   align-items: center;

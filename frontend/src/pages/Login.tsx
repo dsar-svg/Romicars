@@ -32,36 +32,51 @@ export default function Login() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: '#0A1628',
+      background: 'linear-gradient(135deg, #0A1628 0%, #0D1F3C 50%, #0A1628 100%)',
       position: 'relative',
       overflow: 'hidden',
     }}>
       <div style={{
-        position: 'absolute',
-        top: '-20%', left: '-10%',
-        width: 800, height: 800,
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(211,47,47,0.12) 0%, transparent 60%)',
+        position: 'absolute', top: -200, left: -200,
+        width: 900, height: 900, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(211,47,47,0.15) 0%, transparent 60%)',
         pointerEvents: 'none',
-        animation: 'pulse-glow 6s ease-in-out infinite',
+        animation: 'drift-slow 12s ease-in-out infinite alternate',
       }} />
       <div style={{
-        position: 'absolute',
-        bottom: '-25%', right: '-15%',
-        width: 600, height: 600,
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(21,101,192,0.10) 0%, transparent 60%)',
+        position: 'absolute', bottom: -300, right: -200,
+        width: 700, height: 700, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(21,101,192,0.12) 0%, transparent 60%)',
         pointerEvents: 'none',
-        animation: 'pulse-glow 8s ease-in-out infinite 2s',
+        animation: 'drift-slow 15s ease-in-out infinite alternate 3s',
       }} />
       <div style={{
-        position: 'absolute',
-        top: '40%', left: '60%',
-        width: 300, height: 300,
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(211,47,47,0.06) 0%, transparent 60%)',
+        position: 'absolute', top: '30%', left: '50%',
+        width: 400, height: 400, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(211,47,47,0.08) 0%, transparent 60%)',
         pointerEvents: 'none',
-        animation: 'pulse-glow 10s ease-in-out infinite 4s',
+        animation: 'drift-slow 10s ease-in-out infinite alternate 6s',
+      }} />
+      <div style={{
+        position: 'absolute', top: '60%', left: '15%',
+        width: 200, height: 200, borderRadius: '50%',
+        border: '1px solid rgba(211,47,47,0.08)',
+        pointerEvents: 'none',
+        animation: 'float-up 20s linear infinite',
+      }} />
+      <div style={{
+        position: 'absolute', top: '20%', right: '25%',
+        width: 120, height: 120, borderRadius: '50%',
+        border: '1px solid rgba(21,101,192,0.08)',
+        pointerEvents: 'none',
+        animation: 'float-up 25s linear infinite 5s',
+      }} />
+      <div style={{
+        position: 'absolute', bottom: '30%', left: '30%',
+        width: 80, height: 80, borderRadius: '50%',
+        border: '1px solid rgba(211,47,47,0.06)',
+        pointerEvents: 'none',
+        animation: 'float-up 18s linear infinite 10s',
       }} />
       <div className="fade-in-up" style={{
         background: 'rgba(255,255,255,0.97)',
