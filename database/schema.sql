@@ -39,14 +39,27 @@ CREATE TABLE IF NOT EXISTS mensajes (
     FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+CREATE TABLE IF NOT EXISTS roles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) UNIQUE NOT NULL,
+    permisos JSON DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+INSERT IGNORE INTO roles (id, nombre, permisos) VALUES
+(1, 'superadmin', '["inbox","dashboard","campanas","admin.agentes"]'),
+(2, 'agente', '["inbox","dashboard","campanas"]');
+
 CREATE TABLE IF NOT EXISTS agentes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
+    rol_id INT DEFAULT 2,
     activo BOOLEAN DEFAULT TRUE,
     ultimo_acceso TIMESTAMP NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (rol_id) REFERENCES roles(id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS campañas (

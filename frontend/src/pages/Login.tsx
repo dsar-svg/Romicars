@@ -2,11 +2,9 @@ import { useState, FormEvent } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Login() {
-  const { login, register } = useAuth();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [nombre, setNombre] = useState('');
-  const [isRegister, setIsRegister] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -15,12 +13,7 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      if (isRegister) {
-        if (!nombre.trim()) { setError('El nombre es requerido'); setLoading(false); return; }
-        await register(nombre, email, password);
-      } else {
-        await login(email, password);
-      }
+      await login(email, password);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Error al iniciar sesión');
     } finally {
@@ -75,24 +68,11 @@ export default function Login() {
             AutoParts Flow
           </h1>
           <p style={{ margin: '6px 0 0', color: '#6B7280', fontSize: 14, fontWeight: 400 }}>
-            {isRegister ? 'Crea tu cuenta de agente' : 'Accede al panel de gestión'}
+            Accede al panel de gestión
           </p>
         </div>
 
         <form onSubmit={handleSubmit}>
-          {isRegister && (
-            <div style={{ marginBottom: 18 }}>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#374151' }}>
-                Nombre completo
-              </label>
-              <input
-                value={nombre}
-                onChange={e => setNombre(e.target.value)}
-                placeholder="Tu nombre"
-                style={{ width: '100%' }}
-              />
-            </div>
-          )}
           <div style={{ marginBottom: 18 }}>
             <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#374151' }}>
               Correo electrónico
@@ -140,22 +120,12 @@ export default function Login() {
               letterSpacing: '0.3px',
             }}
           >
-            {loading ? 'Cargando...' : isRegister ? 'Crear cuenta' : 'Iniciar sesión'}
+            {loading ? 'Cargando...' : 'Iniciar sesión'}
           </button>
         </form>
 
         <p style={{ textAlign: 'center', margin: '24px 0 0', fontSize: 13, color: '#9CA3AF' }}>
-          {isRegister ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?'}{' '}
-          <button
-            onClick={() => { setIsRegister(!isRegister); setError(''); }}
-            style={{
-              background: 'none', border: 'none', color: '#D32F2F', cursor: 'pointer',
-              fontWeight: 700, fontSize: 13, textDecoration: 'underline',
-              textUnderlineOffset: 2,
-            }}
-          >
-            {isRegister ? 'Inicia sesión' : 'Regístrate'}
-          </button>
+          Plataforma de gestión de clientes © Romicars
         </p>
       </div>
     </div>

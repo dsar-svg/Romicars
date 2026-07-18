@@ -10,7 +10,6 @@ interface AuthState {
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<void>;
-  register: (nombre: string, email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -44,13 +43,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState({ agente: data.agente, token: data.token, loading: false });
   };
 
-  const register = async (nombre: string, email: string, password: string) => {
-    const { data } = await api.post('/auth/register', { nombre, email, password });
-    localStorage.setItem('token', data.token);
-    api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-    setState({ agente: data.agente, token: data.token, loading: false });
-  };
-
   const logout = () => {
     localStorage.removeItem('token');
     delete api.defaults.headers.common['Authorization'];
@@ -58,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout }}>
+    <AuthContext.Provider value={{ ...state, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

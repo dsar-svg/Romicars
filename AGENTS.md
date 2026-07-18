@@ -13,6 +13,7 @@
 | `/frontend` | `npm run lint` | oxlint (not eslint!) |
 | `/backend` | `npm run dev` | `ts-node-dev --respawn --transpile-only src/index.ts` |
 | `/backend` | `npm run build` | `tsc` outputs to `./dist` |
+| `/backend` | `npm run seed` | Creates superadmin (admin@romicars.com / Admin123!) |
 | root | `docker compose up -d` | starts MySQL, backend, frontend |
 
 ## Architecture
@@ -22,6 +23,15 @@
 - **DB:** database/schema.sql is auto-executed on first MySQL container start (docker-entrypoint-initdb.d)
 - **Frontend routes (react-router):** `/login`, `/inbox/:clienteId?`, `/dashboard`, `/campanas` — all behind `PrivateRoute` except `/login`
 - **CSS:** CSS custom properties for brand (red/blue/white system), no CSS-in-JS
+
+## Roles & Auth
+- `roles` table: `id`, `nombre` (unique), `permisos` (JSON array)
+- Default roles: `superadmin` (id=1), `agente` (id=2)
+- `agentes.rol_id` FK → `roles.id`
+- JWT token carries `rol_id` + `rol_nombre`
+- `requireAdmin` middleware checks `rol_nombre === 'superadmin'`
+- Superadmin sees "Admin Agentes" in sidebar; agents don't
+- Seed: `npm run seed` creates `admin@romicars.com` / `Admin123!` with rol_id=1
 
 ## Conventions
 - Backend is CommonJS (`"type": "commonjs"`), Frontend is ESM (`"type": "module"`)

@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { MessageSquare, LayoutDashboard, Send, Menu, ChevronLeft, Bell, LogOut } from 'lucide-react';
+import { MessageSquare, LayoutDashboard, Send, Shield, Menu, ChevronLeft, Bell, LogOut } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const navItems = [
   { path: '/inbox', label: 'Inbox', icon: MessageSquare },
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/campanas', label: 'Campañas', icon: Send },
+];
+
+const adminItems = [
+  { path: '/admin/agentes', label: 'Admin Agentes', icon: Shield },
 ];
 
 function Layout() {
@@ -107,8 +111,42 @@ function Layout() {
                   }} />
                 )}
               </Link>
-            );
-          })}
+              );
+            })}
+            {agente?.rol_nombre === 'superadmin' && (
+              <>
+                <div style={{
+                  margin: '12px 0 6px', padding: '0 14px', fontSize: 11, fontWeight: 700,
+                  color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.1em',
+                }}>
+                  {collapsed ? '••' : 'Admin'}
+                </div>
+                {adminItems.map(item => {
+                  const Icon = item.icon;
+                  const active = location.pathname.startsWith(item.path);
+                  return (
+                    <Link key={item.path} to={item.path}
+                      title={collapsed ? item.label : undefined}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 12,
+                        padding: collapsed ? '12px' : '12px 14px',
+                        borderRadius: 10, textDecoration: 'none',
+                        justifyContent: collapsed ? 'center' : 'flex-start',
+                        color: active ? '#fff' : 'rgba(255,255,255,0.45)',
+                        background: active
+                          ? 'linear-gradient(135deg, #D32F2F, #B71C1C)'
+                          : 'transparent',
+                        fontSize: 14, fontWeight: active ? 700 : 500,
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      <Icon size={20} />
+                      {!collapsed && <span>{item.label}</span>}
+                    </Link>
+                  );
+                })}
+              </>
+            )}
         </nav>
 
         <div style={{
@@ -137,7 +175,7 @@ function Layout() {
                     display: 'inline-block', width: 6, height: 6, borderRadius: '50%',
                     background: '#22C55E', marginRight: 6, verticalAlign: 'middle',
                   }} />
-                  En línea
+                  {agente?.rol_nombre === 'superadmin' ? 'Superadmin' : 'Agente'}
                 </div>
               </div>
               <Bell size={16} style={{ color: 'rgba(255,255,255,0.3)', cursor: 'pointer', transition: 'color 0.2s' }}

@@ -34,6 +34,14 @@ export interface Agente {
   id: number;
   nombre: string;
   email: string;
+  rol_id: number;
+  rol_nombre: string;
   activo: boolean;
   ultimo_acceso: string | null;
+}
+
+export interface Rol {
+  id: number;
+  nombre: string;
+  permisos: string[] | null;
 }
