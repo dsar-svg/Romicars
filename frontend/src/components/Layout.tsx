@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { MessageSquare, LayoutDashboard, Send, Menu, ChevronLeft, Bell } from 'lucide-react';
+import { MessageSquare, LayoutDashboard, Send, Menu, ChevronLeft, Bell, LogOut } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const navItems = [
   { path: '/inbox', label: 'Inbox', icon: MessageSquare },
@@ -10,47 +11,68 @@ const navItems = [
 
 function Layout() {
   const location = useLocation();
+  const { agente, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       <aside style={{
-        width: collapsed ? 72 : 240,
-        background: 'linear-gradient(180deg, var(--azul-oscuro) 0%, #0a2e5c 100%)',
+        width: collapsed ? 68 : 248,
+        background: 'linear-gradient(180deg, #0A1628 0%, #0D1F3C 100%)',
         color: '#fff',
         display: 'flex',
         flexDirection: 'column',
         flexShrink: 0,
-        transition: 'width 0.3s ease',
+        transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         position: 'relative',
+        zIndex: 10,
       }}>
-        <button onClick={() => setCollapsed(!collapsed)}
+        <button
+          onClick={() => setCollapsed(!collapsed)}
           style={{
-            position: 'absolute', top: 20, right: collapsed ? -12 : -12,
-            width: 24, height: 24, borderRadius: '50%', background: 'var(--rojo-primario)',
+            position: 'absolute', top: 24, right: -14,
+            width: 28, height: 28, borderRadius: '50%',
+            background: 'linear-gradient(135deg, #D32F2F, #B71C1C)',
             color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
             border: '2px solid #fff', padding: 0, zIndex: 10,
-          }}>
-          {collapsed ? <Menu size={12} /> : <ChevronLeft size={12} />}
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+          }}
+        >
+          {collapsed ? <Menu size={13} /> : <ChevronLeft size={13} />}
         </button>
 
         <Link to="/" style={{
-          display: 'flex', alignItems: 'center', gap: 12,
-          padding: collapsed ? '20px 16px 24px' : '20px 20px 24px',
-          textDecoration: 'none', borderBottom: '1px solid rgba(255,255,255,0.08)',
+          display: 'flex', alignItems: 'center', gap: 14,
+          padding: collapsed ? '24px 14px 28px' : '24px 20px 28px',
+          textDecoration: 'none',
           justifyContent: collapsed ? 'center' : 'flex-start',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
         }}>
-          <img src="/logotipo.png" alt="" style={{ height: collapsed ? 32 : 36, transition: 'height 0.3s' }} />
+          <img
+            src="/logotipo.png"
+            alt="Romicars"
+            style={{
+              height: collapsed ? 34 : 40,
+              transition: 'height 0.3s',
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+            }}
+          />
           {!collapsed && (
-            <span style={{ fontSize: 15, fontWeight: 800, color: '#fff', letterSpacing: '0.3px' }}>AutoParts Flow</span>
+            <span style={{
+              fontSize: 16, fontWeight: 900, color: '#fff',
+              letterSpacing: '-0.03em',
+              fontFamily: 'Inter, sans-serif',
+            }}>
+              AutoParts Flow
+            </span>
           )}
         </Link>
 
         <nav style={{
-          flex: 1, padding: collapsed ? '16px 8px' : '16px 12px',
-          display: 'flex', flexDirection: 'column', gap: 4,
+          flex: 1, padding: collapsed ? '20px 6px' : '20px 12px',
+          display: 'flex', flexDirection: 'column', gap: 2,
         }}>
-          {navItems.map(item => {
+          {navItems.map((item, i) => {
             const Icon = item.icon;
             const active = location.pathname.startsWith(item.path);
             return (
@@ -58,21 +80,30 @@ function Layout() {
                 title={collapsed ? item.label : undefined}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 12,
-                  padding: collapsed ? '10px' : '10px 14px',
-                  borderRadius: 8, textDecoration: 'none',
+                  padding: collapsed ? '12px' : '12px 14px',
+                  borderRadius: 10, textDecoration: 'none',
                   justifyContent: collapsed ? 'center' : 'flex-start',
-                  color: active ? '#fff' : 'rgba(255,255,255,0.55)',
-                  background: active ? 'linear-gradient(135deg, var(--rojo-primario), var(--rojo-oscuro))' : 'transparent',
-                  fontSize: 14, fontWeight: 500,
-                  transition: 'all 0.2s',
+                  color: active ? '#fff' : 'rgba(255,255,255,0.45)',
+                  background: active
+                    ? 'linear-gradient(135deg, #D32F2F, #B71C1C)'
+                    : 'transparent',
+                  fontSize: 14, fontWeight: active ? 700 : 500,
+                  transition: 'all 0.2s ease',
                   position: 'relative',
-                }}>
+                }}
+                onMouseEnter={e => {
+                  if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                }}
+                onMouseLeave={e => {
+                  if (!active) e.currentTarget.style.background = 'transparent';
+                }}
+              >
                 <Icon size={20} />
-                {!collapsed && item.label}
-                {active && (
+                {!collapsed && <span>{item.label}</span>}
+                {active && !collapsed && (
                   <div style={{
                     position: 'absolute', left: -12, top: '50%', transform: 'translateY(-50%)',
-                    width: 4, height: 24, background: '#fff', borderRadius: '0 4px 4px 0',
+                    width: 4, height: 28, background: '#fff', borderRadius: '0 4px 4px 0',
                   }} />
                 )}
               </Link>
@@ -81,30 +112,52 @@ function Layout() {
         </nav>
 
         <div style={{
-          padding: collapsed ? '16px 8px' : '16px 20px',
-          borderTop: '1px solid rgba(255,255,255,0.08)',
+          padding: collapsed ? '16px 8px' : '16px 16px',
+          borderTop: '1px solid rgba(255,255,255,0.06)',
           display: 'flex', alignItems: 'center', gap: 10,
           justifyContent: collapsed ? 'center' : 'flex-start',
         }}>
           <div style={{
-            width: 32, height: 32, borderRadius: '50%',
-            background: 'linear-gradient(135deg, var(--rojo-primario), var(--rojo-oscuro))',
+            width: 34, height: 34, borderRadius: '50%',
+            background: 'linear-gradient(135deg, #D32F2F, #B71C1C)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 13, fontWeight: 700, flexShrink: 0,
-          }}>A</div>
+            fontSize: 14, fontWeight: 700, flexShrink: 0,
+            boxShadow: '0 2px 6px rgba(211,47,47,0.3)',
+          }}>
+            {(agente?.nombre || 'A').charAt(0).toUpperCase()}
+          </div>
           {!collapsed && (
             <>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 600 }}>Agente</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)' }}>En línea</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {agente?.nombre || 'Agente'}
+                </div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>
+                  <span style={{
+                    display: 'inline-block', width: 6, height: 6, borderRadius: '50%',
+                    background: '#22C55E', marginRight: 6, verticalAlign: 'middle',
+                  }} />
+                  En línea
+                </div>
               </div>
-              <Bell size={16} style={{ color: 'rgba(255,255,255,0.45)', cursor: 'pointer' }} />
+              <Bell size={16} style={{ color: 'rgba(255,255,255,0.3)', cursor: 'pointer', transition: 'color 0.2s' }}
+                onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
+              />
+              <LogOut size={16} style={{ color: 'rgba(255,255,255,0.3)', cursor: 'pointer', transition: 'color 0.2s' }}
+                onClick={logout}
+                onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
+              />
             </>
           )}
         </div>
       </aside>
 
-      <main style={{ flex: 1, overflow: 'auto', background: 'var(--gris-fondo)' }}>
+      <main style={{
+        flex: 1, overflow: 'auto', background: 'var(--gris-fondo)',
+        position: 'relative',
+      }}>
         <Outlet />
       </main>
     </div>
