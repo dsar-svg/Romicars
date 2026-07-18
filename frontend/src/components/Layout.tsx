@@ -52,7 +52,7 @@ function Layout() {
             src="/logotipo.png"
             alt="Romicars"
             style={{
-              height: collapsed ? 34 : 40,
+              height: collapsed ? 38 : 48,
               transition: 'height 0.3s',
               filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
             }}
