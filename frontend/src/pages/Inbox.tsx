@@ -43,7 +43,8 @@ function Inbox() {
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
   const [nuevoMensaje, setNuevoMensaje] = useState('');
   const [canalFiltro, setCanalFiltro] = useState('todos');
-  const [estadoFiltro, setEstadoFiltro] = useState('todos');
+  const [filtroUrgentes, setFiltroUrgentes] = useState(false);
+  const [filtroIA, setFiltroIA] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [showPanel, setShowPanel] = useState(false);
@@ -92,8 +93,8 @@ function Inbox() {
 
   const clientesFiltrados = clientes.filter(c => {
     if (canalFiltro !== 'todos' && c.canal_origen !== canalFiltro) return false;
-    if (estadoFiltro === 'urgentes' && c.urgencia !== 'Alta') return false;
-    if (estadoFiltro === 'bot' && !c.resumen_busqueda) return false;
+    if (filtroUrgentes && c.urgencia !== 'Alta') return false;
+    if (filtroIA && !c.resumen_busqueda) return false;
     if (searchTerm) {
       const s = searchTerm.toLowerCase();
       const name = (c.nombre || '').toLowerCase();
@@ -128,10 +129,9 @@ function Inbox() {
     { key: 'facebook', label: 'Facebook', color: '#1877F2' },
   ];
 
-  const filtrosEstado = [
-    { key: 'todos', label: 'Todos', color: '#6B7280' },
-    { key: 'urgentes', label: '🔴 Urgentes', color: '#DC2626' },
-    { key: 'bot', label: '🤖 Con IA', color: '#7C3AED' },
+  const filtrosToggle = [
+    { key: 'urgentes', label: '🔴 Urgentes', color: '#DC2626', active: filtroUrgentes, setter: setFiltroUrgentes },
+    { key: 'ia', label: '🤖 Con IA', color: '#7C3AED', active: filtroIA, setter: setFiltroIA },
   ];
 
   return (
@@ -189,16 +189,16 @@ function Inbox() {
               Adicional
             </div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-              {filtrosEstado.map(f => (
-                <button key={f.key} onClick={() => setEstadoFiltro(f.key)}
+              {filtrosToggle.map(f => (
+                <button key={f.key} onClick={() => f.setter(!f.active)}
                   style={{
                     padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                    background: estadoFiltro === f.key ? f.color : 'var(--blanco)',
-                    color: estadoFiltro === f.key ? '#fff' : 'var(--gris-texto)',
-                    border: estadoFiltro === f.key ? 'none' : '1.5px solid var(--gris-borde)',
+                    background: f.active ? f.color : 'var(--blanco)',
+                    color: f.active ? '#fff' : 'var(--gris-texto)',
+                    border: f.active ? 'none' : '1.5px solid var(--gris-borde)',
                     cursor: 'pointer', transition: 'all 0.2s',
                   }}>
-                  {f.label}
+                  {f.active ? '✓ ' : ''}{f.label}
                 </button>
               ))}
             </div>
@@ -486,7 +486,6 @@ function Inbox() {
                 style={{
                   position: 'absolute', opacity: 0.1, width: 360, height: 'auto',
                   pointerEvents: 'none', userSelect: 'none',
-                  filter: 'grayscale(1)',
                 }}
               />
               <div style={{
