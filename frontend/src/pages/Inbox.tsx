@@ -160,35 +160,45 @@ function Inbox() {
 
         <div style={{
           padding: '12px 16px', borderBottom: '1px solid var(--gris-borde)',
-          display: 'flex', flexDirection: 'column', gap: 8, background: '#FAFBFC',
+          display: 'flex', flexDirection: 'column', gap: 10, background: '#FAFBFC',
         }}>
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-            {filtrosRapidos.map(f => (
-              <button key={f.key} onClick={() => setFiltro(f.key)}
-                style={{
-                  padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                  background: filtro === f.key ? f.color : 'var(--blanco)',
-                  color: filtro === f.key ? '#fff' : 'var(--gris-texto)',
-                  border: filtro === f.key ? 'none' : '1.5px solid var(--gris-borde)',
-                  transition: 'all 0.2s',
-                }}>
-                {f.label}
-              </button>
-            ))}
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+              Estado
+            </div>
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+              {filtrosRapidos.map(f => (
+                <button key={f.key} onClick={() => setFiltro(f.key)}
+                  style={{
+                    padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                    background: filtro === f.key ? f.color : 'var(--blanco)',
+                    color: filtro === f.key ? '#fff' : 'var(--gris-texto)',
+                    border: filtro === f.key ? 'none' : '1.5px solid var(--gris-borde)',
+                    cursor: 'pointer', transition: 'all 0.2s',
+                  }}>
+                  {f.label}
+                </button>
+              ))}
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-            {filtrosCanales.map(f => (
-              <button key={f.key} onClick={() => setFiltro(f.key)}
-                style={{
-                  padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                  background: filtro === f.key ? f.color : 'var(--blanco)',
-                  color: filtro === f.key ? '#fff' : 'var(--gris-texto)',
-                  border: filtro === f.key ? 'none' : '1.5px solid var(--gris-borde)',
-                  transition: 'all 0.2s',
-                }}>
-                {f.label}
-              </button>
-            ))}
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+              Canal
+            </div>
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+              {filtrosCanales.map(f => (
+                <button key={f.key} onClick={() => setFiltro(f.key)}
+                  style={{
+                    padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                    background: filtro === f.key ? f.color : 'var(--blanco)',
+                    color: filtro === f.key ? '#fff' : 'var(--gris-texto)',
+                    border: filtro === f.key ? 'none' : '1.5px solid var(--gris-borde)',
+                    cursor: 'pointer', transition: 'all 0.2s',
+                  }}>
+                  {f.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -465,8 +475,16 @@ function Inbox() {
             <div style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               height: '100%', color: 'var(--gris-texto)',
-              background: '#FAFBFC',
+              background: '#FAFBFC', position: 'relative', overflow: 'hidden',
             }}>
+              <img
+                src="/logotipo.png"
+                alt=""
+                style={{
+                  position: 'absolute', opacity: 0.04, width: 320, height: 'auto',
+                  pointerEvents: 'none', userSelect: 'none',
+                }}
+              />
               <div style={{
                 width: 120, height: 120, borderRadius: '50%',
                 background: 'var(--gris-fondo)', display: 'flex', alignItems: 'center', justifyContent: 'center',
