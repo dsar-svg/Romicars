@@ -98,7 +98,7 @@ export default function Login() {
           <h1 style={{
             fontSize: 22, color: '#1F2937', letterSpacing: '-0.03em', margin: 0,
           }}>
-            AutoParts Flow
+            Romicars Flow
           </h1>
           <p style={{ margin: '6px 0 0', color: '#6B7280', fontSize: 14, fontWeight: 400 }}>
             Accede al panel de gestión

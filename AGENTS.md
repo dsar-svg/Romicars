@@ -1,4 +1,4 @@
-# AGENTS.md — AutoParts Flow & Chat
+# AGENTS.md — Romicars Flow & Chat
 
 ## Stack
 - **Frontend:** React 19 + Vite 6 + TypeScript 6 + Oxlint (not ESLint)
