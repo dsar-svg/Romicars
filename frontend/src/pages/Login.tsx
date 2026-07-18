@@ -79,8 +79,9 @@ export default function Login() {
         animation: 'float-up 18s linear infinite 10s',
       }} />
       <div className="fade-in-up" style={{
-        background: 'rgba(255,255,255,0.97)',
+        background: 'var(--blanco)',
         backdropFilter: 'blur(20px)',
+        border: '1px solid var(--gris-borde)',
         borderRadius: 20,
         padding: 48,
         width: 420,
@@ -96,18 +97,18 @@ export default function Login() {
             style={{ height: 120, marginBottom: 24, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))' }}
           />
           <h1 style={{
-            fontSize: 22, color: '#1F2937', letterSpacing: '-0.03em', margin: 0,
+            fontSize: 22, color: 'var(--gris-oscuro)', letterSpacing: '-0.03em', margin: 0,
           }}>
             Romicars Flow
           </h1>
-          <p style={{ margin: '6px 0 0', color: '#6B7280', fontSize: 14, fontWeight: 400 }}>
+          <p style={{ margin: '6px 0 0', color: 'var(--gris-texto)', fontSize: 14, fontWeight: 400 }}>
             Accede al panel de gestión
           </p>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: 18 }}>
-            <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#374151' }}>
+            <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: 'var(--gris-oscuro)' }}>
               Correo electrónico
             </label>
             <input
@@ -120,7 +121,7 @@ export default function Login() {
             />
           </div>
           <div style={{ marginBottom: 28 }}>
-            <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#374151' }}>
+            <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: 'var(--gris-oscuro)' }}>
               Contraseña
             </label>
             <div style={{ position: 'relative' }}>
@@ -140,7 +141,7 @@ export default function Login() {
                   position: 'absolute', right: 2, top: 2, bottom: 2,
                   width: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   background: 'none', border: 'none', cursor: 'pointer',
-                  color: '#9CA3AF', borderRadius: 8,
+                  color: 'var(--gris-texto)', borderRadius: 8,
                 }}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -150,8 +151,8 @@ export default function Login() {
 
           {error && (
             <p style={{
-              color: '#DC2626', fontSize: 13, margin: '0 0 18px', padding: '10px 14px',
-              background: '#FEF2F2', borderRadius: 8, border: '1px solid #FECACA',
+              color: '#FCA5A5', fontSize: 13, margin: '0 0 18px', padding: '10px 14px',
+              background: '#451A1A', borderRadius: 8, border: '1px solid #7F1D1D',
             }}>
               {error}
             </p>
@@ -172,7 +173,7 @@ export default function Login() {
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', margin: '24px 0 0', fontSize: 13, color: '#9CA3AF' }}>
+        <p style={{ textAlign: 'center', margin: '24px 0 0', fontSize: 13, color: 'var(--gris-texto)' }}>
           Plataforma de gestión de clientes © Romicars
         </p>
       </div>

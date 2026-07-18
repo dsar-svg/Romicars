@@ -59,7 +59,7 @@ export default function AdminAgentes() {
   return (
     <div style={{ padding: 32, maxWidth: 900 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
-        <h1 style={{ margin: 0, fontSize: 22, color: '#1F2937' }}>Administrar Agentes</h1>
+        <h1 style={{ margin: 0, fontSize: 22, color: 'var(--gris-oscuro)' }}>Administrar Agentes</h1>
         <button
           onClick={() => setShowForm(!showForm)}
           style={{
@@ -80,25 +80,25 @@ export default function AdminAgentes() {
 
       {showForm && (
         <form onSubmit={handleCreate} style={{
-          background: '#F9FAFB', borderRadius: 12, padding: 24, marginBottom: 28,
-          border: '1px solid #E5E7EB',
+          background: 'var(--gris-fondo)', borderRadius: 12, padding: 24, marginBottom: 28,
+          border: '1px solid var(--gris-borde)',
         }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
             <div>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#374151' }}>Nombre</label>
+              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: 'var(--gris-oscuro)' }}>Nombre</label>
               <input value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Nombre del agente" required style={{ width: '100%' }} />
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#374151' }}>Email</label>
+              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: 'var(--gris-oscuro)' }}>Email</label>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@ejemplo.com" required style={{ width: '100%' }} />
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#374151' }}>Contraseña</label>
+              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: 'var(--gris-oscuro)' }}>Contraseña</label>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required style={{ width: '100%' }} />
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#374151' }}>Rol</label>
-              <select value={rolId} onChange={e => setRolId(Number(e.target.value))} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #D1D5DB', fontSize: 14, background: '#fff' }}>
+              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: 'var(--gris-oscuro)' }}>Rol</label>
+              <select value={rolId} onChange={e => setRolId(Number(e.target.value))} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--gris-borde)', fontSize: 14, background: 'var(--blanco)' }}>
                 {roles.map(r => (
                   <option key={r.id} value={r.id}>{r.nombre}</option>
                 ))}
@@ -110,7 +110,7 @@ export default function AdminAgentes() {
             disabled={loading}
             style={{
               padding: '10px 24px', background: 'linear-gradient(135deg, #BD060A, #8B0508)',
-              color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600,
+            color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600,
               cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1,
             }}
           >
@@ -119,23 +119,23 @@ export default function AdminAgentes() {
         </form>
       )}
 
-      <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #E5E7EB', overflow: 'hidden' }}>
+      <div style={{ background: 'var(--blanco)', borderRadius: 12, border: '1px solid var(--gris-borde)', overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
           <thead>
-            <tr style={{ background: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
-              <th style={{ textAlign: 'left', padding: '12px 16px', color: '#6B7280', fontWeight: 600 }}>Nombre</th>
-              <th style={{ textAlign: 'left', padding: '12px 16px', color: '#6B7280', fontWeight: 600 }}>Email</th>
-              <th style={{ textAlign: 'left', padding: '12px 16px', color: '#6B7280', fontWeight: 600 }}>Rol</th>
-              <th style={{ textAlign: 'left', padding: '12px 16px', color: '#6B7280', fontWeight: 600 }}>Estado</th>
-              <th style={{ textAlign: 'left', padding: '12px 16px', color: '#6B7280', fontWeight: 600 }}>Último Acceso</th>
-              <th style={{ textAlign: 'left', padding: '12px 16px', color: '#6B7280', fontWeight: 600 }}>Acción</th>
+            <tr style={{ background: 'var(--gris-fondo)', borderBottom: '1px solid var(--gris-borde)' }}>
+              <th style={{ textAlign: 'left', padding: '12px 16px', color: 'var(--gris-texto)', fontWeight: 600 }}>Nombre</th>
+              <th style={{ textAlign: 'left', padding: '12px 16px', color: 'var(--gris-texto)', fontWeight: 600 }}>Email</th>
+              <th style={{ textAlign: 'left', padding: '12px 16px', color: 'var(--gris-texto)', fontWeight: 600 }}>Rol</th>
+              <th style={{ textAlign: 'left', padding: '12px 16px', color: 'var(--gris-texto)', fontWeight: 600 }}>Estado</th>
+              <th style={{ textAlign: 'left', padding: '12px 16px', color: 'var(--gris-texto)', fontWeight: 600 }}>Último Acceso</th>
+              <th style={{ textAlign: 'left', padding: '12px 16px', color: 'var(--gris-texto)', fontWeight: 600 }}>Acción</th>
             </tr>
           </thead>
           <tbody>
             {agentes.map(a => (
-              <tr key={a.id} style={{ borderBottom: '1px solid #F3F4F6' }}>
+              <tr key={a.id} style={{ borderBottom: '1px solid var(--gris-borde)' }}>
                 <td style={{ padding: '12px 16px', fontWeight: 500 }}>{a.nombre}</td>
-                <td style={{ padding: '12px 16px', color: '#6B7280' }}>{a.email}</td>
+                <td style={{ padding: '12px 16px', color: 'var(--gris-texto)' }}>{a.email}</td>
                 <td style={{ padding: '12px 16px' }}>
                   <span style={{
                     display: 'inline-block', padding: '2px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600,
@@ -152,15 +152,15 @@ export default function AdminAgentes() {
                   }} />
                   {a.activo ? 'Activo' : 'Inactivo'}
                 </td>
-                <td style={{ padding: '12px 16px', color: '#9CA3AF', fontSize: 13 }}>
+                <td style={{ padding: '12px 16px', color: 'var(--gris-texto)', fontSize: 13 }}>
                   {a.ultimo_acceso ? new Date(a.ultimo_acceso).toLocaleString() : 'Nunca'}
                 </td>
                 <td style={{ padding: '12px 16px' }}>
                   <button
                     onClick={() => toggleActivo(a)}
                     style={{
-                      padding: '4px 12px', borderRadius: 6, border: '1px solid #D1D5DB',
-                      background: '#fff', fontSize: 12, cursor: 'pointer',
+                      padding: '4px 12px', borderRadius: 6, border: '1px solid var(--gris-borde)',
+                      background: 'var(--blanco)', fontSize: 12, cursor: 'pointer',
                       color: a.activo ? '#EF4444' : '#22C55E', fontWeight: 500,
                     }}
                   >
@@ -171,7 +171,7 @@ export default function AdminAgentes() {
             ))}
             {agentes.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ padding: 32, textAlign: 'center', color: '#9CA3AF' }}>
+                <td colSpan={6} style={{ padding: 32, textAlign: 'center', color: 'var(--gris-texto)' }}>
                   No hay agentes registrados
                 </td>
               </tr>

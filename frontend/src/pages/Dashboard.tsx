@@ -114,7 +114,7 @@ function Dashboard() {
             <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--gris-texto)' }}>
               <BarChart3 size={40} style={{ opacity: 0.1, marginBottom: 12 }} />
               <p style={{ fontSize: 14, fontWeight: 600 }}>Sin datos aún</p>
-              <p style={{ fontSize: 13, marginTop: 4, color: '#9CA3AF' }}>Los leads entrantes aparecerán aquí</p>
+              <p style={{ fontSize: 13, marginTop: 4, color: 'var(--gris-texto)' }}>Los leads entrantes aparecerán aquí</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -151,13 +151,13 @@ function Dashboard() {
             <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--gris-texto)' }}>
               <PieChart size={40} style={{ opacity: 0.1, marginBottom: 12 }} />
               <p style={{ fontSize: 14, fontWeight: 600 }}>Sin tráfico aún</p>
-              <p style={{ fontSize: 13, marginTop: 4, color: '#9CA3AF' }}>Los datos aparecerán al recibir mensajes</p>
+              <p style={{ fontSize: 13, marginTop: 4, color: 'var(--gris-texto)' }}>Los datos aparecerán al recibir mensajes</p>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={data.traffic} layout="vertical">
                 <XAxis type="number" hide />
-                <YAxis type="category" dataKey="canal" tick={{ fontSize: 13, fill: '#6B7280' }} width={90} />
+                <YAxis type="category" dataKey="canal" tick={{ fontSize: 13, fill: 'var(--gris-texto)' }} width={90} />
                 <Tooltip
                   contentStyle={{
                     borderRadius: 10, border: '1px solid #E5E7EB',

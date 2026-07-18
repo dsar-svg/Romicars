@@ -167,7 +167,7 @@ function Inbox() {
           display: 'flex', flexDirection: 'column', gap: 10, background: 'var(--bg-filtros)',
         }}>
           <div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--gris-texto)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
               Canal
             </div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
@@ -189,7 +189,7 @@ function Inbox() {
             </div>
           </div>
           <div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--gris-texto)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
               Urgencia
             </div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
@@ -213,7 +213,7 @@ function Inbox() {
             </div>
           </div>
           <div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--gris-texto)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
               IA
             </div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
@@ -237,7 +237,7 @@ function Inbox() {
               <div style={{ padding: 60, textAlign: 'center', color: 'var(--gris-texto)' }}>
                 <MessageSquare size={40} style={{ opacity: 0.15, marginBottom: 12 }} />
                 <p style={{ fontSize: 14, fontWeight: 600 }}>No hay chats</p>
-                <p style={{ fontSize: 13, marginTop: 4, color: '#9CA3AF' }}>
+                <p style={{ fontSize: 13, marginTop: 4, color: 'var(--gris-texto)' }}>
                   {searchTerm ? 'Intenta con otro término de búsqueda' : filtro !== 'todos' ? 'Cambia el filtro para ver más' : 'Los mensajes nuevos aparecerán aquí'}
                 </p>
               </div>
@@ -250,13 +250,13 @@ function Inbox() {
                     padding: '16px 16px',
                     borderBottom: '1px solid #F3F4F6',
                     cursor: 'pointer',
-                    background: selectedCliente?.id === cliente.id ? '#F0F4FF' : 'transparent',
+                    background: selectedCliente?.id === cliente.id ? 'var(--azul-claro)' : 'transparent',
                     borderLeft: selectedCliente?.id === cliente.id ? '3px solid var(--rojo-primario)' : '3px solid transparent',
                     transition: 'all 0.2s',
                     animationDelay: `${i * 40}ms`,
                   }}
                   onMouseEnter={e => {
-                    if (selectedCliente?.id !== cliente.id) e.currentTarget.style.background = '#FAFBFC';
+                    if (selectedCliente?.id !== cliente.id) e.currentTarget.style.background = 'var(--gris-fondo)';
                   }}
                   onMouseLeave={e => {
                     if (selectedCliente?.id !== cliente.id) e.currentTarget.style.background = 'transparent';
@@ -312,7 +312,7 @@ function Inbox() {
                   {cliente.resumen_busqueda && (
                     <div style={{
                       marginTop: 8, marginLeft: 50, padding: '4px 10px',
-                      background: '#F0F4FF', borderRadius: 6, fontSize: 12,
+                      background: 'var(--azul-claro)', borderRadius: 6, fontSize: 12,
                       color: 'var(--azul-primario)', display: 'flex', alignItems: 'center', gap: 6,
                       borderLeft: '2px solid var(--azul-primario)',
                     }}>
@@ -422,7 +422,7 @@ function Inbox() {
                   }}>
                     <MessageSquare size={48} style={{ opacity: 0.12, marginBottom: 16 }} />
                     <p style={{ fontSize: 15, fontWeight: 600 }}>Sin mensajes aún</p>
-                    <p style={{ fontSize: 13, marginTop: 4, color: '#9CA3AF' }}>
+                    <p style={{ fontSize: 13, marginTop: 4, color: 'var(--gris-texto)' }}>
                       Envía el primer mensaje para iniciar la conversación
                     </p>
                   </div>
@@ -526,8 +526,8 @@ function Inbox() {
                   onClick={enviarMensaje}
                   style={{
                     padding: '12px 20px', borderRadius: 12, fontSize: 14, fontWeight: 600,
-                    background: nuevoMensaje.trim() ? 'linear-gradient(135deg, #BD060A, #9E0508)' : '#E5E7EB',
-                    color: nuevoMensaje.trim() ? '#fff' : '#9CA3AF',
+                    background: nuevoMensaje.trim() ? 'linear-gradient(135deg, #BD060A, #9E0508)' : 'var(--gris-borde)',
+                    color: nuevoMensaje.trim() ? '#fff' : 'var(--gris-texto)',
                     border: 'none', cursor: nuevoMensaje.trim() ? 'pointer' : 'not-allowed',
                     display: 'flex', alignItems: 'center', gap: 8,
                     transition: 'all 0.2s',
@@ -558,10 +558,10 @@ function Inbox() {
                 background: 'var(--gris-fondo)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 marginBottom: 24, border: '2px dashed var(--gris-borde)',
               }}>
-                <MessageSquare size={48} style={{ color: '#D1D5DB' }} />
+                <MessageSquare size={48} style={{ color: 'var(--gris-borde)' }} />
               </div>
-              <p style={{ fontSize: 18, fontWeight: 700, color: '#374151' }}>Selecciona un chat</p>
-              <p style={{ fontSize: 14, marginTop: 6, color: '#9CA3AF' }}>Elige una conversación de la bandeja para comenzar</p>
+              <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--gris-oscuro)' }}>Selecciona un chat</p>
+              <p style={{ fontSize: 14, marginTop: 6, color: 'var(--gris-texto)' }}>Elige una conversación de la bandeja para comenzar</p>
             </div>
           )}
         </div>

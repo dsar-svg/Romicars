@@ -77,7 +77,7 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
           background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gris-texto)',
           padding: 4, borderRadius: 6, transition: 'background 0.2s',
         }}
-          onMouseEnter={e => e.currentTarget.style.background = '#F3F4F6'}
+          onMouseEnter={e => e.currentTarget.style.background = 'var(--gris-fondo)'}
           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
         >
           <X size={18} />
@@ -183,7 +183,7 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
             <div style={{ fontWeight: 600, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--azul-oscuro)' }}>
               <FileText size={14} /> Resumen IA
             </div>
-            <p style={{ color: '#374151', lineHeight: 1.5 }}>{cliente.resumen_busqueda}</p>
+            <p style={{ color: 'var(--gris-oscuro)', lineHeight: 1.5 }}>{cliente.resumen_busqueda}</p>
             {cliente.pidio_fotos !== undefined && (
               <p style={{ marginTop: 6, fontSize: 12, color: 'var(--gris-texto)', display: 'flex', alignItems: 'center', gap: 4 }}>
                 {cliente.pidio_fotos ? '📸 Solicitó fotos' : '❌ No solicitó fotos'}
@@ -198,14 +198,14 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
           </div>
           <div style={{ maxHeight: 200, overflowY: 'auto' }}>
             {historial.length === 0 ? (
-              <p style={{ fontSize: 12, color: '#9CA3AF', textAlign: 'center', padding: 20 }}>
+              <p style={{ fontSize: 12, color: 'var(--gris-texto)', textAlign: 'center', padding: 20 }}>
                 Sin historial de mensajes
               </p>
             ) : (
               historial.slice(-20).reverse().map((msg, i) => (
                 <div key={msg.id} className="fade-in" style={{
                   padding: '8px 10px', marginBottom: 6, borderRadius: 8,
-                  background: msg.remitente === 'agente' ? '#FFEDED' : msg.remitente === 'bot' ? '#F3F4F6' : '#fff',
+                  background: msg.remitente === 'agente' ? '#FFEDED' : msg.remitente === 'bot' ? 'var(--gris-fondo)' : 'var(--blanco)',
                   border: '1px solid var(--gris-borde)',
                   animationDelay: `${i * 30}ms`,
                 }}>
@@ -213,7 +213,7 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
                     <span style={{ fontWeight: 600, fontSize: 11, color: 'var(--gris-texto)' }}>
                       {msg.remitente === 'agente' ? 'Tú' : msg.remitente === 'bot' ? 'Bot IA' : 'Cliente'}
                     </span>
-                    <span style={{ fontSize: 10, color: '#9CA3AF' }}>
+                    <span style={{ fontSize: 10, color: 'var(--gris-texto)' }}>
                       {new Date(msg.fecha_envio).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>

@@ -131,23 +131,23 @@ function Campañas() {
         </h3>
 
         <div style={{ marginBottom: 20 }}>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Nombre de la campaña</label>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--gris-oscuro)', marginBottom: 6 }}>Nombre de la campaña</label>
           <input value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Ej: Promoción Julio - Filtros de Aceite" style={{ width: '100%' }} />
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
           <div>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Marca del vehículo</label>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--gris-oscuro)', marginBottom: 6 }}>Marca del vehículo</label>
             <input value={marca} onChange={e => setMarca(e.target.value)} placeholder="Ej: Honda, Toyota, Ford" style={{ width: '100%' }} />
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Modelo del vehículo</label>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--gris-oscuro)', marginBottom: 6 }}>Modelo del vehículo</label>
             <input value={modelo} onChange={e => setModelo(e.target.value)} placeholder="Ej: Civic, Corolla, Explorer" style={{ width: '100%' }} />
           </div>
         </div>
 
         <div style={{ marginBottom: 24 }}>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Estado de venta</label>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--gris-oscuro)', marginBottom: 6 }}>Estado de venta</label>
           <select value={estadoVenta} onChange={e => setEstadoVenta(e.target.value)} style={{ width: '100%', maxWidth: 320 }}>
             <option value="">Todos los estados</option>
             <option value="Lead">Lead — Nuevo contacto</option>
@@ -165,12 +165,12 @@ function Campañas() {
           }}>
             <Target size={18} style={{ color: '#059669' }} />
             <strong style={{ color: '#059669', fontSize: 15 }}>{previewCount} destinatarios</strong>
-            <span style={{ color: '#374151' }}>coinciden con los filtros seleccionados</span>
+            <span style={{ color: 'var(--gris-oscuro)' }}>coinciden con los filtros seleccionados</span>
           </div>
         )}
 
         <div style={{ marginBottom: 24 }}>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Mensaje de campaña</label>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--gris-oscuro)', marginBottom: 6 }}>Mensaje de campaña</label>
           <textarea
             value={mensaje} onChange={e => setMensaje(e.target.value)} rows={5}
             placeholder='Usa {"nombre"} y {"modelo"} para personalizar. Ej: "Hola {nombre}, tenemos ofertas para tu {modelo}"'
@@ -178,10 +178,10 @@ function Campañas() {
           />
           <div style={{ fontSize: 12, color: 'var(--gris-texto)', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
             <AlertCircle size={12} />
-            Variables disponibles: <code style={{ background: '#F3F4F6', padding: '1px 6px', borderRadius: 4, fontSize: 12 }}>
+            Variables disponibles: <code style={{ background: 'var(--gris-fondo)', padding: '1px 6px', borderRadius: 4, fontSize: 12 }}>
               {'{nombre}'}
             </code>,{' '}
-            <code style={{ background: '#F3F4F6', padding: '1px 6px', borderRadius: 4, fontSize: 12 }}>
+            <code style={{ background: 'var(--gris-fondo)', padding: '1px 6px', borderRadius: 4, fontSize: 12 }}>
               {'{modelo}'}
             </code>
           </div>
@@ -223,8 +223,8 @@ function Campañas() {
         {campanias.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--gris-texto)' }}>
             <Send size={44} style={{ opacity: 0.1, marginBottom: 16 }} />
-            <p style={{ fontSize: 15, fontWeight: 600, color: '#374151' }}>Aún no se han enviado campañas</p>
-            <p style={{ fontSize: 13, marginTop: 6, color: '#9CA3AF' }}>Usa el formulario de arriba para crear tu primera campaña</p>
+            <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--gris-oscuro)' }}>Aún no se han enviado campañas</p>
+            <p style={{ fontSize: 13, marginTop: 6, color: 'var(--gris-texto)' }}>Usa el formulario de arriba para crear tu primera campaña</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
