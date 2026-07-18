@@ -62,7 +62,7 @@ function Inbox() {
   }, []);
 
   useEffect(() => {
-    if (!clienteId) return;
+    if (!clienteId) { setSelectedCliente(null); return; }
     const id = Number(clienteId);
     setLoading(true);
     Promise.all([
@@ -74,6 +74,13 @@ function Inbox() {
       setLoading(false);
     });
   }, [clienteId]);
+
+  useEffect(() => {
+    if (clienteId && clientes.length > 0 && clientesFiltrados.length > 0) {
+      const exists = clientesFiltrados.some(c => c.id === Number(clienteId));
+      if (!exists) navigate('/inbox', { replace: true });
+    }
+  }, [canalFiltro, urgenciaFiltro, filtroIA, searchTerm]);
 
   const enviarMensaje = async () => {
     if (!nuevoMensaje.trim() || !selectedCliente) return;
@@ -157,7 +164,7 @@ function Inbox() {
 
         <div style={{
           padding: '12px 16px', borderBottom: '1px solid var(--gris-borde)',
-          display: 'flex', flexDirection: 'column', gap: 10, background: '#FAFBFC',
+          display: 'flex', flexDirection: 'column', gap: 10, background: 'var(--bg-filtros)',
         }}>
           <div>
             <div style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
@@ -412,22 +419,22 @@ function Inbox() {
                       marginBottom: 10,
                       display: 'flex',
                       flexDirection: 'column',
-                      alignItems: msg.remitente === 'agente' ? 'flex-end' : 'flex-start',
+                      alignItems: msg.remitente === 'agente' || msg.remitente === 'bot' ? 'flex-end' : 'flex-start',
                       animationDelay: `${i * 30}ms`,
                     }}>
                       <div style={{
                         padding: '12px 16px',
                         background: msg.remitente === 'bot'
-                          ? '#F3F4F6'
+                          ? 'var(--msg-bot)'
                           : msg.remitente === 'agente'
 ? 'linear-gradient(135deg, #BD060A, #9E0508)'
                             : 'var(--blanco)',
-                        border: msg.remitente === 'bot'
-                          ? '1.5px dashed #D1D5DB'
-                          : msg.remitente === 'agente'
-                            ? 'none'
+                        border: msg.remitente === 'agente'
+                          ? 'none'
+                          : msg.remitente === 'bot'
+                            ? '1.5px dashed #6B7280'
                             : '1.5px solid var(--gris-borde)',
-                        borderRadius: msg.remitente === 'agente'
+                        borderRadius: msg.remitente === 'agente' || msg.remitente === 'bot'
                           ? '16px 16px 4px 16px'
                           : '16px 16px 16px 4px',
                         maxWidth: '70%',
@@ -442,7 +449,7 @@ function Inbox() {
                           fontSize: 11, fontWeight: 600, marginBottom: 4, opacity: 0.7,
                           textTransform: 'uppercase', letterSpacing: '0.5px',
                         }}>
-                          {msg.remitente === 'agente' ? 'Tú' : msg.remitente === 'bot' ? 'Bot IA' : 'Cliente'}
+                          {msg.remitente === 'agente' ? 'Tú' : msg.remitente === 'bot' ? 'Bot IA' : selectedCliente?.nombre || 'Cliente'}
                         </div>
                         <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                           {msg.contenido}

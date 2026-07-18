@@ -1,4 +1,4 @@
-:root {
+:root, [data-theme="light"] {
   --rojo-primario: #BD060A;
   --rojo-oscuro: #8B0508;
   --rojo-claro: #FFEDED;
@@ -18,7 +18,28 @@
   --radius: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
+  --bg-chat: #FAFBFC;
+  --bg-filtros: #FAFBFC;
+  --msg-bot: #F3F4F6;
 }
+
+[data-theme="dark"] {
+  --blanco: #1F2937;
+  --gris-fondo: #111827;
+  --gris-borde: #374151;
+  --gris-texto: #9CA3AF;
+  --gris-oscuro: #F3F4F6;
+  --rojo-claro: #3D0A0D;
+  --azul-claro: #0C1F3D;
+  --sidebar-bg: #0A0F1A;
+  --sombra-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --sombra-md: 0 4px 16px rgba(0,0,0,0.4);
+  --sombra-lg: 0 8px 32px rgba(0,0,0,0.5);
+  --bg-chat: #1A2332;
+  --bg-filtros: #1F2937;
+  --msg-bot: #2D3748;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;

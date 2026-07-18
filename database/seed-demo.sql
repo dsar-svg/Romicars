@@ -35,8 +35,9 @@ INSERT IGNORE INTO campania_log (id, campania_id, cliente_id, estado, enviado_en
 (9, 2, 9, 'enviado', '2026-07-15 09:01:40'),
 (10, 2, 10, 'enviado', '2026-07-15 09:01:45'),
 (11, 3, 3, 'enviado', '2026-07-17 10:00:00'),
-(12, 3, 4, 'pendiente', NULL),
-(13, 3, 7, 'pendiente', NULL);
+(12, 3, 4, 'enviado', '2026-07-17 10:00:30'),
+(13, 3, 7, 'error', '2026-07-17 10:01:00'),
+(14, 3, 9, 'opt_out', NULL);
 
 -- MENSAJES
 INSERT IGNORE INTO mensajes (id, cliente_id, remitente, contenido, tipo, leido, fecha_envio) VALUES

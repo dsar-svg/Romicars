@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Send, Filter, History, AlertCircle, Users, Target, CheckCircle2, XCircle } from 'lucide-react';
+import { Send, Filter, History, AlertCircle, Target, ChevronDown, ChevronUp, CheckCircle2, XCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from '../components/Toast';
 import api from '../services/api';
@@ -14,6 +14,16 @@ interface Campania {
   creador_nombre: string;
   total_enviados: number;
   created_at: string;
+}
+
+interface CampaniaLog {
+  id: number;
+  campania_id: number;
+  cliente_nombre: string;
+  telefono: string;
+  estado: string;
+  error_msg: string | null;
+  enviado_en: string | null;
 }
 
 const estadoEstilos: Record<string, { color: string; bg: string; label: string }> = {
@@ -34,8 +44,29 @@ function Campañas() {
   const [preview, setPreview] = useState<any[]>([]);
   const [previewCount, setPreviewCount] = useState(0);
   const [sending, setSending] = useState(false);
+  const [expandedCampana, setExpandedCampana] = useState<number | null>(null);
+  const [campaniaLogs, setCampaniaLogs] = useState<Record<number, CampaniaLog[]>>({});
+  const [loadingLog, setLoadingLog] = useState(false);
 
   useEffect(() => { api.get('/campanias').then(r => setCampanias(r.data)).catch(() => {}); }, []);
+
+  const toggleLog = async (campaniaId: number) => {
+    if (expandedCampana === campaniaId) {
+      setExpandedCampana(null);
+      return;
+    }
+    setExpandedCampana(campaniaId);
+    if (campaniaLogs[campaniaId]) return;
+    setLoadingLog(true);
+    try {
+      const { data } = await api.get(`/campanias/${campaniaId}/log`);
+      setCampaniaLogs(prev => ({ ...prev, [campaniaId]: data }));
+    } catch {
+      toast('error', 'Error al cargar historial');
+    } finally {
+      setLoadingLog(false);
+    }
+  };
 
   const cargarPreview = async () => {
     try {
@@ -197,43 +228,103 @@ function Campañas() {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {campanias.map((c, i) => {
+              {campanias.map((c, i) => {
               const est = estadoEstilos[c.estado] || estadoEstilos.borrador;
+              const isExpanded = expandedCampana === c.id;
+              const logs = campaniaLogs[c.id] || [];
               return (
-                <div key={c.id} className="fade-in-up" style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  padding: '16px 20px', borderRadius: 10,
-                  border: '1px solid var(--gris-borde)',
-                  background: 'var(--blanco)',
-                  animationDelay: `${i * 60}ms`,
-                  transition: 'box-shadow 0.2s',
-                }}
-                  onMouseEnter={e => e.currentTarget.style.boxShadow = 'var(--sombra-sm)'}
-                  onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
-                >
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--gris-oscuro)' }}>{c.nombre}</div>
-                    <div style={{ fontSize: 12, color: 'var(--gris-texto)', marginTop: 4 }}>
-                      {c.creador_nombre} · {new Date(c.created_at).toLocaleDateString('es-MX', {
-                        day: 'numeric', month: 'long', year: 'numeric',
-                      })}
+                <div key={c.id} style={{ borderRadius: 10, overflow: 'hidden' }}>
+                  <div className="fade-in-up" style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    padding: '16px 20px',
+                    border: '1px solid var(--gris-borde)',
+                    background: 'var(--blanco)',
+                    animationDelay: `${i * 60}ms`,
+                    transition: 'box-shadow 0.2s',
+                    cursor: 'pointer',
+                    borderBottom: isExpanded ? 'none' : '1px solid var(--gris-borde)',
+                    borderRadius: isExpanded ? '10px 10px 0 0' : 10,
+                  }}
+                    onClick={() => toggleLog(c.id)}
+                    onMouseEnter={e => e.currentTarget.style.boxShadow = 'var(--sombra-sm)'}
+                    onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
+                      {isExpanded ? <ChevronUp size={16} style={{ color: 'var(--gris-texto)' }} /> : <ChevronDown size={16} style={{ color: 'var(--gris-texto)' }} />}
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--gris-oscuro)' }}>{c.nombre}</div>
+                        <div style={{ fontSize: 12, color: 'var(--gris-texto)', marginTop: 4 }}>
+                          {c.creador_nombre} · {new Date(c.created_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: 16 }}>
-                    <div style={{ fontSize: 14 }}>
-                      <span style={{ fontWeight: 800, color: 'var(--gris-oscuro)' }}>
-                        {c.total_enviados || c.enviados}
+                    <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: 16 }}>
+                      <div style={{ fontSize: 14 }}>
+                        <span style={{ fontWeight: 800, color: 'var(--gris-oscuro)' }}>
+                          {c.total_enviados || c.enviados}
+                        </span>
+                        <span style={{ color: 'var(--gris-texto)', margin: '0 2px' }}>/</span>
+                        <span style={{ color: 'var(--gris-texto)' }}>{c.destinatarios}</span>
+                      </div>
+                      <span style={{
+                        fontSize: 12, fontWeight: 600, color: est.color, background: est.bg,
+                        padding: '4px 12px', borderRadius: 20, whiteSpace: 'nowrap',
+                      }}>
+                        {est.label}
                       </span>
-                      <span style={{ color: 'var(--gris-texto)', margin: '0 2px' }}>/</span>
-                      <span style={{ color: 'var(--gris-texto)' }}>{c.destinatarios}</span>
                     </div>
-                    <span style={{
-                      fontSize: 12, fontWeight: 600, color: est.color, background: est.bg,
-                      padding: '4px 12px', borderRadius: 20, whiteSpace: 'nowrap',
-                    }}>
-                      {est.label}
-                    </span>
                   </div>
+                  {isExpanded && (
+                    <div style={{
+                      border: '1px solid var(--gris-borde)',
+                      borderTop: 'none',
+                      borderRadius: '0 0 10px 10px',
+                      overflow: 'hidden',
+                    }}>
+                      {loadingLog ? (
+                        <div style={{ padding: 20, textAlign: 'center', color: 'var(--gris-texto)', fontSize: 13 }}>Cargando historial...</div>
+                      ) : logs.length === 0 ? (
+                        <div style={{ padding: 20, textAlign: 'center', color: 'var(--gris-texto)', fontSize: 13 }}>
+                          No hay registros de envÍo para esta campaña
+                        </div>
+                      ) : (
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                          <thead>
+                            <tr style={{ background: 'var(--gris-fondo)' }}>
+                              <th style={{ textAlign: 'left', padding: '10px 16px', fontWeight: 600, color: 'var(--gris-texto)' }}>Cliente</th>
+                              <th style={{ textAlign: 'left', padding: '10px 16px', fontWeight: 600, color: 'var(--gris-texto)' }}>TelÉfono</th>
+                              <th style={{ textAlign: 'left', padding: '10px 16px', fontWeight: 600, color: 'var(--gris-texto)' }}>Estado</th>
+                              <th style={{ textAlign: 'left', padding: '10px 16px', fontWeight: 600, color: 'var(--gris-texto)' }}>EnvÍado</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {logs.map(log => (
+                              <tr key={log.id} style={{ borderTop: '1px solid var(--gris-borde)' }}>
+                                <td style={{ padding: '10px 16px', fontWeight: 500 }}>{log.cliente_nombre || '—'}</td>
+                                <td style={{ padding: '10px 16px', color: 'var(--gris-texto)' }}>{log.telefono}</td>
+                                <td style={{ padding: '10px 16px' }}>
+                                  {log.estado === 'enviado' ? (
+                                    <span style={{ color: '#059669', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                      <CheckCircle2 size={14} /> Enviado
+                                    </span>
+                                  ) : log.estado === 'error' ? (
+                                    <span style={{ color: '#DC2626', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                      <XCircle size={14} /> Error
+                                    </span>
+                                  ) : (
+                                    <span style={{ color: '#D97706' }}>Pendiente</span>
+                                  )}
+                                </td>
+                                <td style={{ padding: '10px 16px', color: 'var(--gris-texto)', fontSize: 12 }}>
+                                  {log.enviado_en ? new Date(log.enviado_en).toLocaleString('es-MX') : '—'}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
