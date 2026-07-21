@@ -1,9 +1,11 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
 import { query } from '../database';
+import { authMiddleware, AuthRequest } from '../middleware/auth';
+import { getProductosMasVendidos, getProductosMenosVendidos, getTotalFacturado, getClientesConCoordenadas } from '../services/profit';
 
 const router = Router();
 
-router.get('/', async (_req: Request, res: Response) => {
+router.get('/', authMiddleware, async (_req: AuthRequest, res: Response) => {
   try {
     const [total] = await query('SELECT COUNT(*) as total FROM clientes') as any[];
     const [conversion] = await query(
@@ -19,15 +21,6 @@ router.get('/', async (_req: Request, res: Response) => {
     const [activos] = await query(
       `SELECT COUNT(*) as activos FROM clientes
        WHERE ultima_interaccion >= NOW() - INTERVAL 24 HOUR`
-    ) as any[];
-
-    const [respuesta] = await query(
-      `SELECT COALESCE(AVG(diff), 0) as promedio FROM (
-         SELECT TIMESTAMPDIFF(SECOND, MIN(fecha_envio), MAX(fecha_envio)) as diff
-         FROM mensajes
-         WHERE remitente IN ('cliente', 'agente')
-         GROUP BY cliente_id, DATE(fecha_envio)
-       ) t`
     ) as any[];
 
     const canales = await query(
@@ -53,7 +46,6 @@ router.get('/', async (_req: Request, res: Response) => {
       tasa_conversion: Number(total.total) > 0
         ? Math.round((Number(conversion.compraron) / Number(total.total)) * 100)
         : 0,
-      respuesta_promedio: Math.round(Number(respuesta.promedio) / 60) || 0,
       funnel,
       traffic: [
         { canal: 'WhatsApp', total: traffic.whatsapp, color: '#BD060A' },
@@ -64,6 +56,28 @@ router.get('/', async (_req: Request, res: Response) => {
   } catch (error) {
     console.error('Error en analytics:', error);
     res.status(500).json({ error: 'Error al obtener analytics' });
+  }
+});
+
+router.get('/profit', authMiddleware, async (_req: AuthRequest, res: Response) => {
+  try {
+    const [masVendidos, menosVendidos, facturado, clientesMapa] = await Promise.all([
+      getProductosMasVendidos(10),
+      getProductosMenosVendidos(10),
+      getTotalFacturado(),
+      getClientesConCoordenadas(),
+    ]);
+
+    res.json({
+      productos_mas_vendidos: masVendidos,
+      productos_menos_vendidos: menosVendidos,
+      total_facturado: facturado.total,
+      facturas_periodo: facturado.facturas,
+      clientes_ubicacion: clientesMapa,
+    });
+  } catch (error) {
+    console.error('Error en analytics profit:', error);
+    res.status(500).json({ error: 'Error al obtener datos de Profit' });
   }
 });
 

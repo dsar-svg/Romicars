@@ -1,0 +1,74 @@
+﻿{
+  "name": "Entrega de Mensajes Salientes",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "entregar-mensaje",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a1111111-1111-1111-1111-111111111111",
+      "name": "Webhook (desde Backend)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-600, 300],
+      "webhookId": "wh-entregar-mensajes"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const item = $input.first();\nconst payload = item.json.body || item.json;\n\nconst canal = payload.canal;\nconst contenido = payload.contenido;\n\nif (!canal || !contenido) {\n  throw new Error('Faltan campos requeridos: canal y contenido');\n}\n\ntry {\n  if (canal === 'whatsapp') {\n    const evoUrl = process.env.EVOLUTION_API_URL || 'http://evolution-api:8080';\n    const evoKey = process.env.EVOLUTION_API_KEY;\n    const evoInstance = process.env.EVOLUTION_INSTANCE || 'romicars';\n    await $helpers.httpRequest({\n      method: 'POST',\n      url: evoUrl + '/message/sendText/' + evoInstance,\n      headers: { 'Content-Type': 'application/json', apikey: evoKey },\n      body: { number: payload.telefono, text: contenido }\n    });\n  } else if (canal === 'facebook') {\n    const pageToken = process.env.FB_PAGE_TOKEN;\n    await $helpers.httpRequest({\n      method: 'POST',\n      url: 'https://graph.facebook.com/v22.0/me/messages?access_token=' + pageToken,\n      headers: { 'Content-Type': 'application/json' },\n      body: {\n        messaging_type: 'RESPONSE',\n        recipient: { id: payload.facebook_psid },\n        message: { text: contenido }\n      }\n    });\n  } else if (canal === 'instagram') {\n    const pageToken = process.env.FB_PAGE_TOKEN;\n    await $helpers.httpRequest({\n      method: 'POST',\n      url: 'https://graph.facebook.com/v22.0/me/messages?access_token=' + pageToken,\n      headers: { 'Content-Type': 'application/json' },\n      body: {\n        messaging_type: 'RESPONSE',\n        recipient: { id: payload.instagram_psid },\n        message: { text: contenido }\n      }\n    });\n  } else {\n    throw new Error('Canal no soportado: ' + canal);\n  }\n\n  return [{ json: { success: true, msg_id: payload.msg_id, canal: canal } }];\n} catch (error) {\n  return [{ json: { success: false, error: error.message, canal: canal } }];\n}"
+      },
+      "id": "a2222222-2222-2222-2222-222222222222",
+      "name": "Enviar segun canal",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-300, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "a3333333-3333-3333-3333-333333333333",
+      "name": "Responder al Backend",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [0, 300]
+    }
+  ],
+  "connections": {
+    "Webhook (desde Backend)": {
+      "main": [
+        [
+          {
+            "node": "Enviar segun canal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar segun canal": {
+      "main": [
+        [
+          {
+            "node": "Responder al Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "tags": []
+}

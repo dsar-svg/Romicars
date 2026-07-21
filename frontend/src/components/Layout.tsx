@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { MessageSquare, LayoutDashboard, Send, Shield, Menu, ChevronLeft, Bell, LogOut, Sun, Moon } from 'lucide-react';
+import { MessageSquare, LayoutDashboard, Send, Shield, Menu, ChevronLeft, LogOut, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const navItems = [
@@ -82,7 +82,7 @@ function Layout() {
           flex: 1, padding: collapsed ? '20px 6px' : '20px 12px',
           display: 'flex', flexDirection: 'column', gap: 2,
         }}>
-          {navItems.map((item, i) => {
+          {navItems.map((item, _i) => {
             const Icon = item.icon;
             const active = location.pathname.startsWith(item.path);
             return (

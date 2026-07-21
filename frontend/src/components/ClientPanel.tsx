@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { X, Phone, Car, ShoppingCart, Bell, FileText, History, Save, CheckCircle } from 'lucide-react';
+import { X, Phone, Car, ShoppingCart, Bell, FileText, History, Save } from 'lucide-react';
 import { clientesApi, mensajesApi } from '../services/api';
+import { connectSocket } from '../services/socket';
 import { toast } from './Toast';
 import type { Cliente, Mensaje } from '../types';
 
@@ -19,6 +20,14 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
     setCliente(initial);
     setDirty(false);
     mensajesApi.getByCliente(initial.id).then(setHistorial).catch(() => {});
+    const socket = connectSocket();
+    const handler = (mensaje: Mensaje) => {
+      if (mensaje.cliente_id === initial.id) {
+        setHistorial(prev => [...prev, mensaje]);
+      }
+    };
+    socket.on('message:new', handler);
+    return () => { socket.off('message:new', handler); };
   }, [initial.id]);
 
   const campos = [
@@ -109,8 +118,8 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
           {campos.map(({ label, key, type, icon: Icon }) => (
             <div key={key}>
               <label style={{
-                display: 'block', marginBottom: 4, color: 'var(--gris-texto)', fontSize: 12,
-                fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4,
+                display: 'flex', marginBottom: 4, color: 'var(--gris-texto)', fontSize: 12,
+                fontWeight: 500, alignItems: 'center', gap: 4,
               }}>
                 {Icon && <Icon size={13} />} {label}
               </label>

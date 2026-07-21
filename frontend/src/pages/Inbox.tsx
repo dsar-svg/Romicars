@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Search, Send, MessageSquare, User, Bot, CheckCheck } from 'lucide-react';
 import { clientesApi, mensajesApi } from '../services/api';
-import { connectSocket } from '../services/socket';
+import { connectSocket, getSocket } from '../services/socket';
 import { toast } from '../components/Toast';
 import ClientPanel from '../components/ClientPanel';
 import type { Cliente, Mensaje } from '../types';
@@ -38,6 +38,8 @@ function SkeletonChats() {
 function Inbox() {
   const { clienteId } = useParams();
   const navigate = useNavigate();
+  const prevClienteId = useRef<string | undefined>(undefined);
+  const currentClienteId = useRef<number | null>(null);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
@@ -55,15 +57,44 @@ function Inbox() {
       setClientes(data);
       setLoading(false);
     });
+
     socket.on('message:new', (mensaje: Mensaje) => {
-      setMensajes(prev => [...prev, mensaje]);
+      if (currentClienteId.current === mensaje.cliente_id) {
+        setMensajes(prev => [...prev, mensaje]);
+      }
     });
-    return () => { socket.off('message:new'); };
+
+    socket.on('chat:updated', (data: { cliente_id: number }) => {
+      setClientes(prev => {
+        const existe = prev.find(c => c.id === data.cliente_id);
+        if (existe) {
+          clientesApi.getById(data.cliente_id).then(actualizado => {
+            setClientes(cs => cs.map(c => c.id === actualizado.id ? actualizado : c));
+          });
+          return prev;
+        }
+        clientesApi.getAll().then(setClientes);
+        return prev;
+      });
+    });
+
+    return () => {
+      socket.off('message:new');
+      socket.off('chat:updated');
+    };
   }, []);
 
   useEffect(() => {
+    const socket = getSocket();
+    if (prevClienteId.current === clienteId) return;
+    if (prevClienteId.current) {
+      socket.emit('leave:chat', Number(prevClienteId.current));
+    }
+    prevClienteId.current = clienteId;
     if (!clienteId) { setSelectedCliente(null); return; }
     const id = Number(clienteId);
+    socket.emit('join:chat', id);
+    currentClienteId.current = id;
     setLoading(true);
     Promise.all([
       clientesApi.getById(id),
@@ -238,7 +269,7 @@ function Inbox() {
                 <MessageSquare size={40} style={{ opacity: 0.15, marginBottom: 12 }} />
                 <p style={{ fontSize: 14, fontWeight: 600 }}>No hay chats</p>
                 <p style={{ fontSize: 13, marginTop: 4, color: 'var(--gris-texto)' }}>
-                  {searchTerm ? 'Intenta con otro término de búsqueda' : filtro !== 'todos' ? 'Cambia el filtro para ver más' : 'Los mensajes nuevos aparecerán aquí'}
+                  {searchTerm ? 'Intenta con otro término de búsqueda' : canalFiltro !== 'todos' ? 'Cambia el filtro para ver más' : 'Los mensajes nuevos aparecerán aquí'}
                 </p>
               </div>
             ) : (

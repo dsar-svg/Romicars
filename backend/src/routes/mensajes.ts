@@ -52,20 +52,48 @@ router.post('/enviar', async (req: Request, res: Response) => {
     getIO().emit('chat:updated', { cliente_id });
 
     if (remitente === 'agente') {
-      const EVO_URL = process.env.EVOLUTION_API_URL || 'http://evolution-api:8080';
-      const EVO_KEY = process.env.EVOLUTION_API_KEY || '';
-      const EVO_INSTANCE = process.env.EVOLUTION_INSTANCE || 'romicars';
+      const clientes = await query(
+        'SELECT telefono, canal_origen, facebook_psid, instagram_psid FROM clientes WHERE id = ?',
+        [cliente_id]
+      ) as any[];
+      const cliente = clientes[0];
 
-      const clientes = await query('SELECT telefono FROM clientes WHERE id = ?', [cliente_id]) as any[];
-      if (clientes[0]?.telefono && EVO_KEY) {
-        try {
-          await fetch(`${EVO_URL}/message/sendText/${EVO_INSTANCE}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', apikey: EVO_KEY },
-            body: JSON.stringify({ number: clientes[0].telefono, text: contenido }),
-          });
-        } catch (evoErr) {
-          console.error('Error al enviar a Evolution API:', evoErr);
+      if (cliente) {
+        const n8nUrl = process.env.N8N_OUTBOUND_URL || process.env.N8N_RECEIVE_URL;
+        if (n8nUrl) {
+          try {
+            await fetch(n8nUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                type: 'enviar_mensaje',
+                cliente_id,
+                contenido,
+                canal: cliente.canal_origen || 'whatsapp',
+                telefono: cliente.telefono || null,
+                facebook_psid: cliente.facebook_psid || null,
+                instagram_psid: cliente.instagram_psid || null,
+                msg_id: msg.id,
+              }),
+            });
+          } catch (n8nErr) {
+            console.error('Error al enviar a n8n:', n8nErr);
+          }
+        }
+
+        const EVO_URL = process.env.EVOLUTION_API_URL || 'http://evolution-api:8080';
+        const EVO_KEY = process.env.EVOLUTION_API_KEY || '';
+        const EVO_INSTANCE = process.env.EVOLUTION_INSTANCE || 'romicars';
+        if (cliente.telefono && EVO_KEY) {
+          try {
+            await fetch(`${EVO_URL}/message/sendText/${EVO_INSTANCE}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', apikey: EVO_KEY },
+              body: JSON.stringify({ number: cliente.telefono, text: contenido }),
+            });
+          } catch (evoErr) {
+            console.error('Error al enviar a Evolution API:', evoErr);
+          }
         }
       }
     }
