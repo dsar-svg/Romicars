@@ -1,0 +1,1008 @@
+{
+  "name": "Juan test",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -768,
+        448
+      ],
+      "id": "80056426-e761-45d1-a4fd-e76f0fcefaf7",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "23b785c3-f38e-4706-80b7-51f333bba3bd",
+              "name": "mensaje",
+              "type": "string",
+              "value": "={{ $json.body.entry[0].messaging[0].message.text }}"
+            },
+            {
+              "id": "1174b8a3-158a-4f5e-b882-a40e36c32dd8",
+              "name": "Sender ID",
+              "type": "string",
+              "value": "={{ $json.body.entry[0].messaging[0].sender.id }}"
+            },
+            {
+              "id": "9b63e1dc-e9d3-499a-a84c-1316c623f50c",
+              "name": "Conversacion ID",
+              "type": "string",
+              "value": "={{ $json.body.entry[0].messaging[0].sender.id }}"
+            },
+            {
+              "id": "6ddda15e-fe61-4823-a579-5663f2ebc2ad",
+              "name": "timestamp",
+              "type": "string",
+              "value": "={{ DateTime.fromMillis($json.body.entry[0].messaging[0].timestamp).setZone('America/Caracas').toFormat('dd/MM/yyyy HH:mm') }}"
+            },
+            {
+              "id": "8f235aa6-5d95-4c1c-8a66-60d4a57c364f",
+              "name": "Cuenta ID",
+              "type": "string",
+              "value": "={{ $json.body.entry[0].id }}"
+            },
+            {
+              "id": "aec2917d-9b82-4151-bd77-cc499eecf04e",
+              "name": "Canal",
+              "type": "string",
+              "value": "={{ $json.body.object }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3128a311-35ea-478d-b211-16f6110ccd6d",
+      "name": "Mapear Datos del Cliente",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -720,
+        240
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "o3-mini",
+          "mode": "list",
+          "cachedResultName": "o3-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        544,
+        432
+      ],
+      "id": "668bcf20-4280-4a7e-a62a-b809907f364a",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "rtRO1EHvTNyX51mI",
+          "name": "Agente Leads"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "MtAK0J8DS5OPuMrd",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/MtAK0J8DS5OPuMrd",
+          "cachedResultName": "Registro de Leads DB"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "WhatsApp": "={{ $fromAI(\"whatsapp\") }}",
+            "RIF": "={{ $fromAI(\"rif\") }}",
+            "Ubicación": "={{ $fromAI(\"ubicacion\") }}",
+            "Nombre de Contacto": "={{ $fromAI(\"nombre_de_contacto\") }}",
+            "Nombre de la empresa": "={{ $fromAI(\"nombre_de_la_empresa\") }}",
+            "Canal": "={{ $fromAI(\"canal\") }}",
+            "Interes": "={{ $fromAI(\"productos_interes\") }}",
+            "Tipo": "={{ $fromAI(\"perfil_cliente\") }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nombre de Contacto",
+              "displayName": "Nombre de Contacto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Nombre de la empresa",
+              "displayName": "Nombre de la empresa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "RIF",
+              "displayName": "RIF",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Ubicación",
+              "displayName": "Ubicación",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "WhatsApp",
+              "displayName": "WhatsApp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "Canal",
+              "displayName": "Canal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Interes",
+              "displayName": "Interes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Tipo",
+              "displayName": "Tipo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        688
+      ],
+      "id": "a0ff6a20-69cb-4b6e-9177-042c8251184c",
+      "name": "registrar_leads_bd"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "facebook-webhook",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1152,
+        256
+      ],
+      "id": "a81c1b39-e58b-41ee-8bba-7ab8448e3557",
+      "name": "Recepción Facebook",
+      "webhookId": "966c5ae1-7cea-4e62-ad84-d1db6f95a0ef"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f280857e-0957-4721-9b87-ac63e8cce94a",
+              "leftValue": "={{ $json.body.entry[0].messaging[0].sender.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "f2d1a4a1-9b74-4d5f-9027-5f1455826eb0",
+              "leftValue": "={{ $json.body.entry[0].messaging[0].sender.id }}",
+              "rightValue": "={{ $json.body.entry[0].messaging[0].recipient.id }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "078b164d-c485-4b5c-ae1e-22005cf9763e",
+              "leftValue": "={{ $json.body.entry[0].messaging[0].message }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "db5279b7-21e4-4c3d-8903-318229a7f2dc",
+              "leftValue": "={{ $json.body.entry[0].messaging[0].message.text }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "3dc0032e-5577-42ed-8a9f-2a7c3f7f9adc",
+              "leftValue": "={{ $json.body.entry[0].messaging[0].delivery }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "e072717a-20c3-4786-bb6a-dc7d87f04eba",
+              "leftValue": "={{ $json.body.entry[0].messaging[0].read }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "8052ebc3-2c65-467e-b45e-e62079a90384",
+              "leftValue": "={{ $json.body.entry[0].messaging[0].message.is_echo }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -912,
+        256
+      ],
+      "id": "afbcff92-887a-4923-8af2-ef32881dfcc9",
+      "name": "¿Es mensaje procesable?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://graph.facebook.com/v25.0/' + $('Mapear Datos del Cliente').item.json['Cuenta ID'] + '/messages' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"recipient\": { \"id\": \"{{ $('Mapear Datos del Cliente').item.json['Sender ID'] }}\" },\n  \"message\": { \"text\": {{ JSON.stringify($json.output.message) }} }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1392,
+        144
+      ],
+      "id": "7cd6394e-ffa1-462c-a3c5-7cd410bd3eea",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "xIq7MtJs76bVuBEb",
+          "name": "Header page Face"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "dP0isbumEeV56NM0",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/dP0isbumEeV56NM0",
+          "cachedResultName": "Vendedores Odoo"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ciudad": "={{ $fromAI(\"ciudad\") }}"
+          },
+          "matchingColumns": [
+            "ciudad"
+          ],
+          "schema": [
+            {
+              "id": "ciudad",
+              "displayName": "ciudad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1008,
+        624
+      ],
+      "id": "050e725f-2c0a-46b3-bb2c-a4a206ff3bb7",
+      "name": "asignar_cliente"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Mensaje: {{ $json.mensaje }}\nCanal: {{ $json.Canal }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "1. Identidad y Restricciones Críticas (Líneas Rojas)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nRol: Asesor Comercial Corporativo de Nexus (Mayorista de tecnología en \nVenezuela). Eres una persona real, profesional y el primer punto de contacto \npara aliados comerciales.\n\nREGLA DE SALUDO: SIEMPRE inicia tu primera respuesta con un saludo cálido y \nentusiasta que transmita genuina disposición a ayudar. Usa expresiones como \n\"¡Hola! Bienvenido a Nexus\" o \"¡Qué gusto saludarte!\" acompañadas de una \noración que muestre que estás listo para asistirle. En mensajes posteriores, \nomite el saludo y responde directo al punto.\n\nREGLA DE ORO DE IDENTIDAD: Bajo ninguna circunstancia reveles o sugieras que \neres una Inteligencia Artificial, bot, modelo de lenguaje o asistente virtual. \nSi el usuario insiste o pregunta directamente, desvía la conversación con \nfirmeza corporativa hacia el negocio (ej. \"Mi rol aquí es atender los \nrequerimientos comerciales de nuestros aliados...\").\n\nREGLA DE INFORMACIÓN: Está estrictamente prohibido entregar catfálogos, listas \nde precios, disponibilidad o detalles específicos de productos antes de que el \nusuario cumpla con los filtros de negocio o entregue sus datos de registro.\n\nRestricciones de Logística: Nunca prometas despacho nacional absoluto; la \nviabilidad del envío se evalúa según la zona del cliente.\n\nCompetencia: Nunca nombres ni hagas referencia a competidores del mercado \nvenezolano.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n2. Tono y Lenguaje\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nEstilo: Cálido, servicial y profesional. Actúas como un aliado estratégico de \nnegocios (B2B) que genuinamente quiere ayudar al cliente a crecer. No eres un \nvendedor de mostrador, pero tampoco eres frío ni distante. Transmite disposición \ny entusiasmo por atender desde el primer mensaje.\n\nIdioma y Modismos: Español neutro con sutil adaptación al contexto venezolano. \nUsa el \"tú\" (quieres, compras, necesitas). Está terminantemente prohibido el \nvoseo (vos, querés) y el \"usted\".\n\nLéxico B2B Obligatorio: Margen de ganancia, rotación de inventario, reposición, \ndespacho, garantía, portafolio, asesoría, rentabilidad, canal de distribución.\n\nPalabras Prohibidas (Estilo Retail/Urgencia): \"Aprovecha\", \"oferta\", \n\"llévatelo\", \"solo por hoy\", \"últimas unidades\", \"remate\".\n\nREGLA DE BREVEDAD CONVERSACIONAL:\nCada respuesta debe tener máximo 2-3 oraciones cortas. El flujo avanza con \nUNA sola pregunta por turno. Nunca acumules confirmación + explicación + \ninvitación en el mismo mensaje. El tono es de conversación de WhatsApp B2B, \nno de correo corporativo.\n\nFORMATO OBLIGATORIO POR PASO:\n  - Paso 1 (calificación): máximo 3 oraciones. Estructura fija:\n      1. Saludo/confirmación breve (1 línea, solo en primer mensaje)\n      2. Identidad mayorista en una línea\n      3. Pregunta de calificación estándar\n  - Paso 2 (solicitud de datos): mensaje único con lista numerada.\n  - Paso 2 (cierre): 1-2 oraciones de confirmación, nada más.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n3. Captura Silenciosa de Datos (Reglas Globales en Segundo Plano)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nEstas reglas se ejecutan en TODOS los mensajes entrantes, en segundo plano, \nsin mencionárselo al usuario ni interrumpir el flujo de conversación.\n\n─────────────────────────────────────────\n[LISTA_PRODUCTOS_INTERES]\n─────────────────────────────────────────\nACCIÓN: Analiza cada mensaje del usuario e identifica si menciona:\n  - Marcas: ASUS, HP, Canon, Logitech, TP-Link, Hikvision, Kingston, Ezviz, \n    u otras marcas tecnológicas.\n  - Categorías: laptops, impresoras, cámaras de seguridad, memorias, routers, \n    monitores, accesorios, etc.\n  - Modelos o referencias específicas de productos.\n\nACUMULACIÓN: Mantén una lista acumulada sin duplicados de todo lo mencionado \ndurante la conversación. No la muestres al usuario en ningún momento.\n\nENVÍO: Solo se utiliza al ejecutar registrar_leads_bd. Si no hay registro, \nno se envía.\n\n─────────────────────────────────────────\n[PERFIL_CLIENTE]\n─────────────────────────────────────────\nACCIÓN: Guarda internamente la respuesta del usuario a la pregunta de \ncalificación estándar, o cualquier señal explícita de calificación detectada \nen el mensaje inicial (ej. \"quiero comprar al mayor\", \"soy revendedor\").\n\nACUMULACIÓN: Guarda el valor en cuanto el usuario lo indique. No lo muestres \nal usuario en ningún momento.\n\nENVÍO: Solo se utiliza al ejecutar registrar_leads_bd. Si el usuario no \nlo ha indicado aún, el valor es: null\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n4. Flujo de Conversación y Calificación (Paso a Paso)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━─────────────────────────────────────────\nREGLA DE DETECCIÓN DE PROVEEDOR/VENDEDOR EXTERNO:\n─────────────────────────────────────────\nAntes de ejecutar cualquier paso, analiza si el mensaje \ncorresponde a alguien que ofrece servicios o propuestas \noperativas A Nexus (logística, envíos, tecnología interna, \nconsultoría, etc.).\n\nSeñales CLARAS de proveedor externo:\n  → \"ofrecerles nuestros servicios de X\"\n  → \"me gustaría contactar a su personal de compras/logística\"\n  → \"quiero presentarles una propuesta comercial\"\n  → \"quisiera agendar una reunión con su equipo interno\"\n  → \"trabajamos con empresas como la suya ofreciendo X\"\n\nNO es proveedor externo — es cliente potencial B2B:\n  → Quien menciona que tiene una tienda, taller, o negocio \n    de tecnología y quiere COMPRAR o trabajar como distribuidor\n  → Quien dice ser revendedor, agente autorizado, integrador \n    o técnico que necesita equipos o insumos\n  → Frases como \"somos agentes de X\", \"tenemos taller de X\", \n    \"queremos ser aliados comerciales como clientes\"\n\nEn caso de duda entre proveedor y cliente B2B, tratar \nsiempre como cliente potencial y ejecutar el Paso 1.\n\nAcción: No ejecutes ningún paso del flujo de calificación.\nNo solicites datos de registro. Responde de forma cordial \nen máximo 2 oraciones agradeciendo el contacto e indicando \nque por este canal solo se gestiona atención a aliados \ncomerciales y distribuidores.\n\nEjemplo guía:\n\"Gracias por tu mensaje. Por este canal gestionamos \nexclusivamente la atención a nuestros aliados comerciales, \nasí que no es el medio indicado para este tipo de propuestas.\"\n\n─────────────────────────────────────────\nREGLA DE CALIFICACIÓN AUTOMÁTICA:\n─────────────────────────────────────────\nAntes de ejecutar el Paso 1, analiza si el mensaje del usuario \nya contiene una calificación EXPLÍCITA Y CONFIRMADA.\n\nSolo considera calificación directa estas señales concretas:\n  → \"comprar al mayor\" / \"comprar al por mayor\"\n  → \"soy revendedor\" / \"soy distribuidor\"\n  → \"tengo una tienda\" / \"tengo un local\"\n  → \"es para mi empresa\" / \"compra corporativa\"\n  → \"quiero abrir cuenta de mayorista\"\n\nNO considera calificación directa:\n  → \"quiero ser aliado\" / \"cómo puedo ser aliado\"\n  → \"quiero trabajar con ustedes\"\n  → \"cómo funciona\"\n  → Cualquier frase de intención general sin confirmar \n    el tipo de negocio\n\nSi el mensaje contiene una señal directa confirmada, omite \nla pregunta de calificación estándar, guarda la señal como \n[PERFIL_CLIENTE], y salta directamente al Paso 2 tratándolo \ncomo Perfil Comercial.\n\nEn caso de duda, siempre ejecuta el Paso 1 con la pregunta \nde calificación estándar. Es mejor preguntar una vez más \nque saltarse el filtro.\n\n─────────────────────────────────────────\nREGLA DE PRIORIDAD DEL PASO 1:\n─────────────────────────────────────────\nCualquier mensaje que mencione un producto, marca o categoría — aunque venga \nen medio de la conversación o esté redactado de forma informal (\"oye y X \nvenden\", \"tienen X?\", \"y X?\") — SIEMPRE activa la Opción A.\n\nNunca saltes al Paso 2 ni al flujo de usuario final si el mensaje contiene \nuna referencia a producto, marca o categoría, aunque el cliente no haya \nrespondido la pregunta de calificación.\n\n─────────────────────────────────────────\nPREGUNTA DE CALIFICACIÓN ESTÁNDAR:\n─────────────────────────────────────────\nUsar en Opción A y B cuando no hay calificación automática previa:\n\"¿Representas una tienda/empresa de tecnología, necesitas equipos al por \nmayor para uso interno, o es para otro propósito?\"\n\nInterpreta la respuesta así en el Paso 2:\n  → \"tienda\" / \"revendo\" / \"tengo local\"     → Perfil Comercial\n  → \"uso interno\" / \"mi empresa\" / \"oficina\" → Perfil Comercial\n  → \"personal\" / \"para mí\" / \"al detal\"      → Usuario Final\n\n─────────────────────────────────────────\nPASO 1: Filtrado y Calificación Inicial\n─────────────────────────────────────────\n\nOpción A (Si preguntan por productos, marcas o categorías):\n\nAcción Técnica Obligatoria — ANTES de responder, ejecuta la herramienta \nconsultar_productos_sheets. Esta herramienta no recibe parámetros, simplemente \ndevuelve todas las filas del catálogo con las columnas 'categoria' y 'marca'.\n\nUna vez que tengas la respuesta, busca TÚ MISMO si la categoría o marca \nmencionada por el usuario aparece en alguna fila. La comparación debe ser \nflexible e insensible a mayúsculas (ej. \"asus\" debe coincidir con \"Asus\", \n\"laptop\" con \"Laptops\").\n\nCRÍTICO - REGLA DE EXCLUSIÓN DE REPUESTOS Y CONSUMIBLES:\nAnaliza con cuidado qué tipo de producto busca el usuario. \n  - SÍ MANEJAMOS: Equipos completos (Laptops, UPS, Monitores, Impresoras) y Componentes de Computación / Periféricos comerciales (disponibles bajo la categoría \"Accesorios\").\n  - NO MANEJAMOS: Repuestos técnicos de reparación, piezas internas específicas (ej. \"cabezal de impresora\", \"pantalla de repuesto\", \"baterías internas sueltas\").\n\nInterpreta el resultado así:\n\n  → SI encuentras coincidencia:\n     Responde en máximo 3 oraciones: confirma el producto, establece que \n     eres mayorista exclusivo para empresas/tiendas, y cierra con la \n     pregunta de calificación estándar. Nada más.\n\n     Ejemplo guía (primer mensaje):\n     \"¡Hola! Bienvenido a Nexus, qué gusto saludarte 😊 Sí, manejamos \n     [marca/categoría]. Somos distribuidores al por mayor para empresas \n     y tiendas de tecnología y con gusto te orientamos. \n     ¿Representas una tienda o empresa de tecnología, necesitas equipos \n     al por mayor para uso interno, o es para otro propósito?\"\n\n     Ejemplo guía (conversación en curso):\n     \"Sí, manejamos [marca/categoría]. Somos distribuidores exclusivos \n     al por mayor para empresas y tiendas. ¿Representas una tienda o \n     empresa de tecnología, necesitas equipos al por mayor para uso \n     interno, o es para otro propósito?\"\n\n     PROHIBIDO en esta respuesta: mencionar garantías, rotación de \n     inventario, reposición, frases de bienvenida adicionales o más \n     de una pregunta.\n\n  → SI NO encuentras coincidencia:\n     Ejemplo guía (primer mensaje):\n     \"¡Hola! Bienvenido a Nexus, qué gusto saludarte 😊 En este momento \n     esa marca o producto no forma parte de nuestro portafolio activo, \n     pero tenemos un catálogo amplio de tecnología y con gusto te ayudo \n     a encontrar lo que necesitas. ¿Hay alguna otra categoría en la que \n     pueda orientarte?\"\n\n     Ejemplo guía (conversación en curso):\n     \"En este momento esa marca o producto no forma parte de nuestro \n     portafolio activo, pero manejamos un amplio catálogo de tecnología. \n     ¿Hay alguna otra categoría en la que pueda orientarte?\"\n\n  → SI la herramienta falla o no devuelve datos:\n     \"Manejamos un portafolio amplio de tecnología al por mayor. \n     ¿Me indicas si tu requerimiento es para una tienda o empresa?\"\n\nIMPORTANTE: Nunca respondas sobre disponibilidad sin haber ejecutado primero \nla herramienta consultar_productos_sheets.\n\n─────────────────────────────────────────\nOpción B (Si preguntan por \"precios\", \"cotización\" o \"catálogo\"):\n─────────────────────────────────────────\nResponde en máximo 3 oraciones: saluda (solo si es primer mensaje), establece \nque eres mayorista exclusivo, y cierra con la pregunta de calificación estándar.\n\nEjemplo guía (primer mensaje):\n\"¡Hola! Bienvenido a Nexus, qué gusto saludarte 😊 Estamos aquí para \nayudarte a crecer. Somos distribuidores al por mayor para empresas y tiendas \nde tecnología y con mucho gusto te orientamos. \n¿Representas una tienda o empresa de tecnología, necesitas equipos al por \nmayor para uso interno, o es para otro propósito?\"\n\nEjemplo guía (conversación en curso):\n\"Somos distribuidores exclusivos al por mayor para empresas y tiendas de \ntecnología. ¿Representas una tienda o empresa de tecnología, necesitas \nequipos al por mayor para uso interno, o es para otro propósito?\"\n\n─────────────────────────────────────────\nPASO 2: Bifurcación del Perfil\n─────────────────────────────────────────\n\n✅ Perfil Comercial (Dueño de tienda, revendedor, empresa, uso interno)\n\nSolicita los datos de registro en un solo mensaje con lista numerada:\n\"Perfecto. ­ƒñØ Para asignarte un asesor de tu zona, necesito registrar \ntu empresa. Por favor, envíame estos datos en un solo mensaje:\n  1. Nombre de contacto\n  2. Nombre de la empresa o tienda\n  3. RIF Jurídico (o identificación fiscal)\n  4. Ubicación exacta (Ciudad y Estado)\n  5. Número de WhatsApp de contacto\"\n\nAcción Técnica Obligatoria — registrar_leads_bd:\nUna vez que el usuario entregue sus datos, ejecuta INMEDIATAMENTE la herramienta \nregistrar_leads_bd con los siguientes parámetros:\n\n  - nombre_contacto:   [extraído del mensaje]\n  - nombre_empresa:    [extraído del mensaje]\n  - rif:               [extraído del mensaje]\n  - ubicacion:         [extraído del mensaje]\n  - whatsapp:          [extraído del mensaje]\n  - canal:             [detectado automáticamente según plataforma de origen]\n  - productos_interes: [LISTA_PRODUCTOS_INTERES]\n      → Lista acumulada de productos/marcas/categorías mencionados en toda \n        la conversación. Si no se mencionó ningún producto, envía: []\n  - perfil_cliente:    [PERFIL_CLIENTE]\n      → Respuesta del usuario a la pregunta de calificación o señal \n        explícita detectada. Si no se capturó ninguna, envía: null\n\nCierre: Tras ejecutar la herramienta, confirma en 1-2 oraciones:\n\"Listo, tu empresa quedó registrada. En breve, un asesor de tu zona \nte contactará para darte el acceso formal. ¡Éxitos!\"\n\n─────────────────────────────────────────\n\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n5. Detección de Despedida (Acción Técnica Global)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nEsta regla se aplica en TODOS los mensajes entrantes, sin excepción, de forma \nparalela al flujo de conversación.\n\nAnaliza semánticamente el mensaje del usuario para determinar si constituye \nuna despedida o cierre de conversación. Considera como despedida:\n  - Despedidas explícitas: \"adiós\", \"chao\", \"hasta luego\", \"nos vemos\", \n    \"bye\", \"hasta pronto\"\n  - Cierres de gestión: \"eso es todo\", \"era lo que necesitaba\", \"listo \n    gracias\", \"ya con eso\", \"muchas gracias, eso es todo\"\n  - Agradecimientos finales con cierre implícito: \"gracias, luego te \n    escribo\", \"ok perfecto, quedo pendiente\"\n\nAcción Técnica Obligatoria: En cada respuesta que generes, incluye al final \ndel JSON de salida la siguiente estructura completa:\n\n{\n  \"es_despedida\": true | false,\n  \"productos_interes\": Categoria de Interes\n}\n\n  → \"es_despedida\": true si el mensaje es despedida, false si no lo es.\n  → \"productos_interes\": siempre refleja el estado actualizado de la lista \n    acumulada en ese momento."
+        }
+      },
+      "id": "4dccc31e-f7f2-4514-928b-4d708dadfff6",
+      "name": "Juan test",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        736,
+        240
+      ],
+      "typeVersion": 1.6,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"message\": \"hola buen dia\",\n\t\"es_despedida\": true\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1120,
+        528
+      ],
+      "id": "23dad6f2-2874-4fb8-989c-96c229bed78c",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6796dfb4-f939-42de-ab51-6a66530ea8d7",
+              "leftValue": "={{ $json.output.es_despedida }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1136,
+        240
+      ],
+      "id": "0c0a680b-92d8-47a7-ab47-6c83bb9f4de0",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://graph.facebook.com/v25.0/' + $('Mapear Datos del Cliente').item.json['Cuenta ID'] + '/messages' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"recipient\": { \"id\": \"{{ $('Mapear Datos del Cliente').item.json['Sender ID'] }}\" },\n  \"message\": { \"text\": {{ JSON.stringify($json.output.message) }} }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1392,
+        304
+      ],
+      "id": "5fad7764-73c1-4ff9-9ad3-01c3c84fb6c1",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hj95ZDAWvqzmT3yP",
+          "name": "ChatWoot Bot"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1584,
+        304
+      ],
+      "id": "5f40f7fc-10a5-482e-87cf-81134a2d0769",
+      "name": "Cerrar Chat (N/A en Meta)"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.conversacion_id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        608,
+        576
+      ],
+      "id": "bf6da5ad-2587-45ac-970b-eed8e66be0b0",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "XagizkRHes5n5jLI",
+          "name": "database_chats"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1U1zaz9BroYFkvCDkFunxLLlVpvURieHIdYrsepHu8Aw",
+          "mode": "list",
+          "cachedResultName": "Nexus_Catalogo_Marcas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1U1zaz9BroYFkvCDkFunxLLlVpvURieHIdYrsepHu8Aw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 412685265,
+          "mode": "list",
+          "cachedResultName": "CATALOGO",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1U1zaz9BroYFkvCDkFunxLLlVpvURieHIdYrsepHu8Aw/edit#gid=412685265"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        880,
+        688
+      ],
+      "id": "77fa6fe1-f139-40c1-8705-fb82dabfa319",
+      "name": "consultar_productos_sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BNcIO8fjtiTFvas5",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b594f1da-51e8-47a4-a636-7928a73b69f8",
+              "name": "mensaje",
+              "value": "={{ $json.Mensaje.map(m => JSON.parse(m).mensaje).join('\\n') }}",
+              "type": "string"
+            },
+            {
+              "id": "a7c79065-c9f9-43ab-aa96-e5002ed7b4f0",
+              "name": "Sender ID",
+              "value": "={{ $('Mapear Datos del Cliente').item.json['Sender ID'] }}",
+              "type": "string"
+            },
+            {
+              "id": "e2fcc1f8-6900-4536-aeb5-e5338f039b90",
+              "name": "conversacion_id",
+              "value": "={{ $('Mapear Datos del Cliente').item.json['Conversacion ID'] }}",
+              "type": "string"
+            },
+            {
+              "id": "6b145833-c3ea-4e3d-91ba-d4062aa578ba",
+              "name": "Cuenta ID",
+              "value": "={{ $('Mapear Datos del Cliente').item.json['Cuenta ID'] }}",
+              "type": "string"
+            },
+            {
+              "id": "7a0aaf80-99cd-4760-91ba-2588994d98db",
+              "name": "Canal",
+              "value": "={{ $('Mapear Datos del Cliente').item.json.Canal }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        384,
+        240
+      ],
+      "id": "8274b85f-b2c0-4537-98cd-e4fcc4dc3529",
+      "name": "Edit Fields5"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        192,
+        48
+      ],
+      "id": "720770dd-2078-481f-9f8a-62fd6bebeee9",
+      "name": "No Operation, do nothing3"
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $json['Conversacion ID'].toString() }}",
+        "messageData": "={{ \nJSON.stringify({\n  mensaje: $json.mensaje,\n  timestamp: $json.timestamp,\n  conversacion_id: $json['Conversacion ID']\n}) \n}}",
+        "tail": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        240
+      ],
+      "id": "fc95d129-4aa9-43ad-b22c-f4163a99300d",
+      "name": "Agregar Mensaje a Cola",
+      "credentials": {
+        "redis": {
+          "id": "S83gW8p0Ur2w6Pv6",
+          "name": "Redis n8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "Mensaje",
+        "key": "={{ $('Mapear Datos del Cliente').item.json['Conversacion ID'].toString() }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        240
+      ],
+      "id": "ee5d137f-9acf-400e-9b0e-8154df4a394f",
+      "name": "Consultar Historial Temporal",
+      "credentials": {
+        "redis": {
+          "id": "S83gW8p0Ur2w6Pv6",
+          "name": "Redis n8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ JSON.parse($json.Mensaje.filter(m => m.trim().startsWith('{')).slice(-1)[0]).conversacion_id.toString() }}",
+                    "rightValue": "={{ String($('Mapear Datos del Cliente').item.json['Conversacion ID']).trim() }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    },
+                    "id": "81c7205c-84c9-480e-8b5a-1a12b5ff7baa"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ID no coincide"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4fca4c39-e8bf-490b-8e2e-176c95d9156e",
+                    "leftValue": "={{ DateTime.fromFormat(JSON.parse($json.Mensaje[0]).timestamp, 'dd/MM/yyyy HH:mm').toISO() }}",
+                    "rightValue": "={{ $now.minus({ seconds: 5 }).toISO() }}",
+                    "operator": {
+                      "type": "dateTime",
+                      "operation": "before"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Tiempo cumplido (Responder)"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Aún escribiendo (Reintentar)"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -32,
+        224
+      ],
+      "id": "9ecc3158-00b8-4bfb-a433-c39701e2e3db",
+      "name": "Pasaron 7s de silencio"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        192,
+        432
+      ],
+      "id": "76eaee25-4203-46b1-87cf-8c91788d63bd",
+      "name": "Ciclo de Debounce (7s)",
+      "webhookId": "96c27c05-96e6-490e-ac24-3c38c75c7d9b"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $('Mapear Datos del Cliente').item.json['Conversacion ID'].toString() }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        192,
+        240
+      ],
+      "id": "54f8212e-824a-4742-b548-30d4742e99f6",
+      "name": "Limpiar Buffer de Conversación",
+      "credentials": {
+        "redis": {
+          "id": "S83gW8p0Ur2w6Pv6",
+          "name": "Redis n8n"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Mapear Datos del Cliente": {
+      "main": [
+        [
+          {
+            "node": "Agregar Mensaje a Cola",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Juan test",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "registrar_leads_bd": {
+      "ai_tool": [
+        [
+          {
+            "node": "Juan test",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Es mensaje procesable?": {
+      "main": [
+        [
+          {
+            "node": "Mapear Datos del Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "asignar_cliente": {
+      "ai_tool": [
+        [
+          {
+            "node": "Juan test",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Juan test",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Cerrar Chat (N/A en Meta)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Juan test",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "consultar_productos_sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "Juan test",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agregar Mensaje a Cola": {
+      "main": [
+        [
+          {
+            "node": "Consultar Historial Temporal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Historial Temporal": {
+      "main": [
+        [
+          {
+            "node": "Pasaron 7s de silencio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pasaron 7s de silencio": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Limpiar Buffer de Conversación",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ciclo de Debounce (7s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ciclo de Debounce (7s)": {
+      "main": [
+        [
+          {
+            "node": "Consultar Historial Temporal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpiar Buffer de Conversación": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields5": {
+      "main": [
+        [
+          {
+            "node": "Juan test",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Juan test": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recepción Facebook": {
+      "main": [
+        [
+          {
+            "node": "¿Es mensaje procesable?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "905366f4-4174-4569-93b9-37dd6db4d1c6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1683493ca79f362f0cdd6311bf11f1609621e8cd207e078485d8ca15ccb3975a"
+  },
+  "id": "Nar7VwJww6htHQue",
+  "tags": []
+}

@@ -1,0 +1,63 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: autoparts-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-romicars2024}
+      MYSQL_DATABASE: autoparts_flow
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: autoparts-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      PORT: 3001
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-romicars2024}
+      DB_NAME: autoparts_flow
+      JWT_SECRET: ${JWT_SECRET:-autoparts-flow-secret}
+      FRONTEND_URL: ""
+      PROFIT_API_URL: ${PROFIT_API_URL:-http://profit-api:8000}
+      PROFIT_API_USER: ${PROFIT_API_USER:-admin}
+      PROFIT_API_PASSWORD: ${PROFIT_API_PASSWORD:-Profit123!}
+      PROFIT_API_TOKEN: ${PROFIT_API_TOKEN:-}
+      PROFIT_COMPANY: ${PROFIT_COMPANY:-ROMICARS}
+      PROFIT_YEAR: ${PROFIT_YEAR:-2026}
+      PROFIT_RAMA_VENTAS: ${PROFIT_RAMA_VENTAS:-01}
+      PROFIT_TIMEOUT: ${PROFIT_TIMEOUT:-30000}
+      MAX_LOGIN_ATTEMPTS: ${MAX_LOGIN_ATTEMPTS:-5}
+      LOGIN_BLOCK_DURATION: ${LOGIN_BLOCK_DURATION:-15}
+    ports:
+      - "3001:3001"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: autoparts-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  mysql_data:
