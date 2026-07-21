@@ -34,39 +34,63 @@ router.post('/facebook', async (req: Request, res: Response) => {
         const sender = event.sender?.id;
         const message = event.message?.text;
         const timestamp = event.timestamp ? new Date(event.timestamp).toISOString() : new Date().toISOString();
-        const conversacionId = `fb_${sender}`;
+
+        if (!sender || !message) continue;
 
         let name = '';
-        if (sender && FB_PAGE_TOKEN) {
+        if (FB_PAGE_TOKEN) {
           try {
             const fbResp = await fetch(
               `https://graph.facebook.com/v22.0/${sender}?fields=name&access_token=${FB_PAGE_TOKEN}`
             );
             const fbData = await fbResp.json() as any;
             name = fbData.name || '';
-            if (!name) console.error('⚠️ Graph API respondió sin name:', JSON.stringify(fbData));
           } catch (err) {
-            console.error('❌ Error al obtener nombre de Facebook:', err);
-            name = '';
+            console.error('Error al obtener nombre de Facebook:', err);
           }
-        } else {
-          console.warn('⚠️ No se pudo obtener nombre — sender:', sender, 'FB_PAGE_TOKEN:', !!FB_PAGE_TOKEN);
         }
 
-        if (sender && message) {
-          console.log('📤 Enviando a n8n:', JSON.stringify({ sender, message, channel: 'facebook', timestamp, name, conversacionId }));
-          await fetch(N8N_RECEIVE_URL, {
+        let clientes = await query(
+          'SELECT id FROM clientes WHERE facebook_psid = ?', [sender]
+        ) as any[];
+        let clienteId = clientes[0]?.id;
+
+        if (!clienteId) {
+          const result = await query(
+            `INSERT INTO clientes (nombre, telefono, canal_origen, facebook_psid, ultima_interaccion)
+             VALUES (?, '', 'facebook', ?, NOW())`,
+            [name || `FB_${sender.slice(-6)}`, sender]
+          ) as any;
+          clienteId = result.insertId;
+          getIO().emit('chat:updated', { cliente_id: clienteId });
+        }
+
+        const msgResult = await query(
+          `INSERT INTO mensajes (cliente_id, remitente, contenido, tipo)
+           VALUES (?, 'cliente', ?, 'texto')`,
+          [clienteId, message]
+        ) as any;
+
+        const mensajes = await query('SELECT * FROM mensajes WHERE id = ?', [msgResult.insertId]) as any[];
+        const msg = mensajes[0];
+
+        await query(
+          'UPDATE clientes SET ultimo_mensaje = ?, ultima_interaccion = NOW() WHERE id = ?',
+          [message, clienteId]
+        );
+
+        getIO().to(`chat:${clienteId}`).emit('message:new', msg);
+        getIO().emit('chat:updated', { cliente_id: clienteId });
+
+        if (N8N_RECEIVE_URL) {
+          fetch(N8N_RECEIVE_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              sender,
-              message,
-              channel: 'facebook',
-              timestamp,
-              name,
-              conversacionId,
+              sender, message, channel: 'facebook', timestamp, name,
+              cliente_id: clienteId,
             }),
-          });
+          }).catch(() => {});
         }
       }
     }
@@ -80,22 +104,28 @@ router.post('/facebook', async (req: Request, res: Response) => {
 
 router.post('/n8n', async (req: Request, res: Response) => {
   try {
-    const { tipo, clienteId, mensaje } = req.body;
+    const body = req.body;
+    const tipo = body.tipo;
+    const clienteId = body.cliente_id || body.clienteId;
+    const contenido = body.contenido || body.mensaje;
 
-    if (tipo === 'nuevo_mensaje' && clienteId) {
-      const mensajes = await query(
-        'SELECT * FROM mensajes WHERE cliente_id = ? ORDER BY fecha_envio DESC LIMIT 1',
-        [clienteId]
-      ) as any[];
-      const ultimo = mensajes[0];
+    if (tipo === 'nuevo_mensaje' && clienteId && contenido) {
+      const result = await query(
+        `INSERT INTO mensajes (cliente_id, remitente, contenido, tipo)
+         VALUES (?, 'cliente', ?, 'texto')`,
+        [clienteId, contenido]
+      ) as any;
 
-      const clientes = await query('SELECT * FROM clientes WHERE id = ?', [clienteId]) as any[];
-      const cliente = clientes[0];
+      const mensajes = await query('SELECT * FROM mensajes WHERE id = ?', [result.insertId]) as any[];
+      const msg = mensajes[0];
 
-      if (ultimo && cliente) {
-        getIO().to(`chat:${clienteId}`).emit('message:new', ultimo);
-        getIO().emit('chat:updated', { cliente_id: clienteId, cliente });
-      }
+      await query(
+        'UPDATE clientes SET ultimo_mensaje = ?, ultima_interaccion = NOW() WHERE id = ?',
+        [contenido, clienteId]
+      );
+
+      getIO().to(`chat:${clienteId}`).emit('message:new', msg);
+      getIO().emit('chat:updated', { cliente_id: clienteId });
     }
 
     if (tipo === 'resumen_actualizado' && clienteId) {
@@ -105,14 +135,76 @@ router.post('/n8n', async (req: Request, res: Response) => {
       }
     }
 
-    if (tipo === 'campania_log' && req.body.campaniaId) {
-      getIO().emit('campania:updated', { campaniaId: req.body.campaniaId, estado: req.body.estado });
+    if (tipo === 'campania_log' && body.campaniaId) {
+      getIO().emit('campania:updated', { campaniaId: body.campaniaId, estado: body.estado });
     }
 
     res.json({ success: true });
   } catch (error) {
     console.error('Error en webhook n8n:', error);
     res.status(500).json({ error: 'Error al procesar webhook' });
+  }
+});
+
+router.post('/whatsapp', async (req: Request, res: Response) => {
+  try {
+    const body = req.body;
+    const sender = body.key?.remoteJid?.replace('@s.whatsapp.net', '') || body.from;
+    const message = body.message?.conversation || body.message?.extendedTextMessage?.text || body.text || body.message;
+    const pushName = body.pushName || body.key?.participant || sender;
+
+    if (!sender || !message) {
+      res.sendStatus(200);
+      return;
+    }
+
+    let clientes = await query(
+      'SELECT id FROM clientes WHERE telefono = ?', [sender]
+    ) as any[];
+    let clienteId = clientes[0]?.id;
+
+    if (!clienteId) {
+      const result = await query(
+        `INSERT INTO clientes (nombre, telefono, canal_origen, ultima_interaccion)
+         VALUES (?, ?, 'whatsapp', NOW())`,
+        [pushName || `WA_${sender.slice(-6)}`, sender]
+      ) as any;
+      clienteId = result.insertId;
+      getIO().emit('chat:updated', { cliente_id: clienteId });
+    }
+
+    const msgResult = await query(
+      `INSERT INTO mensajes (cliente_id, remitente, contenido, tipo)
+       VALUES (?, 'cliente', ?, 'texto')`,
+      [clienteId, message]
+    ) as any;
+
+    const mensajes = await query('SELECT * FROM mensajes WHERE id = ?', [msgResult.insertId]) as any[];
+    const msg = mensajes[0];
+
+    await query(
+      'UPDATE clientes SET ultimo_mensaje = ?, ultima_interaccion = NOW() WHERE id = ?',
+      [message, clienteId]
+    );
+
+    getIO().to(`chat:${clienteId}`).emit('message:new', msg);
+    getIO().emit('chat:updated', { cliente_id: clienteId });
+
+    if (N8N_RECEIVE_URL) {
+      fetch(N8N_RECEIVE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sender, message, channel: 'whatsapp', pushName,
+          cliente_id: clienteId,
+        }),
+      }).catch(() => {});
+    }
+
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('Error en webhook WhatsApp:', error);
+    res.sendStatus(200);
   }
 });
 
