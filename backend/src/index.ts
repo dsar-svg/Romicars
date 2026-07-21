@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import routes from './routes';
 import { setupSocket } from './socket';
 import { securityMiddleware, apiLimiter, requireHttps } from './middleware/security';
+import { startMessageWatcher } from './services/messageWatcher';
 
 dotenv.config();
 
@@ -29,6 +30,8 @@ app.get('/health', (_req, res) => {
 });
 
 setupSocket(server);
+
+startMessageWatcher();
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
