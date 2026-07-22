@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Search, Send, MessageSquare, Bot, CheckCheck, Paperclip, Smile, Phone, Video, PanelRightOpen, PanelRightClose } from 'lucide-react';
+import { Search, Send, MessageSquare, Bot, CheckCheck, Paperclip, Smile, Phone, PanelRightOpen, PanelRightClose } from 'lucide-react';
 import { clientesApi, mensajesApi } from '../services/api';
 import { connectSocket, getSocket } from '../services/socket';
 import { toast } from '../components/Toast';
@@ -70,6 +70,9 @@ function Inbox() {
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [unreadChats, setUnreadChats] = useState<Set<number>>(new Set());
   const [showPanel, setShowPanel] = useState(true);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const [searchMode, setSearchMode] = useState(false);
+  const [searchMsg, setSearchMsg] = useState('');
   const offsetRef = useRef(0);
   const hasMoreRef = useRef(true);
   const loadingMoreRef = useRef(false);
@@ -225,10 +228,11 @@ function Inbox() {
     if (!el) return;
     const onScroll = () => {
       if (el.scrollTop < 80) cargarMasRef.current();
+      setShowScrollBtn(el.scrollHeight - el.scrollTop - el.clientHeight > 200);
     };
     el.addEventListener('scroll', onScroll);
     return () => el.removeEventListener('scroll', onScroll);
-  }, [clienteId]);
+  }, [clienteId, mensajes]);
 
   useEffect(() => {
     if (clienteId && clientes.length > 0) {
@@ -293,7 +297,7 @@ function Inbox() {
   };
 
   return (
-    <div style={{ display: 'flex', height: '100%', overflow: 'hidden', background: '#f6f9fc', borderTop: '3px solid #b51822' }}>
+    <div style={{ display: 'flex', height: '100%', overflow: 'hidden', background: '#f6f9fc' }}>
         {/* Left panel — lista conversaciones */}
         <div style={{
           width: 350, background: '#fff', borderRight: '1px solid #e0e8f0',
@@ -533,13 +537,16 @@ function Inbox() {
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 6 }}>
-                      <button style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid #e0e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                      <button
+                        onClick={() => selectedCliente?.telefono && window.open(`https://wa.me/${selectedCliente.telefono.replace(/[^0-9]/g, '')}`, '_blank')}
+                        style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid #e0e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                        title="Abrir WhatsApp">
                         <Phone size={14} style={{ color: '#b51822' }} />
                       </button>
-                      <button style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid #e0e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                        <Video size={14} style={{ color: '#b51822' }} />
-                      </button>
-                      <button style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid #e0e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                      <button
+                        onClick={() => setSearchMode(!searchMode)}
+                        style={{ width: 34, height: 34, borderRadius: '50%', border: searchMode ? '2px solid #b51822' : '1px solid #e0e8f0', background: searchMode ? 'rgba(181,24,34,0.08)' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                        title={searchMode ? 'Cerrar búsqueda' : 'Buscar en conversación'}>
                         <Search size={14} style={{ color: '#b51822' }} />
                       </button>
                       <button
@@ -562,8 +569,32 @@ function Inbox() {
                   </div>
                 </div>
 
+                {searchMode && (
+                  <div style={{ padding: '8px 20px', borderBottom: '1px solid #e0e8f0', background: '#fff' }}>
+                    <input autoFocus
+                      value={searchMsg}
+                      onChange={e => setSearchMsg(e.target.value)}
+                      placeholder="Buscar en la conversación..."
+                      style={{ width: '100%', padding: '8px 12px', border: '1px solid #d0d8e0', borderRadius: 8, fontSize: 13, outline: 'none' }}
+                    />
+                  </div>
+                )}
                 {/* Messages */}
-                <div ref={messagesContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+                <div ref={messagesContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', position: 'relative' }}>
+                  {showScrollBtn && (
+                    <div onClick={() => {
+                      messagesContainerRef.current?.scrollTo({ top: messagesContainerRef.current.scrollHeight, behavior: 'smooth' });
+                      setShowScrollBtn(false);
+                    }} style={{
+                      position: 'sticky', bottom: 16, zIndex: 10, display: 'flex', justifyContent: 'center',
+                    }}>
+                      <div style={{
+                        width: 36, height: 36, borderRadius: '50%', background: '#b51822', color: '#fff',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)', fontSize: 18,
+                      }} title="Ir al final">&#x2193;</div>
+                    </div>
+                  )}
                   {messagesLoading ? (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12 }}>
                       <div className="skeleton" style={{ width: '60%', height: 14 }} />
@@ -579,7 +610,8 @@ function Inbox() {
                       <p style={{ fontSize: 13, marginTop: 4 }}>Envía el primer mensaje para iniciar la conversación</p>
                     </div>
                   ) : (
-                    mensajes.filter(msg => msg.cliente_id === Number(clienteId)).map((msg) => {
+                    mensajes.filter(msg => msg.cliente_id === Number(clienteId) &&
+                      (!searchMsg || msg.contenido.toLowerCase().includes(searchMsg.toLowerCase()))).map((msg) => {
                       const isAgent = msg.remitente === 'agente';
                       const isBot = msg.remitente === 'bot';
                       const isClient = !isAgent && !isBot;
