@@ -130,6 +130,13 @@ router.post('/n8n', async (req: Request, res: Response) => {
       urlMultimedia = entry.url_multimedia;
     }
 
+    if (urlMultimedia && msgTipo !== 'texto') {
+      const nombreArchivo = urlMultimedia.includes('?')
+        ? decodeURIComponent(urlMultimedia.split('?')[0].split('/').pop() || '')
+        : decodeURIComponent(urlMultimedia.split('/').pop() || '');
+      contenido = contenido || nombreArchivo;
+    }
+
     console.log('[webhook:n8n] recibido:', JSON.stringify(entry));
     console.log('[webhook:n8n] parseado:', { clienteId, contenido, msgTipo, urlMultimedia, remitente });
 
