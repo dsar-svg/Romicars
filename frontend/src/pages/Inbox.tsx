@@ -58,26 +58,31 @@ function Inbox() {
       setLoading(false);
     });
 
+    const refrescarClienteEnLista = (clienteId: number) => {
+      clientesApi.getById(clienteId).then(actualizado => {
+        setClientes(cs => {
+          const idx = cs.findIndex(c => c.id === actualizado.id);
+          if (idx >= 0) {
+            const copy = [...cs];
+            copy[idx] = actualizado;
+            return copy;
+          }
+          return [actualizado, ...cs];
+        });
+      }).catch(() => {
+        clientesApi.getAll().then(setClientes);
+      });
+    };
+
     socket.on('message:new', (mensaje: Mensaje) => {
       if (currentClienteId.current === mensaje.cliente_id) {
         setMensajes(prev => [...prev, mensaje]);
       }
+      refrescarClienteEnLista(mensaje.cliente_id);
     });
 
     socket.on('chat:updated', (data: { cliente_id: number }) => {
-      setClientes(prev => {
-        const existe = prev.find(c => c.id === data.cliente_id);
-        if (existe) {
-          clientesApi.getById(data.cliente_id).then(actualizado => {
-            setClientes(cs => cs.map(c => c.id === actualizado.id ? actualizado : c));
-          });
-          return prev;
-        }
-        clientesApi.getAll().then(actualizados => {
-          setClientes(actualizados);
-        });
-        return prev;
-      });
+      refrescarClienteEnLista(data.cliente_id);
     });
 
     return () => {

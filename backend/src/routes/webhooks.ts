@@ -109,11 +109,19 @@ router.post('/n8n', async (req: Request, res: Response) => {
     const clienteId = body.cliente_id || body.clienteId;
     const contenido = body.contenido || body.mensaje;
 
-    if ((tipo === 'nuevo_mensaje' || (clienteId && contenido && body.remitente === 'cliente')) && clienteId && contenido) {
+    console.log('[webhook:n8n] recibido:', JSON.stringify(body));
+
+    if (!clienteId || !contenido) {
+      console.log('[webhook:n8n] falta clienteId o contenido');
+      res.json({ success: false, error: 'faltan datos' });
+      return;
+    }
+
+    if (tipo === 'nuevo_mensaje' || body.remitente === 'cliente') {
       const result = await query(
         `INSERT INTO mensajes (cliente_id, remitente, contenido, tipo)
-         VALUES (?, 'cliente', ?, 'texto')`,
-        [clienteId, contenido]
+         VALUES (?, ?, ?, 'texto')`,
+        [clienteId, body.remitente || 'cliente', contenido]
       ) as any;
 
       const mensajes = await query('SELECT * FROM mensajes WHERE id = ?', [result.insertId]) as any[];
@@ -125,7 +133,10 @@ router.post('/n8n', async (req: Request, res: Response) => {
       );
 
       getIO().to(`chat:${clienteId}`).emit('message:new', msg);
+      getIO().emit('message:new', msg);
       getIO().emit('chat:updated', { cliente_id: clienteId });
+
+      console.log('[webhook:n8n] mensaje guardado y emitido:', msg.id, 'para cliente:', clienteId);
     }
 
     if (tipo === 'resumen_actualizado' && clienteId) {
