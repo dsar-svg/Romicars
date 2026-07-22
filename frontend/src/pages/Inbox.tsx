@@ -71,6 +71,8 @@ function Inbox() {
   const [unreadChats, setUnreadChats] = useState<Set<number>>(new Set());
   const [showPanel, setShowPanel] = useState(true);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const [newMsgCount, setNewMsgCount] = useState(0);
+  const newMsgCountRef = useRef(0);
   const [searchMode, setSearchMode] = useState(false);
   const [searchMsg, setSearchMsg] = useState('');
   const offsetRef = useRef(0);
@@ -114,6 +116,10 @@ function Inbox() {
       const isCurrent = currentClienteId.current === mensaje.cliente_id;
       if (isCurrent) {
         agregarMensaje(mensaje);
+        if (showScrollBtn) {
+          newMsgCountRef.current += 1;
+          setNewMsgCount(newMsgCountRef.current);
+        }
       } else {
         window.__unreadChats?.add(mensaje.cliente_id);
         setUnreadChats(new Set(window.__unreadChats));
@@ -228,7 +234,12 @@ function Inbox() {
     if (!el) return;
     const onScroll = () => {
       if (el.scrollTop < 80) cargarMasRef.current();
-      setShowScrollBtn(el.scrollHeight - el.scrollTop - el.clientHeight > 200);
+      const lejos = el.scrollHeight - el.scrollTop - el.clientHeight > 200;
+      setShowScrollBtn(lejos);
+      if (!lejos && newMsgCountRef.current > 0) {
+        newMsgCountRef.current = 0;
+        setNewMsgCount(0);
+      }
     };
     el.addEventListener('scroll', onScroll);
     return () => el.removeEventListener('scroll', onScroll);
@@ -585,14 +596,26 @@ function Inbox() {
                     <div onClick={() => {
                       messagesContainerRef.current?.scrollTo({ top: messagesContainerRef.current.scrollHeight, behavior: 'smooth' });
                       setShowScrollBtn(false);
+                      newMsgCountRef.current = 0;
+                      setNewMsgCount(0);
                     }} style={{
                       position: 'sticky', bottom: 16, zIndex: 10, display: 'flex', justifyContent: 'center',
                     }}>
                       <div style={{
                         width: 36, height: 36, borderRadius: '50%', background: '#b51822', color: '#fff',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)', fontSize: 18,
-                      }} title="Ir al final">&#x2193;</div>
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)', fontSize: 18, position: 'relative',
+                      }} title="Ir al final">
+                        &#x2193;
+                        {newMsgCount > 0 && (
+                          <span style={{
+                            position: 'absolute', top: -6, right: -6, background: '#ff4444', color: '#fff',
+                            fontSize: 10, fontWeight: 700, minWidth: 18, height: 18, borderRadius: 9,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                          }}>{newMsgCount}</span>
+                        )}
+                      </div>
                     </div>
                   )}
                   {messagesLoading ? (
