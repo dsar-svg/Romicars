@@ -154,17 +154,25 @@ function Inbox() {
     currentClienteId.current = id;
     window.__unreadChats?.delete(id);
     setUnreadChats(new Set(window.__unreadChats || []));
-    setMessagesLoading(true);
     offsetRef.current = 0;
     hasMoreRef.current = true;
     const cached = clientes.find(c => c.id === id);
     if (cached) setSelectedCliente(cached);
-    mensajesApi.getByCliente(id).then((msgs: Mensaje[]) => {
+    mensajesApi.getByCliente(id, 20).then((msgs: Mensaje[]) => {
       idsRef.current = new Set(msgs.map(m => m.id));
       setMensajes(msgs);
-      hasMoreRef.current = msgs.length >= 50;
       offsetRef.current = msgs.length;
       setMessagesLoading(false);
+      if (msgs.length >= 20) {
+        mensajesApi.getByCliente(id, 50, 20).then((mas: Mensaje[]) => {
+          idsRef.current = new Set([...idsRef.current].concat(mas.map((m: Mensaje) => m.id)));
+          setMensajes(prev => [...mas, ...prev]);
+          hasMoreRef.current = mas.length >= 50;
+          offsetRef.current = 20 + mas.length;
+        });
+      } else {
+        hasMoreRef.current = false;
+      }
     });
   }, [clienteId]);
 
