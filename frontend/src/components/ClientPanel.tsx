@@ -7,7 +7,7 @@ import type { Cliente, Mensaje } from '../types';
 
 interface Props {
   cliente: Cliente;
-  onClose: () => void;
+  onClose?: () => void;
 }
 
 export default function ClientPanel({ cliente: initial, onClose }: Props) {
@@ -82,15 +82,16 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
         <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
           <FileText size={16} /> Ficha del Cliente
         </span>
-        <button onClick={onClose} style={{
-          background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)',
-          padding: 4, borderRadius: 6, transition: 'background 0.2s',
-        }}
-          onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-dim)'}
-          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-        >
-          <X size={18} />
-        </button>
+        {onClose && (
+          <button onClick={onClose} style={{
+            background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)',
+            padding: 4, borderRadius: 6, transition: 'background 0.2s',
+          }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-dim)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+            <X size={16} />
+          </button>
+        )}
       </div>
 
       <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 18, flex: 1 }}>

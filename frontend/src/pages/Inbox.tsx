@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Search, Send, MessageSquare, User, Bot, CheckCheck } from 'lucide-react';
+import { Search, Send, MessageSquare, Bot, CheckCheck, Bell, Paperclip, Smile, Phone, Video, PanelRightOpen, PanelRightClose } from 'lucide-react';
 import { clientesApi, mensajesApi } from '../services/api';
 import { connectSocket, getSocket } from '../services/socket';
 import { toast } from '../components/Toast';
@@ -18,6 +18,12 @@ const canalLabel: Record<string, string> = {
   whatsapp: 'WhatsApp',
   instagram: 'Instagram',
   facebook: 'Facebook',
+};
+
+const canalColor: Record<string, string> = {
+  whatsapp: '#25D366',
+  instagram: '#E4405F',
+  facebook: '#1877F2',
 };
 
 function SkeletonChats() {
@@ -47,11 +53,11 @@ function Inbox() {
   const [nuevoMensaje, setNuevoMensaje] = useState('');
   const [canalFiltro, setCanalFiltro] = useState('todos');
   const [filtroIA, setFiltroIA] = useState(false);
-  const [urgenciaFiltro, setUrgenciaFiltro] = useState('todos');
+  const urgenciaFiltro = 'todos';
   const [searchTerm, setSearchTerm] = useState('');
   const { notify, clearNotifications } = useNotifications();
   const [loading, setLoading] = useState(true);
-  const [showPanel, setShowPanel] = useState(false);
+  const [showPanel, setShowPanel] = useState(true);
 
   useEffect(() => {
     const socket = connectSocket();
@@ -171,443 +177,379 @@ function Inbox() {
     }
   };
 
-  const getUrgenciaBg = (urgencia: string) => {
-    switch (urgencia) {
-      case 'Alta': return '#FEF2F2';
-      case 'Media': return '#FFFBEB';
-      case 'Baja': return '#EFF6FF';
-      default: return '#F9FAFB';
-    }
-  };
-
-  const filtrosCanales = [
-    { key: 'todos', label: 'Todos', color: '#6B7280' },
-    { key: 'whatsapp', label: 'WhatsApp', color: '#25D366' },
-    { key: 'instagram', label: 'Instagram', color: '#E4405F' },
-    { key: 'facebook', label: 'Facebook', color: '#1877F2' },
-  ];
-
   return (
-    <div style={{ display: 'flex', height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#f6f9fc' }}>
+      {/* TopAppBar */}
       <div style={{
-        width: 380, background: 'var(--surface-card)', borderRight: '1px solid var(--outline)',
-        display: 'flex', flexDirection: 'column', flexShrink: 0,
+        background: '#fff', borderBottom: '1px solid #e0e8f0', padding: '0 24px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        height: 60, flexShrink: 0,
       }}>
-        <div style={{ padding: '20px 16px 12px', borderBottom: '1px solid var(--outline)' }}>
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12, letterSpacing: '-0.02em' }}>
-            Bandeja
-            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginLeft: 10 }}>
-              {clientesFiltrados.length} chats
-            </span>
-          </h2>
-          <div style={{ position: 'relative' }}>
-            <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', pointerEvents: 'none' }} />
-            <input
-              placeholder="Buscar por nombre o teléfono..."
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              style={{ width: '100%', paddingLeft: 36, paddingRight: 12 }}
-            />
-          </div>
-        </div>
-
-        <div style={{
-          padding: '12px 16px', borderBottom: '1px solid var(--outline)',
-          display: 'flex', flexDirection: 'column', gap: 10, background: 'var(--surface)',
-        }}>
-          <div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
-              Canal
-            </div>
-            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-              {filtrosCanales.map(f => (
-                <button key={f.key} onClick={() => setCanalFiltro(f.key)}
-                  style={{
-                    padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                    background: canalFiltro === f.key ? f.color : 'var(--surface-card)',
-                    color: canalFiltro === f.key ? '#fff' : 'var(--text-secondary)',
-                    border: canalFiltro === f.key ? 'none' : '1px solid var(--outline)',
-                    cursor: 'pointer', transition: 'all 0.2s',
-                  }}>
-                  {canalFiltro === f.key && f.key !== 'todos' && (
-                    <span style={{ marginRight: 4 }}>✓</span>
-                  )}
-                  {f.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
-              Urgencia
-            </div>
-            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-              {[
-                { key: 'todos', label: 'Todos', color: '#6B7280' },
-                { key: 'urgentes', label: '🔴 Urgentes', color: '#DC2626' },
-                { key: 'interesado', label: '🟡 Interesado', color: '#D97706' },
-                { key: 'neutro', label: '⚪ Neutro', color: '#6B7280' },
-              ].map(f => (
-                <button key={f.key} onClick={() => setUrgenciaFiltro(f.key)}
-                  style={{
-                    padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                    background: urgenciaFiltro === f.key ? f.color : 'var(--surface-card)',
-                    color: urgenciaFiltro === f.key ? '#fff' : 'var(--text-secondary)',
-                    border: urgenciaFiltro === f.key ? 'none' : '1px solid var(--outline)',
-                    cursor: 'pointer', transition: 'all 0.2s',
-                  }}>
-                  {urgenciaFiltro === f.key && f.key !== 'todos' ? '✓ ' : ''}{f.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
-              IA
-            </div>
-            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-              <button onClick={() => setFiltroIA(!filtroIA)}
-                style={{
-                  padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                  background: filtroIA ? '#7C3AED' : 'var(--surface-card)',
-                  color: filtroIA ? '#fff' : 'var(--text-secondary)',
-                  border: filtroIA ? 'none' : '1px solid var(--outline)',
-                  cursor: 'pointer', transition: 'all 0.2s',
-                }}>
-                {filtroIA ? '✓ ' : ''}🤖 Con IA
+        <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: '#002045', fontFamily: "'Hanken Grotesk', sans-serif" }}>
+            Inbox Multicanal
+          </h1>
+          <div style={{ display: 'flex', gap: 4, height: 60, alignItems: 'stretch' }}>
+            {[
+              { key: 'direct', label: 'Direct' },
+              { key: 'groups', label: 'Groups' },
+              { key: 'archived', label: 'Archived' },
+            ].map(t => (
+              <button key={t.key} style={{
+                padding: '0 16px', fontSize: 13, fontWeight: t.key === 'direct' ? 700 : 500,
+                color: t.key === 'direct' ? '#002045' : '#8896ab',
+                background: 'none', border: 'none', cursor: 'pointer',
+                borderBottom: t.key === 'direct' ? '2px solid #b51822' : '2px solid transparent',
+                fontFamily: "'Inter', sans-serif",
+              }}>
+                {t.label}
               </button>
-            </div>
+            ))}
           </div>
         </div>
-
-        <div style={{ flex: 1, overflowY: 'auto' }}>
-          {loading ? <SkeletonChats /> : (
-            clientesFiltrados.length === 0 ? (
-              <div style={{ padding: 60, textAlign: 'center', color: 'var(--text-secondary)' }}>
-                <MessageSquare size={40} style={{ opacity: 0.15, marginBottom: 12 }} />
-                <p style={{ fontSize: 14, fontWeight: 600 }}>No hay chats</p>
-                <p style={{ fontSize: 13, marginTop: 4, color: 'var(--text-secondary)' }}>
-                  {searchTerm ? 'Intenta con otro término de búsqueda' : canalFiltro !== 'todos' ? 'Cambia el filtro para ver más' : 'Los mensajes nuevos aparecerán aquí'}
-                </p>
-              </div>
-            ) : (
-              clientesFiltrados.map((cliente, i) => (
-                <div key={cliente.id}
-                  onClick={() => navigate(`/inbox/${cliente.id}`)}
-                  className="fade-in-up"
-                  style={{
-                    padding: '16px 16px',
-                    borderBottom: '1px solid #F3F4F6',
-                    cursor: 'pointer',
-                    background: selectedCliente?.id === cliente.id ? 'var(--surface-container-high)' : 'transparent',
-                    borderLeft: selectedCliente?.id === cliente.id ? '3px solid var(--secondary)' : '3px solid transparent',
-                    transition: 'all 0.2s',
-                    animationDelay: `${i * 40}ms`,
-                  }}
-                  onMouseEnter={e => {
-                    if (selectedCliente?.id !== cliente.id) e.currentTarget.style.background = 'var(--surface-dim)';
-                  }}
-                  onMouseLeave={e => {
-                    if (selectedCliente?.id !== cliente.id) e.currentTarget.style.background = 'transparent';
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{
-                        width: 40, height: 40, borderRadius: '50%',
-                        background: cliente.urgencia === 'Alta'
-                          ? 'var(--secondary)'
-                          : 'var(--primary)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 15, fontWeight: 700, color: '#fff', flexShrink: 0,
-                      }}>
-                        {(cliente.nombre || cliente.telefono || '?').charAt(0).toUpperCase()}
-                      </div>
-                      <div style={{ minWidth: 0 }}>
-                        <strong style={{ fontSize: 14, color: 'var(--text-primary)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {cliente.nombre || cliente.telefono || 'Sin nombre'}
-                        </strong>
-                        <span style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <svg width={12} height={12} style={{ flexShrink: 0 }}>
-                            <use href={canalIcono[cliente.canal_origen] || '/icons.svg#chat'} />
-                          </svg>
-                          {canalLabel[cliente.canal_origen] || cliente.canal_origen}
-                        </span>
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
-                      <div style={{
-                        width: 10, height: 10, borderRadius: '50%',
-                        background: getUrgenciaColor(cliente.urgencia),
-                        boxShadow: `0 0 0 3px ${getUrgenciaBg(cliente.urgencia)}`,
-                      }} />
-                      <span style={{
-                        fontSize: 10, fontWeight: 600, color: getUrgenciaColor(cliente.urgencia),
-                        background: getUrgenciaBg(cliente.urgencia),
-                        padding: '1px 6px', borderRadius: 4,
-                      }}>
-                        {cliente.urgencia}
-                      </span>
-                    </div>
-                  </div>
-                  <div style={{
-                    fontSize: 13, color: 'var(--text-secondary)',
-                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    paddingLeft: 50, lineHeight: 1.4,
-                  }}>
-                    {cliente.ultimo_mensaje || 'Sin mensajes'}
-                  </div>
-                  {cliente.resumen_busqueda && (
-                    <div style={{
-                      marginTop: 8, marginLeft: 50, padding: '4px 10px',
-                      background: 'var(--surface-container-high)', borderRadius: 4, fontSize: 12,
-                      color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: 6,
-                      borderLeft: '2px solid var(--primary)',
-                    }}>
-                      <Bot size={12} />
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {cliente.resumen_busqueda}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ))
-            )
-          )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button style={{ padding: '6px 14px', fontSize: 12, fontWeight: 600, color: '#002045', background: '#f0f4fa', border: '1px solid #e0e8f0', borderRadius: 6, cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}>
+            Export CSV
+          </button>
+          <button style={{ padding: '6px 14px', fontSize: 12, fontWeight: 600, color: '#fff', background: '#b51822', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}>
+            Create Campaign
+          </button>
+          <div style={{ position: 'relative', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <Bell size={18} style={{ color: '#002045' }} />
+            <div style={{ position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: '50%', background: '#b51822' }} />
+          </div>
+          <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#002045', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+            A
+          </div>
         </div>
       </div>
 
-      <div style={{ display: 'flex', flex: 1 }}>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--surface-card)' }}>
-          {selectedCliente ? (
-            <>
-              <div className="fade-in" style={{
-                padding: '16px 24px',
-                borderBottom: '1px solid var(--outline)',
-                background: 'var(--surface)',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                    <div style={{
-                      width: 44, height: 44, borderRadius: '50%',
-                      background: 'var(--primary)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 18, fontWeight: 700, color: '#fff', flexShrink: 0,
-                    }}>
-                      {(selectedCliente.nombre || selectedCliente.telefono || '?').charAt(0).toUpperCase()}
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        {/* Left panel — lista conversaciones */}
+        <div style={{
+          width: 350, background: '#fff', borderRight: '1px solid #e0e8f0',
+          display: 'flex', flexDirection: 'column', flexShrink: 0,
+        }}>
+          {/* Búsqueda + filtros rápidos */}
+          <div style={{ padding: '16px 16px 12px', borderBottom: '1px solid #e0e8f0' }}>
+            <div style={{ position: 'relative', marginBottom: 10 }}>
+              <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#8896ab', pointerEvents: 'none' }} />
+              <input
+                placeholder="Search conversations..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                style={{
+                  width: '100%', padding: '9px 12px 9px 36px', borderRadius: 8, fontSize: 13,
+                  border: '1px solid #e0e8f0', background: '#f6f9fc', outline: 'none',
+                  fontFamily: "'Inter', sans-serif",
+                }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {[
+                { key: 'todos', label: 'All' },
+                { key: 'whatsapp', label: 'WA', color: '#25D366' },
+                { key: 'instagram', label: 'IG', color: '#E4405F' },
+                { key: 'facebook', label: 'FB', color: '#1877F2' },
+              ].map(f => (
+                <button key={f.key} onClick={() => setCanalFiltro(f.key)}
+                  style={{
+                    padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
+                    background: canalFiltro === f.key ? '#002045' : 'transparent',
+                    color: canalFiltro === f.key ? '#fff' : '#8896ab',
+                    border: canalFiltro === f.key ? 'none' : '1px solid #e0e8f0',
+                    cursor: 'pointer', fontFamily: "'Inter', sans-serif",
+                  }}>
+                  {f.label}
+                </button>
+              ))}
+              <button onClick={() => setFiltroIA(!filtroIA)}
+                style={{
+                  padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
+                  background: filtroIA ? '#002045' : 'transparent',
+                  color: filtroIA ? '#fff' : '#8896ab',
+                  border: filtroIA ? 'none' : '1px solid #e0e8f0',
+                  cursor: 'pointer', fontFamily: "'Inter', sans-serif",
+                }}>
+                IA
+              </button>
+            </div>
+          </div>
+
+          {/* Lista de conversaciones */}
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            {loading ? <SkeletonChats /> : (
+              clientesFiltrados.length === 0 ? (
+                <div style={{ padding: 60, textAlign: 'center', color: '#8896ab' }}>
+                  <MessageSquare size={40} style={{ opacity: 0.15, marginBottom: 12 }} />
+                  <p style={{ fontSize: 14, fontWeight: 600 }}>No hay chats</p>
+                  <p style={{ fontSize: 13, marginTop: 4 }}>
+                    {searchTerm ? 'Intenta con otro término de búsqueda' : 'Los mensajes nuevos aparecerán aquí'}
+                  </p>
+                </div>
+              ) : (
+                clientesFiltrados.map((cliente, i) => {
+                  const initial = (cliente.nombre || cliente.telefono || '?').charAt(0).toUpperCase();
+                  const canal = cliente.canal_origen;
+                  const isSelected = selectedCliente?.id === cliente.id;
+                  return (
+                    <div key={cliente.id}
+                      onClick={() => navigate(`/inbox/${cliente.id}`)}
+                      className="fade-in-up"
+                      style={{
+                        padding: '14px 16px',
+                        borderBottom: '1px solid #f0f2f5',
+                        cursor: 'pointer',
+                        background: isSelected ? '#f0f4fa' : 'transparent',
+                        transition: 'all 0.15s',
+                        animationDelay: `${i * 30}ms`,
+                      }}
+                      onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#f6f9fc'; }}
+                      onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                        {/* Avatar con badge de canal */}
+                        <div style={{ position: 'relative', flexShrink: 0 }}>
+                          <div style={{
+                            width: 42, height: 42, borderRadius: '50%',
+                            background: '#002045',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 16, fontWeight: 700, color: '#fff',
+                          }}>
+                            {initial}
+                          </div>
+                          {canalColor[canal] && (
+                            <div style={{
+                              position: 'absolute', bottom: -1, right: -1,
+                              width: 16, height: 16, borderRadius: '50%',
+                              background: '#fff',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              boxShadow: '0 0 0 1.5px #fff',
+                            }}>
+                              <svg width={10} height={10}>
+                                <use href={canalIcono[canal] || '/icons.svg#chat'} />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                            <strong style={{ fontSize: 14, fontWeight: 600, color: '#002045', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {cliente.nombre || cliente.telefono || 'Sin nombre'}
+                            </strong>
+                            <span style={{ fontSize: 11, color: '#8896ab', flexShrink: 0, marginLeft: 8 }}>
+                              {new Date(cliente.ultima_actividad || Date.now()).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', gap: 6, marginBottom: 4, alignItems: 'center' }}>
+                            {canalLabel[canal] && (
+                              <span style={{
+                                fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4,
+                                color: '#fff', background: canalColor[canal],
+                              }}>
+                                {canalLabel[canal]}
+                              </span>
+                            )}
+                            <div style={{
+                              width: 6, height: 6, borderRadius: '50%',
+                              background: getUrgenciaColor(cliente.urgencia),
+                            }} />
+                          </div>
+                          <div style={{ fontSize: 13, color: '#5a6a7c', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.3 }}>
+                            {cliente.ultimo_mensaje || 'Sin mensajes'}
+                          </div>
+                          {cliente.resumen_busqueda && (
+                            <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#002045' }}>
+                              <Bot size={11} />
+                              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {cliente.resumen_busqueda}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-                        {selectedCliente.nombre || selectedCliente.telefono || 'Sin nombre'}
-                      </h3>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{
-                          fontSize: 12, fontWeight: 500, color: '#fff', padding: '2px 10px',
-                          borderRadius: 12, background: getUrgenciaColor(selectedCliente.urgencia),
+                  );
+                })
+              )
+            )}
+          </div>
+        </div>
+
+        {/* Centro — conversación */}
+        <div style={{ display: 'flex', flex: 1 }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#f6f9fc' }}>
+            {selectedCliente ? (
+              <>
+                {/* Chat Header */}
+                <div style={{
+                  padding: '12px 20px', borderBottom: '1px solid #e0e8f0',
+                  background: '#fff',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ position: 'relative' }}>
+                        <div style={{
+                          width: 40, height: 40, borderRadius: '50%',
+                          background: '#002045',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 16, fontWeight: 700, color: '#fff',
                         }}>
-                          {selectedCliente.urgencia}
-                        </span>
-                        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                          {(selectedCliente.nombre || selectedCliente.telefono || '?').charAt(0).toUpperCase()}
+                        </div>
+                      </div>
+                      <div>
+                        <h3 style={{ fontSize: 15, fontWeight: 600, color: '#002045', fontFamily: "'Inter', sans-serif" }}>
+                          {selectedCliente.nombre || selectedCliente.telefono || 'Sin nombre'}
+                        </h3>
+                        <span style={{ fontSize: 12, color: '#5a6a7c' }}>
                           {canalLabel[selectedCliente.canal_origen] || selectedCliente.canal_origen}
                         </span>
                       </div>
                     </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button
-                      onClick={() => setShowPanel(!showPanel)}
-                      style={{
-                        padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
-                        background: showPanel ? 'var(--secondary)' : 'var(--surface-card)',
-                        color: showPanel ? '#fff' : 'var(--text-primary)',
-                        border: '1px solid var(--outline)',
-                        display: 'flex', alignItems: 'center', gap: 6,
-                        transition: 'all 0.2s',
-                      }}
-                    >
-                      <User size={14} />
-                      {showPanel ? 'Cerrar ficha' : 'Ficha'}
-                    </button>
-                  </div>
-                </div>
-                {selectedCliente.resumen_busqueda && (
-                  <div className="fade-in" style={{
-                    margin: '14px 24px 0', padding: '16px 18px',
-                    background: 'var(--surface-container-high)',
-                    borderRadius: 'var(--radius)', fontSize: 13, lineHeight: 1.6,
-                    border: '1px solid var(--primary)',
-                    borderLeft: '4px solid var(--primary)',
-                    display: 'flex', alignItems: 'flex-start', gap: 12,
-                  }}>
-                    <div style={{
-                      width: 32, height: 32, borderRadius: '50%',
-                      background: 'var(--primary)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                    }}>
-                      <Bot size={16} style={{ color: '#fff' }} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary)', marginBottom: 4, letterSpacing: '0.3px' }}>
-                        RESUMEN DE IA
-                      </div>
-                      {selectedCliente.resumen_busqueda}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div style={{
-                flex: 1, overflowY: 'auto', padding: '16px 24px',
-                background: 'var(--bg-chat)',
-              }}>
-                {mensajes.length === 0 ? (
-                  <div style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    height: '100%', color: 'var(--text-secondary)',
-                  }}>
-                    <MessageSquare size={48} style={{ opacity: 0.12, marginBottom: 16 }} />
-                    <p style={{ fontSize: 15, fontWeight: 600 }}>Sin mensajes aún</p>
-                    <p style={{ fontSize: 13, marginTop: 4, color: 'var(--text-secondary)' }}>
-                      Envía el primer mensaje para iniciar la conversación
-                    </p>
-                  </div>
-                ) : (
-                  mensajes.map((msg, i) => {
-                    const isAgent = msg.remitente === 'agente';
-                    const isBot = msg.remitente === 'bot';
-                    const isRight = isAgent || isBot;
-                    return (
-                      <div key={msg.id} className="fade-in-up" style={{
-                        marginBottom: 12,
-                        display: 'flex',
-                        flexDirection: isRight ? 'row-reverse' : 'row',
-                        alignItems: 'flex-end',
-                        gap: 8,
-                        animationDelay: `${i * 30}ms`,
-                      }}>
-                        <div style={{
-                          width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid #e0e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                        <Phone size={14} style={{ color: '#002045' }} />
+                      </button>
+                      <button style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid #e0e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                        <Video size={14} style={{ color: '#002045' }} />
+                      </button>
+                      <button style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid #e0e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                        <Search size={14} style={{ color: '#002045' }} />
+                      </button>
+                      <button
+                        onClick={() => setShowPanel(!showPanel)}
+                        style={{
+                          width: 34, height: 34, borderRadius: '50%',
+                          border: showPanel ? '2px solid #002045' : '1px solid #e0e8f0',
+                          background: showPanel ? '#eef3f9' : '#fff',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 12, fontWeight: 700, color: '#fff',
-                          background: isAgent
-                            ? 'var(--secondary)'
-                            : isBot
-                              ? '#7C3AED'
-                              : 'var(--primary)',
-                          overflow: 'hidden',
-                        }}>
-                          {isAgent ? (
-                            <img src="/loguito.png" alt="" style={{ width: 20, height: 20, filter: 'brightness(10)' }} />
-                          ) : isBot ? (
-                            <Bot size={16} />
-                          ) : (
-                            (selectedCliente?.nombre || '?').charAt(0).toUpperCase()
-                          )}
-                        </div>
-                        <div style={{
-                          padding: '10px 14px',
-                          background: isAgent
-                            ? 'var(--secondary)'
-                            : isBot
-                              ? 'var(--msg-bot)'
-                              : 'var(--msg-cliente)',
-                          border: isAgent
-                            ? 'none'
-                            : isBot
-                              ? '1px dashed var(--outline-strong)'
-                              : '1px solid var(--outline)',
-                          borderRadius: isAgent || isBot
-                            ? 'var(--radius) var(--radius) 4px var(--radius)'
-                            : 'var(--radius) var(--radius) var(--radius) 4px',
-                          maxWidth: '65%',
-                          fontSize: 14,
-                          lineHeight: 1.5,
-                          color: isAgent ? '#fff' : 'var(--text-primary)',
-                        }}>
-                          <div style={{
-                            fontSize: 11, fontWeight: 600, marginBottom: 4, opacity: 0.7,
-                            textTransform: 'uppercase', letterSpacing: '0.5px',
-                          }}>
-                            {isAgent ? 'Tú' : isBot ? 'Bot IA' : selectedCliente?.nombre || 'Cliente'}
-                          </div>
-                          <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                            {msg.contenido}
-                          </div>
-                          <div style={{
-                            fontSize: 11, marginTop: 6, opacity: 0.6, textAlign: 'right',
-                            display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4,
-                          }}>
-                            {new Date(msg.fecha_envio).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
-                            {isAgent && <CheckCheck size={12} />}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-
-              <div style={{
-                padding: '16px 24px',
-                borderTop: '1px solid var(--outline)',
-                display: 'flex',
-                gap: 10,
-                background: 'var(--surface-card)',
-              }}>
-                <div style={{ flex: 1, position: 'relative' }}>
-                  <input
-                    value={nuevoMensaje}
-                    onChange={e => setNuevoMensaje(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), enviarMensaje())}
-                    placeholder="Escribe un mensaje..."
-                    style={{ width: '100%', padding: '12px 16px', borderRadius: 12, fontSize: 14 }}
-                  />
+                          cursor: 'pointer', transition: 'all 0.15s',
+                        }}
+                        title={showPanel ? 'Ocultar panel' : 'Mostrar panel'}
+                      >
+                        {showPanel
+                          ? <PanelRightClose size={14} style={{ color: '#002045' }} />
+                          : <PanelRightOpen size={14} style={{ color: '#002045' }} />
+                        }
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <button
-                  onClick={enviarMensaje}
-                  style={{
-                    padding: '12px 20px', borderRadius: 'var(--radius-sm)', fontSize: 14, fontWeight: 600,
-                    background: nuevoMensaje.trim() ? 'var(--secondary)' : 'var(--outline)',
-                    color: nuevoMensaje.trim() ? '#fff' : 'var(--text-secondary)',
-                    border: 'none', cursor: nuevoMensaje.trim() ? 'pointer' : 'not-allowed',
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  <Send size={16} />
-                  Enviar
-                </button>
-              </div>
-            </>
-          ) : (
-            <div style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              height: '100%', color: 'var(--text-secondary)',
-              background: 'var(--bg-chat)', position: 'relative', overflow: 'hidden',
-            }}>
-              <img
-                src="/logotipo.png"
-                alt=""
-                style={{
-                  position: 'absolute', opacity: 0.1, width: 360, height: 'auto',
-                  pointerEvents: 'none', userSelect: 'none',
-                }}
-              />
+
+                {/* Messages */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+                  {mensajes.length === 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#8896ab' }}>
+                      <MessageSquare size={48} style={{ opacity: 0.12, marginBottom: 16 }} />
+                      <p style={{ fontSize: 15, fontWeight: 600 }}>Sin mensajes aún</p>
+                      <p style={{ fontSize: 13, marginTop: 4 }}>Envía el primer mensaje para iniciar la conversación</p>
+                    </div>
+                  ) : (
+                    mensajes.map((msg, i) => {
+                      const isAgent = msg.remitente === 'agente';
+                      const isBot = msg.remitente === 'bot';
+                      const isRight = isAgent || isBot;
+                      return (
+                        <div key={msg.id} className="fade-in-up" style={{
+                          marginBottom: 8,
+                          display: 'flex',
+                          flexDirection: isRight ? 'row-reverse' : 'row',
+                          alignItems: 'flex-end',
+                          gap: 8,
+                          animationDelay: `${i * 20}ms`,
+                        }}>
+                          <div style={{
+                            maxWidth: '70%',
+                            padding: '10px 14px',
+                            background: isRight ? '#002045' : '#e5eeff',
+                            borderRadius: isRight
+                              ? '16px 16px 4px 16px'
+                              : '16px 16px 16px 4px',
+                            fontSize: 13,
+                            lineHeight: 1.5,
+                            color: isRight ? '#fff' : '#002045',
+                          }}>
+                            <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                              {msg.contenido}
+                            </div>
+                            <div style={{
+                              fontSize: 10, marginTop: 5,
+                              color: isRight ? 'rgba(255,255,255,0.6)' : 'rgba(0,32,69,0.5)',
+                              textAlign: 'right',
+                              display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 3,
+                            }}>
+                              {new Date(msg.fecha_envio).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                              {isAgent && <CheckCheck size={10} />}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* Input */}
+                <div style={{
+                  padding: '12px 20px',
+                  borderTop: '1px solid #e0e8f0',
+                  background: '#fff',
+                  display: 'flex', gap: 8, alignItems: 'center',
+                }}>
+                  <button style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid #e0e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+                    <Paperclip size={14} style={{ color: '#8896ab' }} />
+                  </button>
+                  <div style={{ flex: 1 }}>
+                    <input
+                      value={nuevoMensaje}
+                      onChange={e => setNuevoMensaje(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), enviarMensaje())}
+                      placeholder="Type a message..."
+                      style={{
+                        width: '100%', padding: '10px 14px', borderRadius: 8, fontSize: 13,
+                        border: '1px solid #e0e8f0', background: '#f6f9fc', outline: 'none',
+                        fontFamily: "'Inter', sans-serif",
+                      }}
+                    />
+                  </div>
+                  <button style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid #e0e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+                    <Smile size={14} style={{ color: '#8896ab' }} />
+                  </button>
+                  <button
+                    onClick={enviarMensaje}
+                    style={{
+                      width: 36, height: 36, borderRadius: '50%',
+                      background: nuevoMensaje.trim() ? '#b51822' : '#e0e8f0',
+                      border: 'none',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: nuevoMensaje.trim() ? 'pointer' : 'not-allowed',
+                      flexShrink: 0, transition: 'all 0.15s',
+                    }}
+                  >
+                    <Send size={14} style={{ color: nuevoMensaje.trim() ? '#fff' : '#8896ab' }} />
+                  </button>
+                </div>
+              </>
+            ) : (
               <div style={{
-                width: 120, height: 120, borderRadius: '50%',
-                background: 'var(--surface-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                marginBottom: 24, border: '2px dashed var(--outline)',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                height: '100%', color: '#8896ab',
               }}>
-                <MessageSquare size={48} style={{ color: 'var(--outline)' }} />
+                <div style={{ width: 80, height: 80, borderRadius: '50%', background: '#e0e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                  <MessageSquare size={32} style={{ color: '#8896ab' }} />
+                </div>
+                <p style={{ fontSize: 16, fontWeight: 600, color: '#002045' }}>Selecciona un chat</p>
+                <p style={{ fontSize: 13, marginTop: 4 }}>Elige una conversación de la bandeja para comenzar</p>
               </div>
-              <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>Selecciona un chat</p>
-              <p style={{ fontSize: 14, marginTop: 6, color: 'var(--text-secondary)' }}>Elige una conversación de la bandeja para comenzar</p>
-            </div>
+            )}
+          </div>
+
+          {/* Right Panel — toggleable */}
+          {selectedCliente && showPanel && (
+            <ClientPanel cliente={selectedCliente} onClose={() => setShowPanel(false)} />
           )}
         </div>
-        {showPanel && selectedCliente && (
-          <ClientPanel cliente={selectedCliente} onClose={() => setShowPanel(false)} />
-        )}
       </div>
     </div>
   );
