@@ -55,6 +55,7 @@ function Inbox() {
   const [filtroIA, setFiltroIA] = useState(false);
   const [urgenciaFiltro, setUrgenciaFiltro] = useState('todos');
   const [searchTerm, setSearchTerm] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const { notify, clearNotifications } = useNotifications();
   const [loading, setLoading] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(false);
@@ -134,6 +135,10 @@ function Inbox() {
     document.addEventListener('visibilitychange', handleVisibility);
     return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, [clienteId]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [mensajes]);
 
   useEffect(() => {
     if (clienteId && clientes.length > 0 && clientesFiltrados.length > 0) {
@@ -509,6 +514,7 @@ function Inbox() {
                       );
                     })
                   )}
+                  <div ref={messagesEndRef} />
                 </div>
 
                 {/* Input */}

@@ -96,6 +96,10 @@ export function useNotifications() {
       return;
     }
 
+    if (!isCurrentChat) {
+      playChatSound();
+    }
+
     unreadCount.current += 1;
     globalUnreadCount += 1;
     if (!hasUnread) {
