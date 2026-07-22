@@ -73,6 +73,7 @@ function Inbox() {
   const offsetRef = useRef(0);
   const hasMoreRef = useRef(true);
   const loadingMoreRef = useRef(false);
+  const fetchIdRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!window.__unreadChats) window.__unreadChats = new Set<number>();
@@ -150,6 +151,7 @@ function Inbox() {
     prevClienteId.current = clienteId;
     if (!clienteId) { setSelectedCliente(null); return; }
     const id = Number(clienteId);
+    fetchIdRef.current = id;
     socket.emit('join:chat', id);
     currentClienteId.current = id;
     window.__unreadChats?.delete(id);
@@ -158,22 +160,23 @@ function Inbox() {
     hasMoreRef.current = true;
     const cached = clientes.find(c => c.id === id);
     if (cached) setSelectedCliente(cached);
-    mensajesApi.getByCliente(id, 20).then((msgs: Mensaje[]) => {
+
+    const load = async (chatId: number) => {
+      const msgs = await mensajesApi.getByCliente(chatId, 20) as Mensaje[];
+      if (fetchIdRef.current !== chatId) return;
       idsRef.current = new Set(msgs.map(m => m.id));
       setMensajes(msgs);
       offsetRef.current = msgs.length;
       setMessagesLoading(false);
-      if (msgs.length >= 20) {
-        mensajesApi.getByCliente(id, 50, 20).then((mas: Mensaje[]) => {
-          idsRef.current = new Set([...idsRef.current].concat(mas.map((m: Mensaje) => m.id)));
-          setMensajes(prev => [...mas, ...prev]);
-          hasMoreRef.current = mas.length >= 50;
-          offsetRef.current = 20 + mas.length;
-        });
-      } else {
-        hasMoreRef.current = false;
-      }
-    });
+      if (msgs.length < 20) { hasMoreRef.current = false; return; }
+      const mas = await mensajesApi.getByCliente(chatId, 50, 20) as Mensaje[];
+      if (fetchIdRef.current !== chatId) return;
+      idsRef.current = new Set([...idsRef.current].concat(mas.map((m: Mensaje) => m.id)));
+      setMensajes(prev => [...mas, ...prev]);
+      hasMoreRef.current = mas.length >= 50;
+      offsetRef.current = 20 + mas.length;
+    };
+    load(id);
   }, [clienteId]);
 
   useEffect(() => {
@@ -192,9 +195,11 @@ function Inbox() {
   const cargarMas = async () => {
     if (!clienteId || loadingMoreRef.current || !hasMoreRef.current) return;
     loadingMoreRef.current = true;
+    const chatId = Number(clienteId);
     const prevHeight = messagesContainerRef.current?.scrollHeight || 0;
     try {
-      const msgs = await mensajesApi.getByCliente(Number(clienteId), 50, offsetRef.current);
+      const msgs = await mensajesApi.getByCliente(chatId, 50, offsetRef.current);
+      if (fetchIdRef.current !== chatId) return;
       if (msgs.length === 0) { hasMoreRef.current = false; return; }
       idsRef.current = new Set([...idsRef.current].concat(msgs.map((m: Mensaje) => m.id)));
       setMensajes(prev => [...msgs, ...prev]);
