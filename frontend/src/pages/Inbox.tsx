@@ -200,9 +200,10 @@ function Inbox() {
   }, [clienteId]);
 
   useEffect(() => {
-    if (messagesContainerRef.current && !loadingMoreRef.current) {
-      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-    }
+    const el = messagesContainerRef.current;
+    if (!el || loadingMoreRef.current) return;
+    const cerca = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+    if (cerca) el.scrollTop = el.scrollHeight;
   }, [mensajes]);
 
   const cargarMas = async () => {
