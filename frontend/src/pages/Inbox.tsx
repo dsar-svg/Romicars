@@ -797,7 +797,7 @@ function Inbox() {
                                 </a>);
                               })()
                             )}
-                            {msg.contenido && (
+                            {(msg.tipo === 'texto' || !msg.url_multimedia) && msg.contenido && (
                               <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                                 {msg.contenido}
                               </div>
