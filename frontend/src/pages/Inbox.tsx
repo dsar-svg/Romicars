@@ -579,7 +579,7 @@ function Inbox() {
                       <p style={{ fontSize: 13, marginTop: 4 }}>Envía el primer mensaje para iniciar la conversación</p>
                     </div>
                   ) : (
-                    mensajes.map((msg) => {
+                    mensajes.filter(msg => msg.cliente_id === Number(clienteId)).map((msg) => {
                       const isAgent = msg.remitente === 'agente';
                       const isBot = msg.remitente === 'bot';
                       const isClient = !isAgent && !isBot;
