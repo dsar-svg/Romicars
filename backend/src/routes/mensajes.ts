@@ -9,8 +9,8 @@ router.get('/:clienteId', async (req: Request, res: Response) => {
     const limit = Math.min(Number(req.query.limit) || 50, 200);
     const offset = Number(req.query.offset) || 0;
     const rows = await query(
-      `SELECT * FROM mensajes WHERE cliente_id = ? ORDER BY fecha_envio DESC LIMIT ? OFFSET ?`,
-      [req.params.clienteId, limit, offset]
+      `SELECT * FROM mensajes WHERE cliente_id = ? ORDER BY fecha_envio DESC LIMIT ${limit} OFFSET ${offset}`,
+      [req.params.clienteId]
     ) as any[];
     res.json(rows.reverse());
   } catch (error) {
