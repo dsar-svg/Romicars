@@ -150,7 +150,7 @@ function Inbox() {
         contenido: nuevoMensaje,
         remitente: 'agente',
       });
-      setMensajes(prev => [...prev, msg]);
+      setMensajes(prev => prev.some(m => m.id === msg.id) ? prev : [...prev, msg]);
       setNuevoMensaje('');
       toast('success', 'Mensaje enviado');
     } catch {
