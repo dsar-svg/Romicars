@@ -111,16 +111,18 @@ router.post('/n8n', async (req: Request, res: Response) => {
   try {
     const body = req.body;
     const entry = Array.isArray(body) ? body[0] : body;
-    const tipo = entry.tipo || (entry.remitente === 'cliente' ? 'nuevo_mensaje' : entry.tipo);
     const clienteId = entry.cliente_id || entry.clienteId;
     const contenido = entry.contenido || entry.mensaje || entry.message || '';
+    const tipoRaw = entry.tipo || '';
+    const remitente = entry.remitente || 'cliente';
     let msgTipo = 'texto';
     let urlMultimedia = null;
 
-    if (entry.tipo === 'image') msgTipo = 'imagen';
-    else if (entry.tipo === 'audio') msgTipo = 'audio';
-    else if (entry.tipo === 'video') msgTipo = 'video';
-    else if (entry.tipo && entry.tipo !== 'nuevo_mensaje') msgTipo = 'archivo';
+    const t = tipoRaw.toLowerCase();
+    if (['image', 'photo', 'sticker'].includes(t)) msgTipo = 'imagen';
+    else if (['audio', 'voice'].includes(t)) msgTipo = 'audio';
+    else if (['video', 'animation', 'gif'].includes(t)) msgTipo = 'video';
+    else if (tipoRaw && !['nuevo_mensaje', 'resumen_actualizado', 'campania_log'].includes(tipoRaw)) msgTipo = 'archivo';
 
     if (entry.mediaUrls && entry.mediaUrls.length > 0) {
       urlMultimedia = entry.mediaUrls[0];
@@ -129,6 +131,7 @@ router.post('/n8n', async (req: Request, res: Response) => {
     }
 
     console.log('[webhook:n8n] recibido:', JSON.stringify(entry));
+    console.log('[webhook:n8n] parseado:', { clienteId, contenido, msgTipo, urlMultimedia, remitente });
 
     if (!clienteId) {
       console.log('[webhook:n8n] falta clienteId');
@@ -136,11 +139,11 @@ router.post('/n8n', async (req: Request, res: Response) => {
       return;
     }
 
-    if (tipo === 'nuevo_mensaje' || entry.remitente === 'cliente' || !tipo || msgTipo !== 'texto') {
+    if (remitente === 'cliente' || msgTipo !== 'texto') {
       const result = await query(
         `INSERT INTO mensajes (cliente_id, remitente, contenido, tipo, url_multimedia)
          VALUES (?, ?, ?, ?, ?)`,
-        [clienteId, entry.remitente || 'cliente', contenido, msgTipo, urlMultimedia]
+        [clienteId, remitente, contenido, msgTipo, urlMultimedia]
       ) as any;
 
       const mensajes = await query('SELECT * FROM mensajes WHERE id = ?', [result.insertId]) as any[];
