@@ -55,7 +55,7 @@ function Inbox() {
   const [filtroIA, setFiltroIA] = useState(false);
   const [urgenciaFiltro, setUrgenciaFiltro] = useState('todos');
   const [searchTerm, setSearchTerm] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const { notify, clearNotifications } = useNotifications();
   const [loading, setLoading] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(false);
@@ -137,7 +137,9 @@ function Inbox() {
   }, [clienteId]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
   }, [mensajes]);
 
   useEffect(() => {
@@ -454,7 +456,7 @@ function Inbox() {
                 </div>
 
                 {/* Messages */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+                <div ref={messagesContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
                   {mensajes.length === 0 ? (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#8896ab' }}>
                       <MessageSquare size={48} style={{ opacity: 0.12, marginBottom: 16 }} />
@@ -514,7 +516,6 @@ function Inbox() {
                       );
                     })
                   )}
-                  <div ref={messagesEndRef} />
                 </div>
 
                 {/* Input */}

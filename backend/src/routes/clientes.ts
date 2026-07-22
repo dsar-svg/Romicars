@@ -20,7 +20,13 @@ router.get('/', async (_req: Request, res: Response) => {
 
 router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const [cliente] = await query('SELECT * FROM clientes WHERE id = ?', [req.params.id]) as any[];
+    const [cliente] = await query(
+      `SELECT c.*,
+        (SELECT contenido FROM mensajes WHERE cliente_id = c.id ORDER BY fecha_envio DESC LIMIT 1) as ultimo_mensaje,
+        (SELECT fecha_envio FROM mensajes WHERE cliente_id = c.id ORDER BY fecha_envio DESC LIMIT 1) as ultima_interaccion
+       FROM clientes c WHERE c.id = ?`,
+      [req.params.id]
+    ) as any[];
     if (!cliente) return res.status(404).json({ error: 'Cliente no encontrado' });
     res.json(cliente);
   } catch (error) {
