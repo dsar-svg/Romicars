@@ -183,7 +183,7 @@ function Inbox() {
   };
 
   return (
-    <div style={{ display: 'flex', flex: 1, overflow: 'hidden', background: '#f6f9fc' }}>
+    <div style={{ display: 'flex', height: '100%', overflow: 'hidden', background: '#f6f9fc' }}>
         {/* Left panel — lista conversaciones */}
         <div style={{
           width: 350, background: '#fff', borderRight: '1px solid #e0e8f0',
