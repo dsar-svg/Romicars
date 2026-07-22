@@ -573,7 +573,7 @@ function Inbox() {
                           flexDirection: isAgent ? 'row-reverse' : 'row',
                           alignItems: 'flex-end',
                           gap: 8,
-                          animationDelay: `${i * 20}ms`,
+                          animationDelay: `${(mensajes.length - 1 - i) * 20}ms`,
                         }}>
                           {isBot && (
                             <div style={{
