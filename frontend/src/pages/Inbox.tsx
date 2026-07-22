@@ -26,6 +26,9 @@ const canalColor: Record<string, string> = {
   facebook: '#1877F2',
 };
 
+const avatarColors = ['#1A365D', '#B51822', '#0F5C3A', '#6B2FA0', '#C97D0E', '#1B7A7A', '#A04040', '#2D6B4F'];
+const getAvatarColor = (name: string) => avatarColors[(name.charCodeAt(0) || 0) % avatarColors.length];
+
 function SkeletonChats() {
   return (
     <div style={{ padding: 16 }}>
@@ -306,7 +309,8 @@ function Inbox() {
                         padding: '14px 16px',
                         borderBottom: '1px solid #f0f2f5',
                         cursor: 'pointer',
-                        background: isSelected ? '#f0f4fa' : 'transparent',
+                        background: isSelected ? '#eef3f9' : 'transparent',
+                        borderLeft: isSelected ? '3px solid #b51822' : '3px solid transparent',
                         transition: 'all 0.15s',
                         animationDelay: `${i * 30}ms`,
                       }}
@@ -318,7 +322,7 @@ function Inbox() {
                         <div style={{ position: 'relative', flexShrink: 0 }}>
                           <div style={{
                             width: 42, height: 42, borderRadius: '50%',
-                            background: '#002045',
+                            background: getAvatarColor(cliente.nombre || cliente.telefono || '?'),
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: 16, fontWeight: 700, color: '#fff',
                           }}>
@@ -416,7 +420,7 @@ function Inbox() {
                       <div style={{ position: 'relative' }}>
                         <div style={{
                           width: 40, height: 40, borderRadius: '50%',
-                          background: '#002045',
+                          background: getAvatarColor(selectedCliente.nombre || selectedCliente.telefono || '?'),
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontSize: 16, fontWeight: 700, color: '#fff',
                         }}>
@@ -487,7 +491,7 @@ function Inbox() {
                           {!isRight && (
                             <div style={{
                               width: 28, height: 28, borderRadius: '50%',
-                              background: '#002045',
+                              background: getAvatarColor(selectedCliente?.nombre || selectedCliente?.telefono || '?'),
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
                               fontSize: 11, fontWeight: 700, color: '#fff',
                               flexShrink: 0,
