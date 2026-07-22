@@ -185,16 +185,24 @@ function Inbox() {
 
   const enviarMensaje = async () => {
     if (!nuevoMensaje.trim() || !selectedCliente) return;
+    const contenido = nuevoMensaje;
+    const tempId = Date.now();
+    const tempMsg: Mensaje = {
+      id: tempId, cliente_id: selectedCliente.id, remitente: 'agente',
+      contenido, tipo: 'texto', leido: true, url_multimedia: null,
+      asignado_a: null, fecha_envio: new Date().toISOString(),
+    };
+    agregarMensaje(tempMsg);
+    setNuevoMensaje('');
     try {
       const msg = await mensajesApi.enviar({
-        cliente_id: selectedCliente.id,
-        contenido: nuevoMensaje,
-        remitente: 'agente',
+        cliente_id: selectedCliente.id, contenido, remitente: 'agente',
       });
-      agregarMensaje(msg);
-      setNuevoMensaje('');
-      toast('success', 'Mensaje enviado');
+      setMensajes(prev => prev.map(m => m.id === tempId ? msg : m));
+      idsRef.current = new Set([...idsRef.current].filter(x => x !== tempId).concat(msg.id));
     } catch {
+      setMensajes(prev => prev.filter(m => m.id !== tempId));
+      idsRef.current = new Set([...idsRef.current].filter(x => x !== tempId));
       toast('error', 'Error al enviar mensaje');
     }
   };
@@ -495,7 +503,15 @@ function Inbox() {
 
                 {/* Messages */}
                 <div ref={messagesContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
-                  {mensajes.length === 0 ? (
+                  {messagesLoading ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12 }}>
+                      <div className="skeleton" style={{ width: '60%', height: 14 }} />
+                      <div className="skeleton" style={{ width: '80%', height: 14 }} />
+                      <div className="skeleton" style={{ width: '45%', height: 14 }} />
+                      <div className="skeleton" style={{ width: '70%', height: 14, marginTop: 20 }} />
+                      <div className="skeleton" style={{ width: '50%', height: 14 }} />
+                    </div>
+                  ) : mensajes.length === 0 ? (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#8896ab' }}>
                       <MessageSquare size={48} style={{ opacity: 0.12, marginBottom: 16, color: '#b51822' }} />
                       <p style={{ fontSize: 15, fontWeight: 600, color: '#002045' }}>Sin mensajes aún</p>
