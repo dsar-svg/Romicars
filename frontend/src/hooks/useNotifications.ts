@@ -4,7 +4,7 @@ import type { Mensaje } from '../types';
 let faviconCanvas: HTMLCanvasElement | null = null;
 let hasUnread = false;
 let globalUnreadCount = 0;
-const originalFavicon = '/favicon.svg';
+const originalFavicon = '/loguito.png';
 
 function setFaviconBadge(show: boolean) {
   const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');

@@ -57,6 +57,8 @@ function Inbox() {
   const [searchTerm, setSearchTerm] = useState('');
   const { notify, clearNotifications } = useNotifications();
   const [loading, setLoading] = useState(true);
+  const [messagesLoading, setMessagesLoading] = useState(false);
+  const [unreadChats, setUnreadChats] = useState<Set<number>>(new Set());
   const [showPanel, setShowPanel] = useState(true);
 
   useEffect(() => {
@@ -86,6 +88,8 @@ function Inbox() {
       const isCurrent = currentClienteId.current === mensaje.cliente_id;
       if (isCurrent) {
         setMensajes(prev => [...prev, mensaje]);
+      } else {
+        setUnreadChats(prev => new Set(prev).add(mensaje.cliente_id));
       }
       notify(mensaje, isCurrent);
       refrescarClienteEnLista(mensaje.cliente_id);
@@ -112,14 +116,15 @@ function Inbox() {
     const id = Number(clienteId);
     socket.emit('join:chat', id);
     currentClienteId.current = id;
-    setLoading(true);
+    setUnreadChats(prev => { const next = new Set(prev); next.delete(id); return next; });
+    setMessagesLoading(true);
     Promise.all([
       clientesApi.getById(id),
       mensajesApi.getByCliente(id),
     ]).then(([cliente, msgs]) => {
       setSelectedCliente(cliente);
       setMensajes(msgs);
-      setLoading(false);
+      setMessagesLoading(false);
     });
   }, [clienteId]);
 
@@ -347,14 +352,32 @@ function Inbox() {
                               </svg>
                             </div>
                           )}
+                          {unreadChats.has(cliente.id) && (
+                            <div style={{
+                              position: 'absolute', top: -2, right: -2,
+                              width: 12, height: 12, borderRadius: '50%',
+                              background: '#2563EB',
+                              border: '2px solid #fff',
+                            }} />
+                          )}
                         </div>
 
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                            <strong style={{ fontSize: 14, fontWeight: 600, color: '#002045', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <strong style={{
+                              fontSize: 14,
+                              fontWeight: unreadChats.has(cliente.id) ? 700 : 600,
+                              color: unreadChats.has(cliente.id) ? '#002045' : '#002045',
+                              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                            }}>
                               {cliente.nombre || cliente.telefono || 'Sin nombre'}
                             </strong>
-                            <span style={{ fontSize: 11, color: '#8896ab', flexShrink: 0, marginLeft: 8 }}>
+                            <span style={{
+                              fontSize: 11,
+                              fontWeight: unreadChats.has(cliente.id) ? 600 : 400,
+                              color: unreadChats.has(cliente.id) ? '#002045' : '#8896ab',
+                              flexShrink: 0, marginLeft: 8,
+                            }}>
                               {new Date(cliente.ultima_actividad || Date.now()).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
