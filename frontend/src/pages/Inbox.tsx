@@ -152,11 +152,9 @@ function Inbox() {
     window.__unreadChats?.delete(id);
     setUnreadChats(new Set(window.__unreadChats || []));
     setMessagesLoading(true);
-    Promise.all([
-      clientesApi.getById(id),
-      mensajesApi.getByCliente(id),
-    ]).then(([cliente, msgs]) => {
-      setSelectedCliente(cliente);
+    const cached = clientes.find(c => c.id === id);
+    if (cached) setSelectedCliente(cached);
+    mensajesApi.getByCliente(id).then(msgs => {
       idsRef.current = new Set(msgs.map(m => m.id));
       setMensajes(msgs);
       setMessagesLoading(false);

@@ -6,9 +6,12 @@ const router = Router();
 
 router.get('/:clienteId', async (req: Request, res: Response) => {
   try {
+    const limit = Math.min(Number(req.query.limit) || 50, 200);
     const mensajes = await query(
-      'SELECT * FROM mensajes WHERE cliente_id = ? ORDER BY fecha_envio ASC',
-      [req.params.clienteId]
+      `SELECT * FROM (
+        SELECT * FROM mensajes WHERE cliente_id = ? ORDER BY fecha_envio DESC LIMIT ?
+      ) sub ORDER BY fecha_envio ASC`,
+      [req.params.clienteId, limit]
     );
     res.json(mensajes);
   } catch (error) {
