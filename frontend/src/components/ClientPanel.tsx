@@ -71,22 +71,22 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
 
   return (
     <div className="slide-in-right" style={{
-      width: 340, background: 'var(--blanco)', borderLeft: '1px solid var(--gris-borde)',
+      width: 340, background: 'var(--surface-card)', borderLeft: '1px solid var(--outline)',
       display: 'flex', flexDirection: 'column', flexShrink: 0, overflowY: 'auto',
     }}>
       <div style={{
-        padding: '16px 16px', borderBottom: '1px solid var(--gris-borde)',
+        padding: '16px 16px', borderBottom: '1px solid var(--outline)',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         background: '#FAFBFC',
       }}>
-        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--gris-oscuro)', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
           <FileText size={16} /> Ficha del Cliente
         </span>
         <button onClick={onClose} style={{
-          background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gris-texto)',
+          background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)',
           padding: 4, borderRadius: 6, transition: 'background 0.2s',
         }}
-          onMouseEnter={e => e.currentTarget.style.background = 'var(--gris-fondo)'}
+          onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-dim)'}
           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
         >
           <X size={18} />
@@ -97,7 +97,7 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{
             width: 48, height: 48, borderRadius: '50%',
-            background: 'linear-gradient(135deg, var(--azul-primario), #001A52)',
+                    background: 'var(--primary)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 20, fontWeight: 700, color: '#fff', flexShrink: 0,
             boxShadow: '0 2px 8px rgba(1,41,128,0.2)',
@@ -105,10 +105,10 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
             {(cliente.nombre || cliente.telefono || '?').charAt(0).toUpperCase()}
           </div>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--gris-oscuro)' }}>
+            <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)' }}>
               {cliente.nombre || 'Sin nombre'}
             </div>
-            <div style={{ fontSize: 12, color: 'var(--gris-texto)', display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
               <Phone size={12} /> {cliente.telefono}
             </div>
           </div>
@@ -118,7 +118,7 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
           {campos.map(({ label, key, type, icon: Icon }) => (
             <div key={key}>
               <label style={{
-                display: 'flex', marginBottom: 4, color: 'var(--gris-texto)', fontSize: 12,
+                display: 'flex', marginBottom: 4, color: 'var(--text-secondary)', fontSize: 12,
                 fontWeight: 500, alignItems: 'center', gap: 4,
               }}>
                 {Icon && <Icon size={13} />} {label}
@@ -134,7 +134,7 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
         </div>
 
         <div>
-          <label style={{ display: 'block', marginBottom: 4, color: 'var(--gris-texto)', fontSize: 12, fontWeight: 500 }}>
+          <label style={{ display: 'block', marginBottom: 4, color: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }}>
             <ShoppingCart size={13} style={{ verticalAlign: 'middle', marginRight: 4 }} />
             Estado de Venta
           </label>
@@ -151,7 +151,7 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
         </div>
 
         <div>
-          <label style={{ display: 'block', marginBottom: 4, color: 'var(--gris-texto)', fontSize: 12, fontWeight: 500 }}>
+          <label style={{ display: 'block', marginBottom: 4, color: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }}>
             <Bell size={13} style={{ verticalAlign: 'middle', marginRight: 4 }} />
             Urgencia
           </label>
@@ -168,10 +168,10 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
 
         <label style={{
           display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, cursor: 'pointer',
-          padding: '10px 12px', borderRadius: 8, border: '1.5px solid var(--gris-borde)',
+          padding: '10px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--outline)',
           transition: 'border-color 0.2s, background 0.2s',
           background: cliente.acepta_promos ? '#ECFDF5' : '#fff',
-          borderColor: cliente.acepta_promos ? '#6EE7B7' : 'var(--gris-borde)',
+          borderColor: cliente.acepta_promos ? '#6EE7B7' : 'var(--outline)',
         }}>
           <input
             type="checkbox"
@@ -187,14 +187,14 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
         {cliente.resumen_busqueda && (
           <div style={{
             padding: '12px 14px', background: '#F0F4FF', borderRadius: 10, fontSize: 13,
-            border: '1px solid #DBEAFE', borderLeft: '3px solid var(--azul-primario)',
+            border: '1px solid var(--outline)', borderLeft: '3px solid var(--primary)',
           }}>
-            <div style={{ fontWeight: 600, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--azul-oscuro)' }}>
+            <div style={{ fontWeight: 600, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--primary)' }}>
               <FileText size={14} /> Resumen IA
             </div>
-            <p style={{ color: 'var(--gris-oscuro)', lineHeight: 1.5 }}>{cliente.resumen_busqueda}</p>
+            <p style={{ color: 'var(--text-primary)', lineHeight: 1.5 }}>{cliente.resumen_busqueda}</p>
             {cliente.pidio_fotos !== undefined && (
-              <p style={{ marginTop: 6, fontSize: 12, color: 'var(--gris-texto)', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <p style={{ marginTop: 6, fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4 }}>
                 {cliente.pidio_fotos ? '📸 Solicitó fotos' : '❌ No solicitó fotos'}
               </p>
             )}
@@ -202,31 +202,31 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
         )}
 
         <div style={{ flex: 1, minHeight: 0 }}>
-          <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--gris-oscuro)' }}>
+          <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-primary)' }}>
             <History size={14} /> Historial ({historial.length})
           </div>
           <div style={{ maxHeight: 200, overflowY: 'auto' }}>
             {historial.length === 0 ? (
-              <p style={{ fontSize: 12, color: 'var(--gris-texto)', textAlign: 'center', padding: 20 }}>
+              <p style={{ fontSize: 12, color: 'var(--text-secondary)', textAlign: 'center', padding: 20 }}>
                 Sin historial de mensajes
               </p>
             ) : (
               historial.slice(-20).reverse().map((msg, i) => (
                 <div key={msg.id} className="fade-in" style={{
                   padding: '8px 10px', marginBottom: 6, borderRadius: 8,
-                  background: msg.remitente === 'agente' ? '#FFEDED' : msg.remitente === 'bot' ? 'var(--gris-fondo)' : 'var(--blanco)',
-                  border: '1px solid var(--gris-borde)',
+                  background: msg.remitente === 'agente' ? '#FEF2F2' : msg.remitente === 'bot' ? 'var(--surface-dim)' : 'var(--surface-card)',
+                  border: '1px solid var(--outline)',
                   animationDelay: `${i * 30}ms`,
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                    <span style={{ fontWeight: 600, fontSize: 11, color: 'var(--gris-texto)' }}>
+                    <span style={{ fontWeight: 600, fontSize: 11, color: 'var(--text-secondary)' }}>
                       {msg.remitente === 'agente' ? 'Tú' : msg.remitente === 'bot' ? 'Bot IA' : 'Cliente'}
                     </span>
-                    <span style={{ fontSize: 10, color: 'var(--gris-texto)' }}>
+                    <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>
                       {new Date(msg.fecha_envio).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
-                  <div style={{ color: 'var(--gris-oscuro)', fontSize: 12, lineHeight: 1.4 }}>{msg.contenido}</div>
+                  <div style={{ color: 'var(--text-primary)', fontSize: 12, lineHeight: 1.4 }}>{msg.contenido}</div>
                 </div>
               ))
             )}

@@ -85,7 +85,7 @@ function Dashboard() {
     {
       label: profitLoading ? 'Total Facturado' : 'Total Facturado',
       value: profit ? formatCurrency(profit.total_facturado) : (profitError ? '—' : '—'),
-      icon: DollarSign, color: '#BD060A', bg: '#FFEDED',
+      icon: DollarSign, color: '#E53E3E', bg: '#FEF2F2',
       sub: profit && !profitLoading ? `${formatNumber(profit.facturas_periodo)} facturas` : undefined,
     },
   ];
@@ -102,16 +102,16 @@ function Dashboard() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4,
       }}>
         <div>
-          <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--gris-oscuro)', letterSpacing: '-0.03em' }}>
+          <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
             Dashboard
           </h1>
-          <p style={{ color: 'var(--gris-texto)', marginTop: 4, fontSize: 14 }}>
+          <p style={{ color: 'var(--text-secondary)', marginTop: 4, fontSize: 14 }}>
             Métricas clave · Datos CRM + Profit ERP
           </p>
         </div>
         <div style={{
-          padding: '8px 16px', background: '#FFF', borderRadius: 10,
-          border: '1px solid var(--gris-borde)', fontSize: 13, color: 'var(--gris-texto)',
+          padding: '8px 16px',           background: 'var(--surface-card)', borderRadius: 'var(--radius-sm)',
+          border: '1px solid var(--outline)', fontSize: 13, color: 'var(--text-secondary)',
           display: 'flex', alignItems: 'center', gap: 6,
         }}>
           <Activity size={14} />
@@ -134,17 +134,17 @@ function Dashboard() {
                 <Icon size={24} style={{ color: kpi.color }} />
               </div>
               <div style={{ minWidth: 0 }}>
-                <div style={{ color: 'var(--gris-texto)', fontSize: 13, fontWeight: 500 }}>
+                <div style={{ color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500 }}>
                   {kpi.label}
                 </div>
                 <div style={{
-                  fontSize: 24, fontWeight: 800, color: 'var(--gris-oscuro)',
+                  fontSize: 24, fontWeight: 700, color: 'var(--text-primary)',
                   marginTop: 2, letterSpacing: '-0.03em',
                 }}>
                   {kpi.value}{kpi.suffix || ''}
                 </div>
                 {kpi.sub && (
-                  <div style={{ fontSize: 11, color: 'var(--gris-texto)', marginTop: 1 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 1 }}>
                     {kpi.sub}
                   </div>
                 )}
@@ -163,14 +163,14 @@ function Dashboard() {
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 24, marginTop: 28 }}>
           <div className="card fade-in-up" style={{ padding: 28, animationDelay: '200ms' }}>
             <h3 style={{
-              color: 'var(--gris-oscuro)', marginBottom: 24, fontSize: 17, fontWeight: 700,
+              color: 'var(--text-primary)', marginBottom: 24, fontSize: 17, fontWeight: 700,
               letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 10,
             }}>
-              <BarChart3 size={20} style={{ color: 'var(--azul-primario)' }} />
+              <BarChart3 size={20} style={{ color: 'var(--primary)' }} />
               Embudo de Ventas
             </h3>
             {(!data || data.funnel.every(f => f.valor === 0)) ? (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--gris-texto)' }}>
+              <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-secondary)' }}>
                 <BarChart3 size={40} style={{ opacity: 0.1, marginBottom: 12 }} />
                 <p style={{ fontSize: 14, fontWeight: 600 }}>Sin datos aún</p>
                 <p style={{ fontSize: 13, marginTop: 4 }}>Los leads entrantes aparecerán aquí</p>
@@ -180,7 +180,7 @@ function Dashboard() {
                 {data.funnel.map((item, i) => (
                   <div key={item.etapa} className="fade-in-up" style={{ animationDelay: `${i * 100}ms` }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginBottom: 8 }}>
-                      <span style={{ fontWeight: 600, color: 'var(--gris-oscuro)' }}>{item.etapa}</span>
+                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{item.etapa}</span>
                       <span style={{ fontWeight: 800, color: item.color }}>{item.valor}</span>
                     </div>
                     <div style={{
@@ -201,14 +201,14 @@ function Dashboard() {
 
           <div className="card fade-in-up" style={{ padding: 28, animationDelay: '300ms' }}>
             <h3 style={{
-              color: 'var(--gris-oscuro)', marginBottom: 24, fontSize: 17, fontWeight: 700,
+              color: 'var(--text-primary)', marginBottom: 24, fontSize: 17, fontWeight: 700,
               letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 10,
             }}>
-              <PieChart size={20} style={{ color: 'var(--rojo-primario)' }} />
+              <PieChart size={20} style={{ color: 'var(--secondary)' }} />
               Tráfico por Canal
             </h3>
             {(!data || data.traffic.every(t => t.total === 0)) ? (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--gris-texto)' }}>
+              <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-secondary)' }}>
                 <PieChart size={40} style={{ opacity: 0.1, marginBottom: 12 }} />
                 <p style={{ fontSize: 14, fontWeight: 600 }}>Sin tráfico aún</p>
                 <p style={{ fontSize: 13, marginTop: 4 }}>Los datos aparecerán al recibir mensajes</p>
@@ -217,7 +217,7 @@ function Dashboard() {
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={data.traffic} layout="vertical">
                   <XAxis type="number" hide />
-                  <YAxis type="category" dataKey="canal" tick={{ fontSize: 13, fill: 'var(--gris-texto)' }} width={90} />
+                  <YAxis type="category" dataKey="canal" tick={{ fontSize: 13, fill: 'var(--text-secondary)' }} width={90} />
                   <Tooltip contentStyle={{
                     borderRadius: 10, border: '1px solid #E5E7EB',
                     boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 13,
@@ -241,10 +241,10 @@ function Dashboard() {
             marginBottom: 20,
           }}>
             <h3 style={{
-              color: 'var(--gris-oscuro)', fontSize: 17, fontWeight: 700,
+              color: 'var(--text-primary)', fontSize: 17, fontWeight: 700,
               letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 10,
             }}>
-              <Package size={20} style={{ color: 'var(--azul-primario)' }} />
+              <Package size={20} style={{ color: 'var(--primary)' }} />
               Productos
             </h3>
             <div style={{ display: 'flex', gap: 4, background: '#F3F4F6', borderRadius: 8, padding: 3 }}>
@@ -254,7 +254,7 @@ function Dashboard() {
                   padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 600,
                   border: 'none', cursor: 'pointer',
                   background: activeTab === 'mas' ? '#fff' : 'transparent',
-                  color: activeTab === 'mas' ? 'var(--gris-oscuro)' : 'var(--gris-texto)',
+                  color: activeTab === 'mas' ? 'var(--text-primary)' : 'var(--text-secondary)',
                   boxShadow: activeTab === 'mas' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
                   display: 'flex', alignItems: 'center', gap: 4,
                 }}
@@ -268,7 +268,7 @@ function Dashboard() {
                   padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 600,
                   border: 'none', cursor: 'pointer',
                   background: activeTab === 'menos' ? '#fff' : 'transparent',
-                  color: activeTab === 'menos' ? 'var(--gris-oscuro)' : 'var(--gris-texto)',
+                  color: activeTab === 'menos' ? 'var(--text-primary)' : 'var(--text-secondary)',
                   boxShadow: activeTab === 'menos' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
                   display: 'flex', alignItems: 'center', gap: 4,
                 }}
@@ -286,7 +286,7 @@ function Dashboard() {
               <div className="skeleton" style={{ height: 32, marginBottom: 12 }} />
             </div>
           ) : profitError ? (
-            <div style={{ textAlign: 'center', padding: '30px 0', color: 'var(--gris-texto)' }}>
+            <div style={{ textAlign: 'center', padding: '30px 0', color: 'var(--text-secondary)' }}>
               <ShoppingCart size={40} style={{ opacity: 0.1, marginBottom: 12 }} />
               <p style={{ fontSize: 14, fontWeight: 600 }}>Profit no conectado</p>
               <p style={{ fontSize: 13, marginTop: 4 }}>
@@ -313,17 +313,17 @@ function Dashboard() {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
-                      fontSize: 13, fontWeight: 600, color: 'var(--gris-oscuro)',
+                      fontSize: 13, fontWeight: 600, color: 'var(--text-primary)',
                       whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                     }}>
                       {p.art_des}
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--gris-texto)', marginTop: 1 }}>
+                    <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 1 }}>
                       {p.co_art} · {formatNumber(p.cantidad_vendida)} uds · Stock: {formatNumber(p.existencias)}
                     </div>
                   </div>
                   <div style={{
-                    fontSize: 14, fontWeight: 800, color: 'var(--gris-oscuro)',
+                    fontSize: 14, fontWeight: 800, color: 'var(--text-primary)',
                     textAlign: 'right', flexShrink: 0,
                   }}>
                     {formatCurrency(p.total_vendido)}
@@ -331,7 +331,7 @@ function Dashboard() {
                 </div>
               ))}
               {productosMostrados.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '30px 0', color: 'var(--gris-texto)' }}>
+                <div style={{ textAlign: 'center', padding: '30px 0', color: 'var(--text-secondary)' }}>
                   <Package size={40} style={{ opacity: 0.1, marginBottom: 12 }} />
                   <p style={{ fontSize: 14, fontWeight: 600 }}>Sin datos de productos</p>
                 </div>
@@ -342,10 +342,10 @@ function Dashboard() {
 
         <div className="card fade-in-up" style={{ padding: 28, animationDelay: '500ms' }}>
           <h3 style={{
-            color: 'var(--gris-oscuro)', marginBottom: 20, fontSize: 17, fontWeight: 700,
+            color: 'var(--text-primary)', marginBottom: 20, fontSize: 17, fontWeight: 700,
             letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 10,
           }}>
-            <MapPin size={20} style={{ color: 'var(--rojo-primario)' }} />
+            <MapPin size={20} style={{ color: 'var(--secondary)' }} />
             Ubicación de Clientes
           </h3>
 

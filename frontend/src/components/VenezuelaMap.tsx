@@ -34,7 +34,7 @@ export default function VenezuelaMap({ clientes }: Props) {
       <div style={{
         height: 300, display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
-        color: 'var(--gris-texto)', borderRadius: 12,
+        color: 'var(--text-secondary)', borderRadius: 12,
         background: 'linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%)',
       }}>
         <MapPin size={40} style={{ opacity: 0.2, marginBottom: 8 }} />
@@ -74,7 +74,7 @@ export default function VenezuelaMap({ clientes }: Props) {
       {clientes.length > 0 && (
         <div style={{
           position: 'absolute', bottom: 8, right: 10,
-          fontSize: 11, color: 'var(--gris-texto)',
+          fontSize: 11, color: 'var(--text-secondary)',
           background: 'rgba(255,255,255,0.85)',
           padding: '4px 10px', borderRadius: 6,
         }}>

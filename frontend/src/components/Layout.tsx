@@ -35,7 +35,7 @@ function Layout() {
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       <aside style={{
         width: collapsed ? 68 : 248,
-        background: 'linear-gradient(180deg, #0A1628 0%, #0D1F3C 100%)',
+        background: 'var(--sidebar-bg)',
         color: '#fff',
         display: 'flex',
         flexDirection: 'column',
@@ -44,16 +44,16 @@ function Layout() {
         position: 'relative',
         zIndex: 10,
       }}>
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          style={{
-            position: 'absolute', top: 24, right: -14,
-            width: 28, height: 28, borderRadius: '50%',
-            background: 'linear-gradient(135deg, #BD060A, #8B0508)',
-            color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            border: '2px solid #fff', padding: 0, zIndex: 10,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-          }}
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            style={{
+              position: 'absolute', top: 24, right: -14,
+              width: 28, height: 28, borderRadius: '50%',
+              background: 'var(--secondary)',
+              color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              border: '2px solid #fff', padding: 0, zIndex: 10,
+              boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+            }}
         >
           {collapsed ? <Menu size={13} /> : <ChevronLeft size={13} />}
         </button>
@@ -75,13 +75,13 @@ function Layout() {
             }}
           />
           {!collapsed && (
-            <span style={{
-              fontSize: 16, fontWeight: 900, color: '#fff',
-              letterSpacing: '-0.03em',
-              fontFamily: 'Inter, sans-serif',
-            }}>
-              Romicars Flow
-            </span>
+              <span style={{
+                fontSize: 16, fontWeight: 700, color: '#fff',
+                letterSpacing: '-0.02em',
+                fontFamily: 'Hanken Grotesk, sans-serif',
+              }}>
+                Romicars Flow
+              </span>
           )}
         </Link>
 
@@ -100,20 +100,20 @@ function Layout() {
                   padding: collapsed ? '12px' : '12px 14px',
                   borderRadius: 10, textDecoration: 'none',
                   justifyContent: collapsed ? 'center' : 'flex-start',
-                  color: active ? '#fff' : 'rgba(255,255,255,0.45)',
+                  color: active ? '#fff' : 'rgba(255,255,255,0.5)',
                   background: active
-                    ? 'linear-gradient(135deg, #BD060A, #8B0508)'
+                    ? 'var(--sidebar-active)'
                     : 'transparent',
                   fontSize: 14, fontWeight: active ? 700 : 500,
                   transition: 'all 0.2s ease',
                   position: 'relative',
                 }}
-                onMouseEnter={e => {
-                  if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
-                }}
-                onMouseLeave={e => {
-                  if (!active) e.currentTarget.style.background = 'transparent';
-                }}
+                    onMouseEnter={e => {
+                      if (!active) e.currentTarget.style.background = 'var(--sidebar-hover)';
+                    }}
+                    onMouseLeave={e => {
+                      if (!active) e.currentTarget.style.background = 'transparent';
+                    }}
               >
                 <div style={{ position: 'relative' }}>
                   <Icon size={20} />
@@ -154,9 +154,9 @@ function Layout() {
                         padding: collapsed ? '12px' : '12px 14px',
                         borderRadius: 10, textDecoration: 'none',
                         justifyContent: collapsed ? 'center' : 'flex-start',
-                        color: active ? '#fff' : 'rgba(255,255,255,0.45)',
+                        color: active ? '#fff' : 'rgba(255,255,255,0.5)',
                         background: active
-                          ? 'linear-gradient(135deg, #BD060A, #8B0508)'
+                          ? 'var(--sidebar-active)'
                           : 'transparent',
                         fontSize: 14, fontWeight: active ? 700 : 500,
                         transition: 'all 0.2s ease',
@@ -179,10 +179,9 @@ function Layout() {
         }}>
           <div style={{
             width: 34, height: 34, borderRadius: '50%',
-            background: 'linear-gradient(135deg, #BD060A, #8B0508)',
+            background: 'var(--secondary)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 14, fontWeight: 700, flexShrink: 0,
-            boxShadow: '0 2px 6px rgba(189,6,10,0.3)',
           }}>
             {(agente?.nombre || 'A').charAt(0).toUpperCase()}
           </div>
@@ -231,7 +230,7 @@ function Layout() {
       </aside>
 
       <main style={{
-        flex: 1, overflow: 'auto', background: 'var(--gris-fondo)',
+        flex: 1, overflow: 'auto', background: 'var(--surface)',
         position: 'relative',
       }}>
         <Outlet />

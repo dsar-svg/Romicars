@@ -190,18 +190,18 @@ function Inbox() {
   return (
     <div style={{ display: 'flex', height: '100%' }}>
       <div style={{
-        width: 380, background: 'var(--blanco)', borderRight: '1px solid var(--gris-borde)',
+        width: 380, background: 'var(--surface-card)', borderRight: '1px solid var(--outline)',
         display: 'flex', flexDirection: 'column', flexShrink: 0,
       }}>
-        <div style={{ padding: '20px 16px 12px', borderBottom: '1px solid var(--gris-borde)' }}>
-          <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--gris-oscuro)', marginBottom: 12, letterSpacing: '-0.03em' }}>
+        <div style={{ padding: '20px 16px 12px', borderBottom: '1px solid var(--outline)' }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12, letterSpacing: '-0.02em' }}>
             Bandeja
-            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--gris-texto)', marginLeft: 10 }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginLeft: 10 }}>
               {clientesFiltrados.length} chats
             </span>
           </h2>
           <div style={{ position: 'relative' }}>
-            <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--gris-texto)', pointerEvents: 'none' }} />
+            <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', pointerEvents: 'none' }} />
             <input
               placeholder="Buscar por nombre o teléfono..."
               value={searchTerm}
@@ -212,11 +212,11 @@ function Inbox() {
         </div>
 
         <div style={{
-          padding: '12px 16px', borderBottom: '1px solid var(--gris-borde)',
-          display: 'flex', flexDirection: 'column', gap: 10, background: 'var(--bg-filtros)',
+          padding: '12px 16px', borderBottom: '1px solid var(--outline)',
+          display: 'flex', flexDirection: 'column', gap: 10, background: 'var(--surface)',
         }}>
           <div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--gris-texto)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
               Canal
             </div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
@@ -224,9 +224,9 @@ function Inbox() {
                 <button key={f.key} onClick={() => setCanalFiltro(f.key)}
                   style={{
                     padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                    background: canalFiltro === f.key ? f.color : 'var(--blanco)',
-                    color: canalFiltro === f.key ? '#fff' : 'var(--gris-texto)',
-                    border: canalFiltro === f.key ? 'none' : '1.5px solid var(--gris-borde)',
+                    background: canalFiltro === f.key ? f.color : 'var(--surface-card)',
+                    color: canalFiltro === f.key ? '#fff' : 'var(--text-secondary)',
+                    border: canalFiltro === f.key ? 'none' : '1px solid var(--outline)',
                     cursor: 'pointer', transition: 'all 0.2s',
                   }}>
                   {canalFiltro === f.key && f.key !== 'todos' && (
@@ -238,7 +238,7 @@ function Inbox() {
             </div>
           </div>
           <div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--gris-texto)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
               Urgencia
             </div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
@@ -251,9 +251,9 @@ function Inbox() {
                 <button key={f.key} onClick={() => setUrgenciaFiltro(f.key)}
                   style={{
                     padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                    background: urgenciaFiltro === f.key ? f.color : 'var(--blanco)',
-                    color: urgenciaFiltro === f.key ? '#fff' : 'var(--gris-texto)',
-                    border: urgenciaFiltro === f.key ? 'none' : '1.5px solid var(--gris-borde)',
+                    background: urgenciaFiltro === f.key ? f.color : 'var(--surface-card)',
+                    color: urgenciaFiltro === f.key ? '#fff' : 'var(--text-secondary)',
+                    border: urgenciaFiltro === f.key ? 'none' : '1px solid var(--outline)',
                     cursor: 'pointer', transition: 'all 0.2s',
                   }}>
                   {urgenciaFiltro === f.key && f.key !== 'todos' ? '✓ ' : ''}{f.label}
@@ -262,16 +262,16 @@ function Inbox() {
             </div>
           </div>
           <div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--gris-texto)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
               IA
             </div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
               <button onClick={() => setFiltroIA(!filtroIA)}
                 style={{
                   padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                  background: filtroIA ? '#7C3AED' : 'var(--blanco)',
-                  color: filtroIA ? '#fff' : 'var(--gris-texto)',
-                  border: filtroIA ? 'none' : '1.5px solid var(--gris-borde)',
+                  background: filtroIA ? '#7C3AED' : 'var(--surface-card)',
+                  color: filtroIA ? '#fff' : 'var(--text-secondary)',
+                  border: filtroIA ? 'none' : '1px solid var(--outline)',
                   cursor: 'pointer', transition: 'all 0.2s',
                 }}>
                 {filtroIA ? '✓ ' : ''}🤖 Con IA
@@ -283,10 +283,10 @@ function Inbox() {
         <div style={{ flex: 1, overflowY: 'auto' }}>
           {loading ? <SkeletonChats /> : (
             clientesFiltrados.length === 0 ? (
-              <div style={{ padding: 60, textAlign: 'center', color: 'var(--gris-texto)' }}>
+              <div style={{ padding: 60, textAlign: 'center', color: 'var(--text-secondary)' }}>
                 <MessageSquare size={40} style={{ opacity: 0.15, marginBottom: 12 }} />
                 <p style={{ fontSize: 14, fontWeight: 600 }}>No hay chats</p>
-                <p style={{ fontSize: 13, marginTop: 4, color: 'var(--gris-texto)' }}>
+                <p style={{ fontSize: 13, marginTop: 4, color: 'var(--text-secondary)' }}>
                   {searchTerm ? 'Intenta con otro término de búsqueda' : canalFiltro !== 'todos' ? 'Cambia el filtro para ver más' : 'Los mensajes nuevos aparecerán aquí'}
                 </p>
               </div>
@@ -299,13 +299,13 @@ function Inbox() {
                     padding: '16px 16px',
                     borderBottom: '1px solid #F3F4F6',
                     cursor: 'pointer',
-                    background: selectedCliente?.id === cliente.id ? 'var(--azul-claro)' : 'transparent',
-                    borderLeft: selectedCliente?.id === cliente.id ? '3px solid var(--rojo-primario)' : '3px solid transparent',
+                    background: selectedCliente?.id === cliente.id ? 'var(--surface-container-high)' : 'transparent',
+                    borderLeft: selectedCliente?.id === cliente.id ? '3px solid var(--secondary)' : '3px solid transparent',
                     transition: 'all 0.2s',
                     animationDelay: `${i * 40}ms`,
                   }}
                   onMouseEnter={e => {
-                    if (selectedCliente?.id !== cliente.id) e.currentTarget.style.background = 'var(--gris-fondo)';
+                    if (selectedCliente?.id !== cliente.id) e.currentTarget.style.background = 'var(--surface-dim)';
                   }}
                   onMouseLeave={e => {
                     if (selectedCliente?.id !== cliente.id) e.currentTarget.style.background = 'transparent';
@@ -316,19 +316,18 @@ function Inbox() {
                       <div style={{
                         width: 40, height: 40, borderRadius: '50%',
                         background: cliente.urgencia === 'Alta'
-                          ? 'linear-gradient(135deg, #DC2626, #8B0508)'
-                          : 'linear-gradient(135deg, var(--azul-primario), var(--azul-oscuro))',
+                          ? 'var(--secondary)'
+                          : 'var(--primary)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 15, fontWeight: 700, color: '#fff', flexShrink: 0,
-                        boxShadow: cliente.urgencia === 'Alta' ? '0 2px 8px rgba(220,38,38,0.3)' : '0 2px 6px rgba(1,41,128,0.2)',
                       }}>
                         {(cliente.nombre || cliente.telefono || '?').charAt(0).toUpperCase()}
                       </div>
                       <div style={{ minWidth: 0 }}>
-                        <strong style={{ fontSize: 14, color: 'var(--gris-oscuro)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <strong style={{ fontSize: 14, color: 'var(--text-primary)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {cliente.nombre || cliente.telefono || 'Sin nombre'}
                         </strong>
-                        <span style={{ fontSize: 12, color: 'var(--gris-texto)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4 }}>
                           <svg width={12} height={12} style={{ flexShrink: 0 }}>
                             <use href={canalIcono[cliente.canal_origen] || '/icons.svg#chat'} />
                           </svg>
@@ -352,7 +351,7 @@ function Inbox() {
                     </div>
                   </div>
                   <div style={{
-                    fontSize: 13, color: 'var(--gris-texto)',
+                    fontSize: 13, color: 'var(--text-secondary)',
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                     paddingLeft: 50, lineHeight: 1.4,
                   }}>
@@ -361,9 +360,9 @@ function Inbox() {
                   {cliente.resumen_busqueda && (
                     <div style={{
                       marginTop: 8, marginLeft: 50, padding: '4px 10px',
-                      background: 'var(--azul-claro)', borderRadius: 6, fontSize: 12,
-                      color: 'var(--azul-primario)', display: 'flex', alignItems: 'center', gap: 6,
-                      borderLeft: '2px solid var(--azul-primario)',
+                      background: 'var(--surface-container-high)', borderRadius: 4, fontSize: 12,
+                      color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: 6,
+                      borderLeft: '2px solid var(--primary)',
                     }}>
                       <Bot size={12} />
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -379,27 +378,26 @@ function Inbox() {
       </div>
 
       <div style={{ display: 'flex', flex: 1 }}>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--blanco)' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--surface-card)' }}>
           {selectedCliente ? (
             <>
               <div className="fade-in" style={{
                 padding: '16px 24px',
-                borderBottom: '1px solid var(--gris-borde)',
-                background: 'var(--bg-filtros)',
+                borderBottom: '1px solid var(--outline)',
+                background: 'var(--surface)',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                     <div style={{
                       width: 44, height: 44, borderRadius: '50%',
-                      background: 'linear-gradient(135deg, var(--azul-primario), #001A52)',
+                      background: 'var(--primary)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 18, fontWeight: 700, color: '#fff', flexShrink: 0,
-                      boxShadow: '0 2px 8px rgba(1,41,128,0.2)',
                     }}>
                       {(selectedCliente.nombre || selectedCliente.telefono || '?').charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--gris-oscuro)', letterSpacing: '-0.02em' }}>
+                      <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
                         {selectedCliente.nombre || selectedCliente.telefono || 'Sin nombre'}
                       </h3>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -409,7 +407,7 @@ function Inbox() {
                         }}>
                           {selectedCliente.urgencia}
                         </span>
-                        <span style={{ fontSize: 13, color: 'var(--gris-texto)' }}>
+                        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
                           {canalLabel[selectedCliente.canal_origen] || selectedCliente.canal_origen}
                         </span>
                       </div>
@@ -420,9 +418,9 @@ function Inbox() {
                       onClick={() => setShowPanel(!showPanel)}
                       style={{
                         padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
-                        background: showPanel ? 'var(--rojo-primario)' : 'var(--blanco)',
-                        color: showPanel ? '#fff' : 'var(--gris-oscuro)',
-                        border: '1.5px solid var(--gris-borde)',
+                        background: showPanel ? 'var(--secondary)' : 'var(--surface-card)',
+                        color: showPanel ? '#fff' : 'var(--text-primary)',
+                        border: '1px solid var(--outline)',
                         display: 'flex', alignItems: 'center', gap: 6,
                         transition: 'all 0.2s',
                       }}
@@ -435,23 +433,21 @@ function Inbox() {
                 {selectedCliente.resumen_busqueda && (
                   <div className="fade-in" style={{
                     margin: '14px 24px 0', padding: '16px 18px',
-                    background: 'linear-gradient(135deg, var(--azul-claro), #E6EEF9)',
-                    borderRadius: 14, fontSize: 13, lineHeight: 1.6,
-                    border: '1px solid var(--azul-primario)',
-                    borderLeft: '4px solid var(--azul-primario)',
+                    background: 'var(--surface-container-high)',
+                    borderRadius: 'var(--radius)', fontSize: 13, lineHeight: 1.6,
+                    border: '1px solid var(--primary)',
+                    borderLeft: '4px solid var(--primary)',
                     display: 'flex', alignItems: 'flex-start', gap: 12,
-                    boxShadow: '0 2px 8px rgba(1,41,128,0.1)',
                   }}>
                     <div style={{
                       width: 32, height: 32, borderRadius: '50%',
-                      background: 'linear-gradient(135deg, var(--azul-primario), #001A52)',
+                      background: 'var(--primary)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                      boxShadow: '0 2px 6px rgba(1,41,128,0.25)',
                     }}>
                       <Bot size={16} style={{ color: '#fff' }} />
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--azul-primario)', marginBottom: 4, letterSpacing: '0.3px' }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary)', marginBottom: 4, letterSpacing: '0.3px' }}>
                         RESUMEN DE IA
                       </div>
                       {selectedCliente.resumen_busqueda}
@@ -467,11 +463,11 @@ function Inbox() {
                 {mensajes.length === 0 ? (
                   <div style={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    height: '100%', color: 'var(--gris-texto)',
+                    height: '100%', color: 'var(--text-secondary)',
                   }}>
                     <MessageSquare size={48} style={{ opacity: 0.12, marginBottom: 16 }} />
                     <p style={{ fontSize: 15, fontWeight: 600 }}>Sin mensajes aún</p>
-                    <p style={{ fontSize: 13, marginTop: 4, color: 'var(--gris-texto)' }}>
+                    <p style={{ fontSize: 13, marginTop: 4, color: 'var(--text-secondary)' }}>
                       Envía el primer mensaje para iniciar la conversación
                     </p>
                   </div>
@@ -494,11 +490,10 @@ function Inbox() {
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontSize: 12, fontWeight: 700, color: '#fff',
                           background: isAgent
-                            ? 'linear-gradient(135deg, #BD060A, #8B0508)'
+                            ? 'var(--secondary)'
                             : isBot
-                              ? 'linear-gradient(135deg, #7C3AED, #5B21B6)'
-                              : 'linear-gradient(135deg, var(--azul-primario), #001A52)',
-                          boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
+                              ? '#7C3AED'
+                              : 'var(--primary)',
                           overflow: 'hidden',
                         }}>
                           {isAgent ? (
@@ -512,25 +507,22 @@ function Inbox() {
                         <div style={{
                           padding: '10px 14px',
                           background: isAgent
-                            ? 'linear-gradient(135deg, #BD060A, #9E0508)'
+                            ? 'var(--secondary)'
                             : isBot
                               ? 'var(--msg-bot)'
                               : 'var(--msg-cliente)',
                           border: isAgent
                             ? 'none'
                             : isBot
-                              ? '1.5px dashed #6B7280'
-                              : '1.5px solid var(--gris-borde)',
+                              ? '1px dashed var(--outline-strong)'
+                              : '1px solid var(--outline)',
                           borderRadius: isAgent || isBot
-                            ? '16px 16px 4px 16px'
-                            : '16px 16px 16px 4px',
+                            ? 'var(--radius) var(--radius) 4px var(--radius)'
+                            : 'var(--radius) var(--radius) var(--radius) 4px',
                           maxWidth: '65%',
                           fontSize: 14,
                           lineHeight: 1.5,
-                          color: isAgent ? '#fff' : 'var(--gris-oscuro)',
-                          boxShadow: isAgent
-                            ? '0 2px 12px rgba(189,6,10,0.25)'
-                            : '0 1px 4px rgba(0,0,0,0.04)',
+                          color: isAgent ? '#fff' : 'var(--text-primary)',
                         }}>
                           <div style={{
                             fontSize: 11, fontWeight: 600, marginBottom: 4, opacity: 0.7,
@@ -557,10 +549,10 @@ function Inbox() {
 
               <div style={{
                 padding: '16px 24px',
-                borderTop: '1px solid var(--gris-borde)',
+                borderTop: '1px solid var(--outline)',
                 display: 'flex',
                 gap: 10,
-                background: 'var(--blanco)',
+                background: 'var(--surface-card)',
               }}>
                 <div style={{ flex: 1, position: 'relative' }}>
                   <input
@@ -574,13 +566,12 @@ function Inbox() {
                 <button
                   onClick={enviarMensaje}
                   style={{
-                    padding: '12px 20px', borderRadius: 12, fontSize: 14, fontWeight: 600,
-                    background: nuevoMensaje.trim() ? 'linear-gradient(135deg, #BD060A, #9E0508)' : 'var(--gris-borde)',
-                    color: nuevoMensaje.trim() ? '#fff' : 'var(--gris-texto)',
+                    padding: '12px 20px', borderRadius: 'var(--radius-sm)', fontSize: 14, fontWeight: 600,
+                    background: nuevoMensaje.trim() ? 'var(--secondary)' : 'var(--outline)',
+                    color: nuevoMensaje.trim() ? '#fff' : 'var(--text-secondary)',
                     border: 'none', cursor: nuevoMensaje.trim() ? 'pointer' : 'not-allowed',
                     display: 'flex', alignItems: 'center', gap: 8,
-                    transition: 'all 0.2s',
-                    boxShadow: nuevoMensaje.trim() ? '0 2px 8px rgba(189,6,10,0.25)' : 'none',
+                    transition: 'all 0.15s',
                   }}
                 >
                   <Send size={16} />
@@ -591,7 +582,7 @@ function Inbox() {
           ) : (
             <div style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              height: '100%', color: 'var(--gris-texto)',
+              height: '100%', color: 'var(--text-secondary)',
               background: 'var(--bg-chat)', position: 'relative', overflow: 'hidden',
             }}>
               <img
@@ -604,13 +595,13 @@ function Inbox() {
               />
               <div style={{
                 width: 120, height: 120, borderRadius: '50%',
-                background: 'var(--gris-fondo)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                marginBottom: 24, border: '2px dashed var(--gris-borde)',
+                background: 'var(--surface-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginBottom: 24, border: '2px dashed var(--outline)',
               }}>
-                <MessageSquare size={48} style={{ color: 'var(--gris-borde)' }} />
+                <MessageSquare size={48} style={{ color: 'var(--outline)' }} />
               </div>
-              <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--gris-oscuro)' }}>Selecciona un chat</p>
-              <p style={{ fontSize: 14, marginTop: 6, color: 'var(--gris-texto)' }}>Elige una conversación de la bandeja para comenzar</p>
+              <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>Selecciona un chat</p>
+              <p style={{ fontSize: 14, marginTop: 6, color: 'var(--text-secondary)' }}>Elige una conversación de la bandeja para comenzar</p>
             </div>
           )}
         </div>
