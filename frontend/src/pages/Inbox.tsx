@@ -572,7 +572,6 @@ function Inbox() {
           )}
         </div>
       </div>
-    </div>
   );
 }
 
