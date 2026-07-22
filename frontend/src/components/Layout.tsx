@@ -102,7 +102,7 @@ function Layout() {
                   justifyContent: collapsed ? 'center' : 'flex-start',
                   color: active ? '#fff' : 'rgba(255,255,255,0.5)',
                   background: active
-                    ? 'var(--sidebar-active)'
+                    ? 'rgba(229,62,62,0.2)'
                     : 'transparent',
                   fontSize: 14, fontWeight: active ? 700 : 500,
                   transition: 'all 0.2s ease',
