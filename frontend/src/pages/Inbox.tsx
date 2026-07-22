@@ -562,18 +562,17 @@ function Inbox() {
                       <p style={{ fontSize: 13, marginTop: 4 }}>Envía el primer mensaje para iniciar la conversación</p>
                     </div>
                   ) : (
-                    mensajes.map((msg, i) => {
+                    mensajes.map((msg) => {
                       const isAgent = msg.remitente === 'agente';
                       const isBot = msg.remitente === 'bot';
                       const isClient = !isAgent && !isBot;
                       return (
-                        <div key={msg.id} className="fade-in-up" style={{
+                        <div key={msg.id} style={{
                           marginBottom: 6,
                           display: 'flex',
                           flexDirection: isAgent ? 'row-reverse' : 'row',
                           alignItems: 'flex-end',
                           gap: 8,
-                          animationDelay: `${(mensajes.length - 1 - i) * 20}ms`,
                         }}>
                           {isBot && (
                             <div style={{
