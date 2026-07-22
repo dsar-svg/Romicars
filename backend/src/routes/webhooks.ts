@@ -107,7 +107,7 @@ router.post('/n8n', async (req: Request, res: Response) => {
     const body = req.body;
     const tipo = body.tipo || (body.remitente === 'cliente' ? 'nuevo_mensaje' : body.tipo);
     const clienteId = body.cliente_id || body.clienteId;
-    const contenido = body.contenido || body.mensaje;
+    const contenido = body.contenido || body.mensaje || body.message;
 
     console.log('[webhook:n8n] recibido:', JSON.stringify(body));
 
