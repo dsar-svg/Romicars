@@ -8,13 +8,11 @@ router.get('/:clienteId', async (req: Request, res: Response) => {
   try {
     const limit = Math.min(Number(req.query.limit) || 50, 200);
     const offset = Number(req.query.offset) || 0;
-    const mensajes = await query(
-      `SELECT * FROM (
-        SELECT * FROM mensajes WHERE cliente_id = ? ORDER BY fecha_envio DESC LIMIT ? OFFSET ?
-      ) sub ORDER BY fecha_envio ASC`,
+    const rows = await query(
+      `SELECT * FROM mensajes WHERE cliente_id = ? ORDER BY fecha_envio DESC LIMIT ? OFFSET ?`,
       [req.params.clienteId, limit, offset]
-    );
-    res.json(mensajes);
+    ) as any[];
+    res.json(rows.reverse());
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener mensajes' });
   }
