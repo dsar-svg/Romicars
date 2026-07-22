@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Search, Send, MessageSquare, Bot, CheckCheck, Paperclip, Smile, Phone, PanelRightOpen, PanelRightClose } from 'lucide-react';
+import { Search, Send, MessageSquare, Bot, CheckCheck, Paperclip, Smile, Phone, PanelRightOpen, PanelRightClose, FileText, FileSpreadsheet, FileImage, FileAudio, FileVideo, File as FileIcon } from 'lucide-react';
 import { clientesApi, mensajesApi } from '../services/api';
 import { connectSocket, getSocket } from '../services/socket';
 import { toast } from '../components/Toast';
@@ -675,35 +675,61 @@ function Inbox() {
                               <video controls src={msg.url_multimedia} style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 8, marginBottom: 4 }} />
                             )}
                             {msg.tipo === 'archivo' && msg.url_multimedia && (
-                              <a href={msg.url_multimedia} target="_blank" rel="noopener noreferrer" style={{
-                                display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', marginBottom: 4,
-                                borderRadius: 8, textDecoration: 'none',
-                                background: isAgent ? 'rgba(255,255,255,0.1)' : 'rgba(0,32,69,0.04)',
-                                border: `1px solid ${isAgent ? 'rgba(255,255,255,0.15)' : 'rgba(0,32,69,0.1)'}`,
-                              }}>
-                                <div style={{
-                                  width: 36, height: 36, borderRadius: 6, flexShrink: 0,
-                                  background: isAgent ? '#fff' : '#b51822',
-                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                  fontSize: 10, fontWeight: 700, color: isAgent ? '#002045' : '#fff',
-                                  textTransform: 'uppercase', letterSpacing: 0.5,
+                              (() => {
+                                const ext = (msg.url_multimedia.split('.').pop() || '').split('?')[0].toLowerCase();
+                                const extMap: Record<string, { icon: any; color: string; bg: string; label: string }> = {
+                                  pdf: { icon: FileText, color: '#e74c3c', bg: '#fce8e6', label: 'PDF' },
+                                  doc: { icon: FileText, color: '#2b5797', bg: '#e8eff8', label: 'DOC' },
+                                  docx: { icon: FileText, color: '#2b5797', bg: '#e8eff8', label: 'DOCX' },
+                                  xls: { icon: FileSpreadsheet, color: '#217346', bg: '#e6f4ea', label: 'XLS' },
+                                  xlsx: { icon: FileSpreadsheet, color: '#217346', bg: '#e6f4ea', label: 'XLSX' },
+                                  csv: { icon: FileSpreadsheet, color: '#217346', bg: '#e6f4ea', label: 'CSV' },
+                                  jpg: { icon: FileImage, color: '#e67e22', bg: '#fef5e7', label: 'JPG' },
+                                  jpeg: { icon: FileImage, color: '#e67e22', bg: '#fef5e7', label: 'JPEG' },
+                                  png: { icon: FileImage, color: '#e67e22', bg: '#fef5e7', label: 'PNG' },
+                                  gif: { icon: FileImage, color: '#e67e22', bg: '#fef5e7', label: 'GIF' },
+                                  webp: { icon: FileImage, color: '#e67e22', bg: '#fef5e7', label: 'WEBP' },
+                                  mp3: { icon: FileAudio, color: '#8e44ad', bg: '#f4ecf7', label: 'MP3' },
+                                  wav: { icon: FileAudio, color: '#8e44ad', bg: '#f4ecf7', label: 'WAV' },
+                                  ogg: { icon: FileAudio, color: '#8e44ad', bg: '#f4ecf7', label: 'OGG' },
+                                  mp4: { icon: FileVideo, color: '#2980b9', bg: '#e8f0fe', label: 'MP4' },
+                                  mov: { icon: FileVideo, color: '#2980b9', bg: '#e8f0fe', label: 'MOV' },
+                                  webm: { icon: FileVideo, color: '#2980b9', bg: '#e8f0fe', label: 'WEBM' },
+                                };
+                                const info = extMap[ext] || { icon: FileIcon, color: '#8896ab', bg: '#f0f2f5', label: ext.toUpperCase() };
+                                const Icon = info.icon;
+                                const fileName = msg.url_multimedia.includes('?')
+                                  ? decodeURIComponent(msg.url_multimedia.split('?')[0].split('/').pop() || '')
+                                  : decodeURIComponent(msg.url_multimedia.split('/').pop() || '');
+                                return (
+                                <a href={msg.url_multimedia} target="_blank" rel="noopener noreferrer" style={{
+                                  display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', marginBottom: 4,
+                                  borderRadius: 8, textDecoration: 'none',
+                                  background: isAgent ? 'rgba(255,255,255,0.1)' : 'rgba(0,32,69,0.04)',
+                                  border: `1px solid ${isAgent ? 'rgba(255,255,255,0.15)' : 'rgba(0,32,69,0.1)'}`,
                                 }}>
-                                  {msg.url_multimedia.split('.').pop()?.slice(0, 4) || 'file'}
-                                </div>
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                  <div style={{ fontSize: 13, fontWeight: 600, color: isAgent ? '#fff' : '#002045', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                    {msg.contenido || msg.url_multimedia.split('/').pop() || 'Archivo'}
+                                  <div style={{
+                                    width: 38, height: 38, borderRadius: 8, flexShrink: 0,
+                                    background: isAgent ? info.color : info.bg,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  }}>
+                                    <Icon size={18} color={isAgent ? '#fff' : info.color} />
                                   </div>
-                                  <div style={{ fontSize: 11, color: isAgent ? 'rgba(255,255,255,0.6)' : '#8896ab', marginTop: 2 }}>
-                                    {msg.url_multimedia.split('.').pop()?.toUpperCase()} — Haz clic para descargar
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ fontSize: 13, fontWeight: 600, color: isAgent ? '#fff' : '#002045', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                      {msg.contenido || fileName}
+                                    </div>
+                                    <div style={{ fontSize: 11, color: isAgent ? 'rgba(255,255,255,0.6)' : '#8896ab', marginTop: 2 }}>
+                                      {info.label} — Haz clic para descargar
+                                    </div>
                                   </div>
-                                </div>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isAgent ? '#fff' : '#b51822'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                  <polyline points="7 10 12 15 17 10" />
-                                  <line x1="12" y1="15" x2="12" y2="3" />
-                                </svg>
-                              </a>
+                                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={isAgent ? '#fff' : info.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                    <polyline points="7 10 12 15 17 10" />
+                                    <line x1="12" y1="15" x2="12" y2="3" />
+                                  </svg>
+                                </a>);
+                              })()
                             )}
                             {msg.contenido && (
                               <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
