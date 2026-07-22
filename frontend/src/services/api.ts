@@ -30,7 +30,8 @@ export const clientesApi = {
 };
 
 export const mensajesApi = {
-  getByCliente: (clienteId: number) => api.get(`/mensajes/${clienteId}`).then(r => r.data),
+  getByCliente: (clienteId: number, limit?: number, offset?: number) =>
+    api.get(`/mensajes/${clienteId}`, { params: { limit, offset } }).then(r => r.data),
   marcarLeido: (id: number) => api.put(`/mensajes/${id}/leer`).then(r => r.data),
   enviar: (data: { cliente_id: number; contenido: string; remitente: string; tipo?: string }) =>
     api.post('/mensajes/enviar', data).then(r => r.data),

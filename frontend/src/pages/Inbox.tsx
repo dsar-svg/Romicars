@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Search, Send, MessageSquare, Bot, CheckCheck, Bell, Paperclip, Smile, Phone, Video, PanelRightOpen, PanelRightClose } from 'lucide-react';
+import { Search, Send, MessageSquare, Bot, CheckCheck, Paperclip, Smile, Phone, Video, PanelRightOpen, PanelRightClose } from 'lucide-react';
 import { clientesApi, mensajesApi } from '../services/api';
 import { connectSocket, getSocket } from '../services/socket';
 import { toast } from '../components/Toast';
@@ -70,6 +70,9 @@ function Inbox() {
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [unreadChats, setUnreadChats] = useState<Set<number>>(new Set());
   const [showPanel, setShowPanel] = useState(true);
+  const offsetRef = useRef(0);
+  const hasMoreRef = useRef(true);
+  const loadingMoreRef = useRef(false);
 
   useEffect(() => {
     if (!window.__unreadChats) window.__unreadChats = new Set<number>();
@@ -152,11 +155,15 @@ function Inbox() {
     window.__unreadChats?.delete(id);
     setUnreadChats(new Set(window.__unreadChats || []));
     setMessagesLoading(true);
+    offsetRef.current = 0;
+    hasMoreRef.current = true;
     const cached = clientes.find(c => c.id === id);
     if (cached) setSelectedCliente(cached);
-    mensajesApi.getByCliente(id).then(msgs => {
+    mensajesApi.getByCliente(id).then((msgs: Mensaje[]) => {
       idsRef.current = new Set(msgs.map(m => m.id));
       setMensajes(msgs);
+      hasMoreRef.current = msgs.length >= 50;
+      offsetRef.current = msgs.length;
       setMessagesLoading(false);
     });
   }, [clienteId]);
@@ -169,10 +176,41 @@ function Inbox() {
   }, [clienteId]);
 
   useEffect(() => {
-    if (messagesContainerRef.current) {
+    if (messagesContainerRef.current && !loadingMoreRef.current) {
       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
     }
   }, [mensajes]);
+
+  const cargarMas = async () => {
+    if (!clienteId || loadingMoreRef.current || !hasMoreRef.current) return;
+    loadingMoreRef.current = true;
+    const prevHeight = messagesContainerRef.current?.scrollHeight || 0;
+    try {
+      const msgs = await mensajesApi.getByCliente(Number(clienteId), 50, offsetRef.current);
+      if (msgs.length === 0) { hasMoreRef.current = false; return; }
+      idsRef.current = new Set([...idsRef.current].concat(msgs.map((m: Mensaje) => m.id)));
+      setMensajes(prev => [...msgs, ...prev]);
+      hasMoreRef.current = msgs.length >= 50;
+      offsetRef.current += msgs.length;
+      requestAnimationFrame(() => {
+        if (messagesContainerRef.current) {
+          messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight - prevHeight;
+        }
+      });
+    } finally {
+      loadingMoreRef.current = false;
+    }
+  };
+
+  useEffect(() => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      if (el.scrollTop < 80) cargarMas();
+    };
+    el.addEventListener('scroll', onScroll);
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [clienteId]);
 
   useEffect(() => {
     if (clienteId && clientes.length > 0 && clientesFiltrados.length > 0) {
@@ -398,7 +436,7 @@ function Inbox() {
                               color: unreadChats.has(cliente.id) ? '#b51822' : '#8896ab',
                               flexShrink: 0, marginLeft: 8,
                             }}>
-                              {new Date(cliente.ultima_actividad || Date.now()).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                              {new Date(cliente.ultima_interaccion || Date.now()).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
                           <div style={{ display: 'flex', gap: 6, marginBottom: 4, alignItems: 'center' }}>

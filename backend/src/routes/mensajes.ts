@@ -7,11 +7,12 @@ const router = Router();
 router.get('/:clienteId', async (req: Request, res: Response) => {
   try {
     const limit = Math.min(Number(req.query.limit) || 50, 200);
+    const offset = Number(req.query.offset) || 0;
     const mensajes = await query(
       `SELECT * FROM (
-        SELECT * FROM mensajes WHERE cliente_id = ? ORDER BY fecha_envio DESC LIMIT ?
+        SELECT * FROM mensajes WHERE cliente_id = ? ORDER BY fecha_envio DESC LIMIT ? OFFSET ?
       ) sub ORDER BY fecha_envio ASC`,
-      [req.params.clienteId, limit]
+      [req.params.clienteId, limit, offset]
     );
     res.json(mensajes);
   } catch (error) {
