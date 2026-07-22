@@ -63,7 +63,7 @@ function Layout() {
           padding: collapsed ? '24px 14px 28px' : '24px 20px 28px',
           textDecoration: 'none',
           justifyContent: collapsed ? 'center' : 'flex-start',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          borderBottom: '1px solid rgba(181,24,34,0.3)',
         }}>
           <img
             src="/loguito.png"
@@ -107,6 +107,7 @@ function Layout() {
                   fontSize: 14, fontWeight: active ? 700 : 500,
                   transition: 'all 0.2s ease',
                   position: 'relative',
+                  borderLeft: active && !collapsed ? '3px solid #E53E3E' : '3px solid transparent',
                 }}
                     onMouseEnter={e => {
                       if (!active) e.currentTarget.style.background = 'var(--sidebar-hover)';

@@ -200,7 +200,7 @@ function Inbox() {
   };
 
   return (
-    <div style={{ display: 'flex', height: '100%', overflow: 'hidden', background: '#f6f9fc' }}>
+    <div style={{ display: 'flex', height: '100%', overflow: 'hidden', background: '#f6f9fc', borderTop: '3px solid #b51822' }}>
         {/* Left panel — lista conversaciones */}
         <div style={{
           width: 350, background: '#fff', borderRight: '1px solid #e0e8f0',
@@ -232,7 +232,7 @@ function Inbox() {
                   <button key={f.key} onClick={() => setCanalFiltro(f.key)}
                     style={{
                       padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-                      background: canalFiltro === f.key ? '#002045' : 'transparent',
+                      background: canalFiltro === f.key ? (f.key === 'todos' ? '#002045' : '#b51822') : 'transparent',
                       color: canalFiltro === f.key ? '#fff' : '#8896ab',
                       border: canalFiltro === f.key ? 'none' : '1px solid #e0e8f0',
                       cursor: 'pointer', fontFamily: "'Inter', sans-serif",
@@ -249,7 +249,7 @@ function Inbox() {
                 <button onClick={() => setFiltroIA(!filtroIA)}
                   style={{
                     padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-                    background: filtroIA ? '#002045' : 'transparent',
+                    background: filtroIA ? '#b51822' : 'transparent',
                     color: filtroIA ? '#fff' : '#8896ab',
                     border: filtroIA ? 'none' : '1px solid #e0e8f0',
                     cursor: 'pointer', fontFamily: "'Inter', sans-serif",
@@ -269,7 +269,7 @@ function Inbox() {
                   <button key={f.key} onClick={() => setUrgenciaFiltro(f.key)}
                     style={{
                       padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-                      background: urgenciaFiltro === f.key ? '#002045' : 'transparent',
+                      background: urgenciaFiltro === f.key ? (f.key === 'urgentes' ? '#b51822' : '#002045') : 'transparent',
                       color: urgenciaFiltro === f.key ? '#fff' : '#8896ab',
                       border: urgenciaFiltro === f.key ? 'none' : '1px solid #e0e8f0',
                       cursor: 'pointer', fontFamily: "'Inter', sans-serif",
@@ -290,8 +290,8 @@ function Inbox() {
             {loading ? <SkeletonChats /> : (
               clientesFiltrados.length === 0 ? (
                 <div style={{ padding: 60, textAlign: 'center', color: '#8896ab' }}>
-                  <MessageSquare size={40} style={{ opacity: 0.15, marginBottom: 12 }} />
-                  <p style={{ fontSize: 14, fontWeight: 600 }}>No hay chats</p>
+                  <MessageSquare size={40} style={{ opacity: 0.15, marginBottom: 12, color: '#b51822' }} />
+                  <p style={{ fontSize: 14, fontWeight: 600, color: '#002045' }}>No hay chats</p>
                   <p style={{ fontSize: 13, marginTop: 4 }}>
                     {searchTerm ? 'Intenta con otro término de búsqueda' : 'Los mensajes nuevos aparecerán aquí'}
                   </p>
@@ -309,7 +309,7 @@ function Inbox() {
                         padding: '14px 16px',
                         borderBottom: '1px solid #f0f2f5',
                         cursor: 'pointer',
-                        background: isSelected ? '#eef3f9' : 'transparent',
+                        background: isSelected ? 'rgba(181,24,34,0.06)' : 'transparent',
                         borderLeft: isSelected ? '3px solid #b51822' : '3px solid transparent',
                         transition: 'all 0.15s',
                         animationDelay: `${i * 30}ms`,
@@ -345,7 +345,7 @@ function Inbox() {
                             <div style={{
                               position: 'absolute', top: -2, right: -2,
                               width: 12, height: 12, borderRadius: '50%',
-                              background: '#2563EB',
+                              background: '#DC2626',
                               border: '2px solid #fff',
                             }} />
                           )}
@@ -356,7 +356,7 @@ function Inbox() {
                             <strong style={{
                               fontSize: 14,
                               fontWeight: unreadChats.has(cliente.id) ? 700 : 600,
-                              color: unreadChats.has(cliente.id) ? '#002045' : '#002045',
+                              color: unreadChats.has(cliente.id) ? '#b51822' : '#002045',
                               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                             }}>
                               {cliente.nombre || cliente.telefono || 'Sin nombre'}
@@ -364,7 +364,7 @@ function Inbox() {
                             <span style={{
                               fontSize: 11,
                               fontWeight: unreadChats.has(cliente.id) ? 600 : 400,
-                              color: unreadChats.has(cliente.id) ? '#002045' : '#8896ab',
+                              color: unreadChats.has(cliente.id) ? '#b51822' : '#8896ab',
                               flexShrink: 0, marginLeft: 8,
                             }}>
                               {new Date(cliente.ultima_actividad || Date.now()).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
@@ -385,10 +385,12 @@ function Inbox() {
                             }} />
                           </div>
                           <div style={{ fontSize: 13, color: '#5a6a7c', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.3 }}>
-                            {cliente.ultimo_remitente === 'agente' ? `tú: ${cliente.ultimo_mensaje}` : (cliente.ultimo_mensaje || 'Sin mensajes')}
+                            {cliente.ultimo_remitente === 'agente'
+                              ? <><span style={{ color: '#b51822', fontWeight: 600 }}>tú: </span>{cliente.ultimo_mensaje}</>
+                              : (cliente.ultimo_mensaje || 'Sin mensajes')}
                           </div>
                           {cliente.resumen_busqueda && (
-                            <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#002045' }}>
+                            <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#b51822' }}>
                               <Bot size={11} />
                               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {cliente.resumen_busqueda}
@@ -428,38 +430,38 @@ function Inbox() {
                         </div>
                       </div>
                       <div>
-                        <h3 style={{ fontSize: 15, fontWeight: 600, color: '#002045', fontFamily: "'Inter', sans-serif" }}>
+                        <h3 style={{ fontSize: 15, fontWeight: 600, color: '#b51822', fontFamily: "'Inter', sans-serif" }}>
                           {selectedCliente.nombre || selectedCliente.telefono || 'Sin nombre'}
                         </h3>
-                        <span style={{ fontSize: 12, color: '#5a6a7c' }}>
+                        <span style={{ fontSize: 12, color: '#b51822', fontWeight: 500 }}>
                           {canalLabel[selectedCliente.canal_origen] || selectedCliente.canal_origen}
                         </span>
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 6 }}>
                       <button style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid #e0e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                        <Phone size={14} style={{ color: '#002045' }} />
+                        <Phone size={14} style={{ color: '#b51822' }} />
                       </button>
                       <button style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid #e0e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                        <Video size={14} style={{ color: '#002045' }} />
+                        <Video size={14} style={{ color: '#b51822' }} />
                       </button>
                       <button style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid #e0e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                        <Search size={14} style={{ color: '#002045' }} />
+                        <Search size={14} style={{ color: '#b51822' }} />
                       </button>
                       <button
                         onClick={() => setShowPanel(!showPanel)}
                         style={{
                           width: 34, height: 34, borderRadius: '50%',
-                          border: showPanel ? '2px solid #002045' : '1px solid #e0e8f0',
-                          background: showPanel ? '#eef3f9' : '#fff',
+                          border: showPanel ? '2px solid #b51822' : '1px solid #e0e8f0',
+                          background: showPanel ? 'rgba(181,24,34,0.08)' : '#fff',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           cursor: 'pointer', transition: 'all 0.15s',
                         }}
                         title={showPanel ? 'Ocultar panel' : 'Mostrar panel'}
                       >
                         {showPanel
-                          ? <PanelRightClose size={14} style={{ color: '#002045' }} />
-                          : <PanelRightOpen size={14} style={{ color: '#002045' }} />
+                          ? <PanelRightClose size={14} style={{ color: '#b51822' }} />
+                          : <PanelRightOpen size={14} style={{ color: '#b51822' }} />
                         }
                       </button>
                     </div>
@@ -470,8 +472,8 @@ function Inbox() {
                 <div ref={messagesContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
                   {mensajes.length === 0 ? (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#8896ab' }}>
-                      <MessageSquare size={48} style={{ opacity: 0.12, marginBottom: 16 }} />
-                      <p style={{ fontSize: 15, fontWeight: 600 }}>Sin mensajes aún</p>
+                      <MessageSquare size={48} style={{ opacity: 0.12, marginBottom: 16, color: '#b51822' }} />
+                      <p style={{ fontSize: 15, fontWeight: 600, color: '#002045' }}>Sin mensajes aún</p>
                       <p style={{ fontSize: 13, marginTop: 4 }}>Envía el primer mensaje para iniciar la conversación</p>
                     </div>
                   ) : (
@@ -545,11 +547,13 @@ function Inbox() {
                       onChange={e => setNuevoMensaje(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), enviarMensaje())}
                       placeholder="Type a message..."
-                      style={{
-                        width: '100%', padding: '10px 14px', borderRadius: 8, fontSize: 13,
-                        border: '1px solid #e0e8f0', background: '#f6f9fc', outline: 'none',
-                        fontFamily: "'Inter', sans-serif",
-                      }}
+                    style={{
+                      width: '100%', padding: '10px 14px', borderRadius: 8, fontSize: 13,
+                      border: '1px solid #e0e8f0', background: '#f6f9fc', outline: 'none',
+                      fontFamily: "'Inter', sans-serif",
+                    }}
+                    onFocus={e => e.currentTarget.style.borderColor = '#b51822'}
+                    onBlur={e => e.currentTarget.style.borderColor = '#e0e8f0'}
                     />
                   </div>
                   <button style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid #e0e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
@@ -575,11 +579,11 @@ function Inbox() {
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 height: '100%', color: '#8896ab',
               }}>
-                <div style={{ width: 80, height: 80, borderRadius: '50%', background: '#e0e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                  <MessageSquare size={32} style={{ color: '#8896ab' }} />
+                <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(181,24,34,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                  <MessageSquare size={32} style={{ color: '#b51822' }} />
                 </div>
-                <p style={{ fontSize: 16, fontWeight: 600, color: '#002045' }}>Selecciona un chat</p>
-                <p style={{ fontSize: 13, marginTop: 4 }}>Elige una conversación de la bandeja para comenzar</p>
+                <p style={{ fontSize: 16, fontWeight: 600, color: '#b51822' }}>Selecciona un chat</p>
+                <p style={{ fontSize: 13, marginTop: 4, color: '#5a6a7c' }}>Elige una conversación de la bandeja para comenzar</p>
               </div>
             )}
           </div>
