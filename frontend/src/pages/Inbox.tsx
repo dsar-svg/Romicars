@@ -87,7 +87,7 @@ function Inbox() {
     socket.on('message:new', (mensaje: Mensaje) => {
       const isCurrent = currentClienteId.current === mensaje.cliente_id;
       if (isCurrent) {
-        setMensajes(prev => [...prev, mensaje]);
+        setMensajes(prev => prev.some(m => m.id === mensaje.id) ? prev : [...prev, mensaje]);
       } else {
         setUnreadChats(prev => new Set(prev).add(mensaje.cliente_id));
       }
@@ -490,7 +490,6 @@ function Inbox() {
                       const isAgent = msg.remitente === 'agente';
                       const isBot = msg.remitente === 'bot';
                       const isRight = isAgent || isBot;
-                      const showAvatar = !isRight && (i === 0 || mensajes[i - 1]?.remitente === 'agente' || mensajes[i - 1]?.remitente === 'bot');
                       return (
                         <div key={msg.id} className="fade-in-up" style={{
                           marginBottom: 6,
@@ -498,20 +497,17 @@ function Inbox() {
                           flexDirection: isRight ? 'row-reverse' : 'row',
                           alignItems: 'flex-end',
                           gap: 8,
-                          paddingLeft: isRight ? 0 : 0,
                           animationDelay: `${i * 20}ms`,
                         }}>
                           {!isRight && (
                             <div style={{
                               width: 28, height: 28, borderRadius: '50%',
-                              background: showAvatar ? '#002045' : 'transparent',
+                              background: '#002045',
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              fontSize: 11, fontWeight: 700, color: showAvatar ? '#fff' : 'transparent',
+                              fontSize: 11, fontWeight: 700, color: '#fff',
                               flexShrink: 0,
-                              transition: 'all 0.15s',
-                              visibility: showAvatar ? 'visible' : 'hidden',
                             }}>
-                              {showAvatar && (selectedCliente?.nombre || '?').charAt(0).toUpperCase()}
+                              {(selectedCliente?.nombre || '?').charAt(0).toUpperCase()}
                             </div>
                           )}
                           <div style={{
@@ -524,7 +520,6 @@ function Inbox() {
                             fontSize: 13,
                             lineHeight: 1.5,
                             color: isRight ? '#fff' : '#002045',
-                            marginLeft: !isRight && !showAvatar ? 36 : 0,
                           }}>
                             <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                               {msg.contenido}
