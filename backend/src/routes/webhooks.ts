@@ -160,15 +160,15 @@ router.post('/n8n', async (req: Request, res: Response) => {
       console.log('[webhook:n8n] mensaje guardado y emitido:', msg.id, 'tipo:', msgTipo, 'para cliente:', clienteId);
     }
 
-    if (tipo === 'resumen_actualizado' && clienteId) {
+    if (tipoRaw === 'resumen_actualizado' && clienteId) {
       const clientes = await query('SELECT * FROM clientes WHERE id = ?', [clienteId]) as any[];
       if (clientes[0]) {
         getIO().emit('cliente:updated', clientes[0]);
       }
     }
 
-    if (tipo === 'campania_log' && body.campaniaId) {
-      getIO().emit('campania:updated', { campaniaId: body.campaniaId, estado: body.estado });
+    if (tipoRaw === 'campania_log' && entry.campaniaId) {
+      getIO().emit('campania:updated', { campaniaId: entry.campaniaId, estado: entry.estado });
     }
 
     res.json({ success: true });
