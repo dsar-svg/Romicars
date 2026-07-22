@@ -6,11 +6,14 @@ let hasUnread = false;
 let globalUnreadCount = 0;
 const originalFavicon = '/loguito.png';
 
-function setFaviconBadge(show: boolean) {
+function setFavicon(href: string) {
   const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
-  if (!link) return;
+  if (link) link.href = href;
+}
+
+function setFaviconBadge(show: boolean) {
   if (!show) {
-    link.href = originalFavicon;
+    setFavicon(originalFavicon);
     return;
   }
   if (!faviconCanvas) {
@@ -32,8 +35,14 @@ function setFaviconBadge(show: boolean) {
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 2.5;
     ctx.stroke();
-    link.href = faviconCanvas!.toDataURL();
+    setFavicon(faviconCanvas!.toDataURL());
   };
+  img.onerror = () => setFavicon(originalFavicon);
+}
+
+// Ensure favicon is set to logo on load
+if (typeof document !== 'undefined') {
+  setFavicon(originalFavicon);
 }
 
 export function playNotificationSound() {
@@ -104,9 +113,9 @@ export function useNotifications() {
     globalUnreadCount = 0;
     if (hasUnread) {
       hasUnread = false;
-      setFaviconBadge(false);
-      dispatchCountChange();
     }
+    setFaviconBadge(false);
+    dispatchCountChange();
   }, []);
 
   return { notify, clearNotifications, unreadCount };
