@@ -183,36 +183,7 @@ function Inbox() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#f6f9fc' }}>
-      {/* TopAppBar */}
-      <div style={{
-        background: '#fff', borderBottom: '1px solid #e0e8f0', padding: '0 24px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        height: 60, flexShrink: 0,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <h1 style={{ fontSize: 18, fontWeight: 700, color: '#002045', fontFamily: "'Hanken Grotesk', sans-serif" }}>
-            Inbox Multicanal
-          </h1>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button style={{ padding: '6px 14px', fontSize: 12, fontWeight: 600, color: '#002045', background: '#f0f4fa', border: '1px solid #e0e8f0', borderRadius: 6, cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}>
-            Export CSV
-          </button>
-          <button style={{ padding: '6px 14px', fontSize: 12, fontWeight: 600, color: '#fff', background: '#b51822', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}>
-            Create Campaign
-          </button>
-          <div style={{ position: 'relative', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <Bell size={18} style={{ color: '#002045' }} />
-            <div style={{ position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: '50%', background: '#b51822' }} />
-          </div>
-          <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#002045', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-            A
-          </div>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flex: 1, overflow: 'hidden', background: '#f6f9fc' }}>
         {/* Left panel — lista conversaciones */}
         <div style={{
           width: 350, background: '#fff', borderRight: '1px solid #e0e8f0',
