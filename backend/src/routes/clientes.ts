@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { query } from '../database';
+import { getIO } from '../socket';
 
 const router = Router();
 
@@ -38,16 +39,17 @@ router.get('/:id', async (req: Request, res: Response) => {
 
 router.put('/:id', async (req: Request, res: Response) => {
   try {
-    const { nombre, marca_carro, modelo_carro, anio_carro, motor_carro, estado_venta, urgencia, acepta_promos, resumen_busqueda, pidio_fotos } = req.body;
+    const { nombre, telefono, marca_carro, modelo_carro, anio_carro, motor_carro, estado_venta, urgencia, acepta_promos, resumen_busqueda, pidio_fotos } = req.body;
     await query(
       `UPDATE clientes SET
-        nombre = ?, marca_carro = ?, modelo_carro = ?, anio_carro = ?,
+        nombre = ?, telefono = ?, marca_carro = ?, modelo_carro = ?, anio_carro = ?,
         motor_carro = ?, estado_venta = ?, urgencia = ?, acepta_promos = ?,
         resumen_busqueda = ?, pidio_fotos = ?
        WHERE id = ?`,
-      [nombre, marca_carro, modelo_carro, anio_carro, motor_carro, estado_venta, urgencia, acepta_promos, resumen_busqueda, pidio_fotos, req.params.id]
+      [nombre, telefono, marca_carro, modelo_carro, anio_carro, motor_carro, estado_venta, urgencia, acepta_promos, resumen_busqueda, pidio_fotos, req.params.id]
     );
     const [cliente] = await query('SELECT * FROM clientes WHERE id = ?', [req.params.id]) as any[];
+    getIO().emit('cliente:updated', cliente);
     res.json(cliente);
   } catch (error) {
     res.status(500).json({ error: 'Error al actualizar cliente' });

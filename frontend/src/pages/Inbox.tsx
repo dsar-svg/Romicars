@@ -72,6 +72,10 @@ function Inbox() {
   const [showPanel, setShowPanel] = useState(true);
 
   useEffect(() => {
+    window.dispatchEvent(new CustomEvent('unread-changed', { detail: unreadChats.size }));
+  }, [unreadChats.size]);
+
+  useEffect(() => {
     const socket = connectSocket();
     clientesApi.getAll().then(data => {
       setClientes(data);
@@ -109,9 +113,24 @@ function Inbox() {
       refrescarClienteEnLista(data.cliente_id);
     });
 
+    socket.on('cliente:updated', (cliente: Cliente) => {
+      setClientes(cs => {
+        const idx = cs.findIndex(c => c.id === cliente.id);
+        if (idx >= 0) {
+          const copy = [...cs];
+          copy[idx] = cliente;
+          return copy;
+        }
+        return cs;
+      });
+      setSelectedCliente(prev => prev?.id === cliente.id ? cliente : prev);
+    });
+
     return () => {
       socket.off('message:new');
       socket.off('chat:updated');
+      socket.off('cliente:updated');
+      window.dispatchEvent(new CustomEvent('unread-changed', { detail: 0 }));
     };
   }, []);
 
@@ -343,10 +362,11 @@ function Inbox() {
                           )}
                           {unreadChats.has(cliente.id) && (
                             <div style={{
-                              position: 'absolute', top: -2, right: -2,
-                              width: 12, height: 12, borderRadius: '50%',
+                              position: 'absolute', top: -3, right: -3,
+                              width: 14, height: 14, borderRadius: '50%',
                               background: '#DC2626',
                               border: '2px solid #fff',
+                              boxShadow: '0 0 0 1px rgba(220,38,38,0.5)',
                             }} />
                           )}
                         </div>
@@ -480,17 +500,27 @@ function Inbox() {
                     mensajes.map((msg, i) => {
                       const isAgent = msg.remitente === 'agente';
                       const isBot = msg.remitente === 'bot';
-                      const isRight = isAgent || isBot;
+                      const isClient = !isAgent && !isBot;
                       return (
                         <div key={msg.id} className="fade-in-up" style={{
                           marginBottom: 6,
                           display: 'flex',
-                          flexDirection: isRight ? 'row-reverse' : 'row',
+                          flexDirection: isAgent ? 'row-reverse' : 'row',
                           alignItems: 'flex-end',
                           gap: 8,
                           animationDelay: `${i * 20}ms`,
                         }}>
-                          {!isRight && (
+                          {isBot && (
+                            <div style={{
+                              width: 28, height: 28, borderRadius: '50%',
+                              background: '#6B7280',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              flexShrink: 0, order: 1,
+                            }}>
+                              <Bot size={14} color="#fff" />
+                            </div>
+                          )}
+                          {isClient && (
                             <div style={{
                               width: 28, height: 28, borderRadius: '50%',
                               background: getAvatarColor(selectedCliente?.nombre || selectedCliente?.telefono || '?'),
@@ -504,20 +534,30 @@ function Inbox() {
                           <div style={{
                             maxWidth: '70%',
                             padding: '10px 14px',
-                            background: isRight ? '#002045' : '#e5eeff',
-                            borderRadius: isRight
+                            background: isBot ? 'var(--msg-bot)' : isAgent ? '#002045' : '#e5eeff',
+                            border: isBot ? '1px dashed var(--outline)' : 'none',
+                            borderRadius: isAgent
                               ? '16px 16px 4px 16px'
                               : '16px 16px 16px 4px',
                             fontSize: 13,
                             lineHeight: 1.5,
-                            color: isRight ? '#fff' : '#002045',
+                            color: isBot ? 'var(--text-primary)' : isAgent ? '#fff' : '#002045',
                           }}>
+                            {isBot && (
+                              <div style={{
+                                fontSize: 10, fontWeight: 600, marginBottom: 4,
+                                color: 'var(--text-secondary)',
+                                display: 'flex', alignItems: 'center', gap: 4,
+                              }}>
+                                <Bot size={10} /> Bot IA
+                              </div>
+                            )}
                             <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                               {msg.contenido}
                             </div>
                             <div style={{
                               fontSize: 10, marginTop: 5,
-                              color: isRight ? 'rgba(255,255,255,0.6)' : 'rgba(0,32,69,0.5)',
+                              color: isBot ? 'var(--text-secondary)' : isAgent ? 'rgba(255,255,255,0.6)' : 'rgba(0,32,69,0.5)',
                               textAlign: 'right',
                               display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 3,
                             }}>

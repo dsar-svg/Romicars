@@ -49,6 +49,7 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
     try {
       const updated = await clientesApi.update(cliente.id, {
         nombre: cliente.nombre,
+        telefono: cliente.telefono,
         marca_carro: cliente.marca_carro,
         modelo_carro: cliente.modelo_carro,
         anio_carro: cliente.anio_carro,

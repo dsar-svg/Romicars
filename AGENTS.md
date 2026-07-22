@@ -1,66 +1,74 @@
 # AGENTS.md — Romicars Flow & Chat
 
+Idioma: español. Todo el código y mensajes del sistema están en español.
+
 ## Stack
-- **Frontend:** React 19 + Vite 6 + TypeScript 6 + Oxlint (not ESLint)
+- **Frontend:** React 19 + Vite 6 + TypeScript ~6.0.2 + Oxlint (no ESLint)
 - **Backend:** Express 5 + Socket.IO + MySQL 8 (mysql2) + JWT (bcryptjs)
-- **Infra:** Docker Compose (MySQL + backend + frontend), Nginx SPA proxy
+- **Infra:** Docker Compose (MySQL + backend + frontend), Nginx SPA proxy con `envsubst`
 
-## Commands
-| location | command | note |
+## Comandos
+| ubicación | comando | nota |
 |---|---|---|
-| `/frontend` | `npm run dev` | Vite dev server on :5173, proxies `/api` + `/socket.io` to :3001 |
-| `/frontend` | `npm run build` | `tsc -b` then `vite build` (order matters) |
-| `/frontend` | `npm run lint` | oxlint (not eslint!) — config in `.oxlintrc.json` |
-| `/frontend` | `npm run preview` | Vite preview of built output |
+| `/frontend` | `npm run dev` | Vite :5173, proxy `/api` y `/socket.io` → :3001 |
+| `/frontend` | `npm run build` | `tsc -b` (project references) luego `vite build` — ese orden |
+| `/frontend` | `npm run lint` | oxlint — config en `.oxlintrc.json` |
 | `/backend` | `npm run dev` | `ts-node-dev --respawn --transpile-only src/index.ts` |
-| `/backend` | `npm run build` | `tsc` outputs to `./dist` |
-| `/backend` | `npm run start` | `node dist/index.js` (production) |
-| `/backend` | `npm run seed` | Creates superadmin via `src/seed.ts` |
-| root | `docker compose up -d` | starts MySQL, backend, frontend |
-| root | `npm run seed` | Not a root script — run from `/backend` instead |
+| `/backend` | `npm run build` | `tsc` → `./dist` |
+| `/backend` | `npm run seed` | Crea superadmin `admin@romicars.com` / `Admin123!` |
+| root | `docker compose up -d` | Inicia MySQL + backend + frontend |
 
-## Architecture
-- **All API routes** mounted under `/api` — auth, clientes, mensajes, webhook, analytics, campanias, **agentes, profit**
-- **Health** at `/health` (root, not under `/api`)
-- **Auth:** JWT in `localStorage`, `Authorization: Bearer <token>`, 24h expiry
-- **Real-time:** Socket.IO on same port, events: `join:chat`, `leave:chat`, `message:send`, `message:new`, `chat:updated`, `message:error`
-- **DB:** `database/schema.sql` auto-executed on first MySQL container start (docker-entrypoint-initdb.d); `database/seed-demo.sql` available for demo data
-- **Frontend routes:** `/login`, `/inbox/:clienteId?`, `/dashboard`, `/campanas`, `/admin/agentes` — all behind `PrivateRoute` except `/login`; `/admin/agentes` also behind `AdminRoute` (superadmin only)
-- **CSS:** Custom properties for brand (red/blue/white), font families `Inter` (headings) + `DM Sans` (body), dark mode via `data-theme="dark"` on `:root`, no CSS-in-JS
+## Arquitectura
+- **API routes** montadas bajo `/api`: `auth`, `clientes`, `mensajes`, `webhook`, `analytics`, `campanias`, `agentes`, `profit`
+- **Health** en `/health` (raíz, no bajo `/api`)
+- **Auth:** JWT en `localStorage`, header `Authorization: Bearer <token>`, expira 24h
+- **Socket.IO** en el mismo puerto Express; eventos: `join:chat`, `leave:chat`, `message:send`, `message:new`, `chat:updated`, `message:error`
+- **DB:** `database/schema.sql` se ejecuta automáticamente al primer inicio del contenedor MySQL; `database/seed-demo.sql` disponible
+- **Frontend routes:** `/login`, `/inbox/:clienteId?`, `/dashboard`, `/campanas`, `/admin/agentes` — todo tras `PrivateRoute` excepto `/login`; `/admin/agentes` también requiere `AdminRoute` (rol `superadmin`)
 
-## Roles & Auth
-- `roles` table: `id`, `nombre` (unique), `permisos` (JSON array)
-- Default roles: `superadmin` (id=1), `agente` (id=2)
-- `agentes.rol_id` FK → `roles.id`
-- JWT token carries `rol_id` + `rol_nombre`
-- `requireAdmin` middleware checks `rol_nombre === 'superadmin'`
-- Superadmin sees "Admin Agentes" in sidebar; agents don't
-- Seed (`npm run seed`) creates `admin@romicars.com` / `Admin123!` with `rol_id=1`
+## Roles
+- `roles` tabla: `id`, `nombre` (único), `permisos` (JSON array)
+- Roles por defecto: `superadmin` (id=1), `agente` (id=2)
+- JWT incluye `rol_id` + `rol_nombre`; `requireAdmin` chequea `rol_nombre === 'superadmin'`
+- Seed crea `admin@romicars.com` / `Admin123!` con rol superadmin
 
-## Conventions
-- Backend is CommonJS (`"type": "commonjs"`), Frontend is ESM (`"type": "module"`)
-- Backend `ts-node-dev` transpiles only (no type checking at runtime), type errors found via `tsc` only
-- n8n workflow definitions are in `/n8n-workflows/` as **raw JSON** (standard n8n export format)
-- `import.meta.env.VITE_*` for frontend env vars; `dotenv` for backend
-- Default JWT secret in `auth.ts`: `romicars-secret-key-change-in-production`; in `docker-compose.yml`: `autoparts-flow-secret` (the compose env var overrides)
-- Default DB: `autoparts_flow`, root password: `romicars2024`
-- CORS allows `FRONTEND_URL` env var or falls back to `http://localhost:5173`
-- Nginx uses `envsubst` template for `$BACKEND_URL` — must be set at container runtime
-- No tests exist; test script is a placeholder
+## Convenciones
+- Backend CommonJS (`"type": "commonjs"`), Frontend ESM (`"type": "module"`)
+- Backend `ts-node-dev` solo transpila (sin typecheck en runtime); errores de tipos solo con `tsc`
+- `query()` helper (`database.ts:18`) retorna rows tipados de `mysql2/promise.execute()`
+- `import.meta.env.VITE_*` para vars de entorno del frontend; `dotenv` para backend
+- Default JWT secret en `auth.ts`: `romicars-secret-key-change-in-production`; en docker-compose: `autoparts-flow-secret` (override)
+- CORS permite `FRONTEND_URL` env var o fallback a `http://localhost:5173`
+- Nginx usa `envsubst`: `$BACKEND_URL` debe estar definida en runtime del contenedor
+- No hay tests; `npm test` es placeholder
 
-## Message Flow (Outbound)
-- Agent reply → `POST /api/mensajes/enviar` → saved to DB + Socket.IO emit **and** forwarded to n8n (`N8N_OUTBOUND_URL`) with `{ type: "enviar_mensaje", cliente_id, contenido, canal, telefono, facebook_psid, instagram_psid }`
-- Falls back to Evolution API (`EVOLUTION_API_URL`/`EVOLUTION_API_KEY`/`EVOLUTION_INSTANCE`) for WhatsApp if n8n not configured
-- n8n is responsible for delivering to the correct channel (IG/FB/WA)
+## CSS
+- Variables CSS personalizadas (`--primary`, `--secondary`, etc.) — rojo/azul/blanco
+- Headings: `Hanken Grotesk`; body: `Inter` (NO DM Sans como decía una versión anterior)
+- Dark mode via `data-theme="dark"` en `:root`
+- Sin CSS-in-JS
 
 ## Gotchas
-- `oxlint` is the linter, not ESLint — don't add eslint config or deps; `.oxlintrc.json` configures react + typescript + oxc rules
-- `tsc` versions differ: backend TS 7 (`^7.0.2`), frontend TS 6 (`~6.0.2`)
-- Frontend Dockerfile copies `frontend/` as context — vite config is inside, not at repo root
-- Backend Dockerfile copies `backend/` as context, runs `tsc`, uses `tini` entrypoint
-- Backend `query()` helper returns typed rows from `mysql2/promise.execute()`
-- Schema includes commented migration for PSID columns (ALTER TABLE comment, only needed for legacy DBs without those columns)
-- Backend applies `helmet` via `securityMiddleware` — CSP disabled, cross-origin resource policy set to cross-origin
-- Backend applies rate limiting: 100 req/min general (`apiLimiter`), 10 per 15 min login (`loginRateLimiter`)
-- `/health` endpoint returns JSON with `status` and `timestamp` — useful for Docker healthchecks
-- Key env vars for external integrations: `N8N_OUTBOUND_URL` (envía respuesta a n8n), `N8N_RECEIVE_URL` (webhook n8n para mensajes entrantes), `EVOLUTION_API_URL`/`EVOLUTION_API_KEY`/`EVOLUTION_INSTANCE` (fallback WhatsApp directo), `FB_VERIFY_TOKEN`/`FB_PAGE_TOKEN` (Meta webhook)
+- `oxlint` es el linter, **no ESLint** — no agregar config ni dependencias de ESLint
+- `tsc` versions distintas: backend TS 7 (`^7.0.2`), frontend TS 6 (`~6.0.2`)
+- Frontend build: `tsc -b` (project references en `tsconfig.json` → `tsconfig.app.json` + `tsconfig.node.json`)
+- Docker build: cada Dockerfile copia su propio subdirectorio como contexto (`frontend/` o `backend/`)
+- Las rutas `GET /api/clientes` **no tienen `authMiddleware`** — acceso público
+- Las rutas `GET /api/campanias` y `POST /api/campanias` **tampoco** tienen authMiddleware
+- `POST /api/mensajes/enviar`: intenta enviar a n8n **y también** a Evolution API (no son mutuamente excluyentes)
+- Webhooks entrantes: `GET/POST /api/webhook/facebook`, `POST /api/webhook/whatsapp`, `POST /api/webhook/n8n`
+- Header `Cross-Origin-Resource-Policy: cross-origin` (explícitamente abierto, no same-origin)
+- `requireHttps` chequea `x-forwarded-proto` (para reverse proxy); en dev local simplemente no hace redirect
+- **`login_audit` no está en schema.sql** — la tabla es referenciada en `auth.ts` para brute-force protection pero no se crea automáticamente. Si se necesita, hay que agregarla manualmente.
+- Rate limiting: 100 req/min global (`apiLimiter`), sin rate limiter específico de login (solo el `login_audit` de fuerza bruta)
+- En `clientes` PUT, todos los campos se envían siempre (no hay merge parcial del lado del frontend)
+- n8n workflows están en `/n8n-workflows/` como JSON crudo + archivos `.ts` para algunos
+- Profit API: integración externa con variables `PROFIT_API_URL`, `PROFIT_API_USER`, `PROFIT_API_PASSWORD`, etc. — el servicio `services/profit.ts` hace fetch a esa API
+- En `docker-compose.yml` el backend expone `:3001`, el frontend expone `:80`
+
+## Flujo de mensajes salientes
+1. Agente responde → `POST /api/mensajes/enviar`
+2. Se guarda en DB + Socket.IO emit a la sala `chat:{clienteId}`
+3. Se reenvía a n8n (`N8N_OUTBOUND_URL` o `N8N_RECEIVE_URL`) con `{ type: "enviar_mensaje", ... }`
+4. Si el cliente tiene teléfono y `EVOLUTION_API_KEY` está configurada, también se envía por Evolution API
+5. n8n es el responsable principal de entregar al canal correcto (IG/FB/WA)

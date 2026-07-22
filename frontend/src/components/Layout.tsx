@@ -120,10 +120,17 @@ function Layout() {
                   <Icon size={20} />
                   {item.path === '/inbox' && unread > 0 && (
                     <div style={{
-                      position: 'absolute', top: -6, right: -8, width: 10, height: 10,
-                      borderRadius: '50%', background: '#DC2626',
+                      position: 'absolute', top: -8, right: -10,
+                      minWidth: 20, height: 20, borderRadius: 10,
+                      background: '#DC2626', color: '#fff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 11, fontWeight: 700,
                       border: '2px solid #0A1628',
-                    }} />
+                      padding: '0 5px',
+                      boxShadow: '0 2px 6px rgba(220,38,38,0.4)',
+                    }}>
+                      {unread > 99 ? '99+' : unread}
+                    </div>
                   )}
                 </div>
                 {!collapsed && <span>{item.label}</span>}

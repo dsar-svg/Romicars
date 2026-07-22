@@ -81,17 +81,6 @@ router.post('/facebook', async (req: Request, res: Response) => {
 
         getIO().to(`chat:${clienteId}`).emit('message:new', msg);
         getIO().emit('chat:updated', { cliente_id: clienteId });
-
-        if (N8N_RECEIVE_URL) {
-          fetch(N8N_RECEIVE_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              sender, message, channel: 'facebook', timestamp, name,
-              cliente_id: clienteId,
-            }),
-          }).catch(() => {});
-        }
       }
     }
 
@@ -199,17 +188,6 @@ router.post('/whatsapp', async (req: Request, res: Response) => {
 
     getIO().to(`chat:${clienteId}`).emit('message:new', msg);
     getIO().emit('chat:updated', { cliente_id: clienteId });
-
-    if (N8N_RECEIVE_URL) {
-      fetch(N8N_RECEIVE_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sender, message, channel: 'whatsapp', pushName,
-          cliente_id: clienteId,
-        }),
-      }).catch(() => {});
-    }
 
     res.sendStatus(200);
   } catch (error) {
