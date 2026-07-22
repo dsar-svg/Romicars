@@ -13,6 +13,7 @@ export interface Cliente {
   pidio_fotos: boolean;
   acepta_promos: boolean;
   ultimo_mensaje: string | null;
+  ultimo_remitente: string | null;
   ultima_interaccion: string | null;
   created_at: string;
   updated_at: string;

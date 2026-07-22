@@ -8,6 +8,7 @@ router.get('/', async (_req: Request, res: Response) => {
     const clientes = await query(
       `SELECT c.*,
         (SELECT contenido FROM mensajes WHERE cliente_id = c.id ORDER BY fecha_envio DESC LIMIT 1) as ultimo_mensaje,
+        (SELECT remitente FROM mensajes WHERE cliente_id = c.id ORDER BY fecha_envio DESC LIMIT 1) as ultimo_remitente,
         (SELECT fecha_envio FROM mensajes WHERE cliente_id = c.id ORDER BY fecha_envio DESC LIMIT 1) as ultima_interaccion
        FROM clientes c
        ORDER BY ultima_interaccion DESC`
@@ -23,6 +24,7 @@ router.get('/:id', async (req: Request, res: Response) => {
     const [cliente] = await query(
       `SELECT c.*,
         (SELECT contenido FROM mensajes WHERE cliente_id = c.id ORDER BY fecha_envio DESC LIMIT 1) as ultimo_mensaje,
+        (SELECT remitente FROM mensajes WHERE cliente_id = c.id ORDER BY fecha_envio DESC LIMIT 1) as ultimo_remitente,
         (SELECT fecha_envio FROM mensajes WHERE cliente_id = c.id ORDER BY fecha_envio DESC LIMIT 1) as ultima_interaccion
        FROM clientes c WHERE c.id = ?`,
       [req.params.id]

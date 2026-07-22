@@ -374,7 +374,7 @@ function Inbox() {
                             }} />
                           </div>
                           <div style={{ fontSize: 13, color: '#5a6a7c', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.3 }}>
-                            {cliente.ultimo_mensaje || 'Sin mensajes'}
+                            {cliente.ultimo_remitente === 'agente' ? `tú: ${cliente.ultimo_mensaje}` : (cliente.ultimo_mensaje || 'Sin mensajes')}
                           </div>
                           {cliente.resumen_busqueda && (
                             <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#002045' }}>
