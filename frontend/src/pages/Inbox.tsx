@@ -234,7 +234,7 @@ function Inbox() {
     if (!el) return;
     const onScroll = () => {
       if (el.scrollTop < 80) cargarMasRef.current();
-      const lejos = el.scrollHeight - el.scrollTop - el.clientHeight > 200;
+      const lejos = el.scrollHeight - el.scrollTop - el.clientHeight > 100;
       setShowScrollBtn(lejos);
       if (!lejos && newMsgCountRef.current > 0) {
         newMsgCountRef.current = 0;
