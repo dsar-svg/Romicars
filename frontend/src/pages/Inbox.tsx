@@ -159,6 +159,8 @@ function Inbox() {
     setUnreadChats(new Set(window.__unreadChats || []));
     offsetRef.current = 0;
     hasMoreRef.current = true;
+    setMensajes([]);
+    setMessagesLoading(true);
     const cached = clientes.find(c => c.id === id);
     if (cached) setSelectedCliente(cached);
 
@@ -172,8 +174,9 @@ function Inbox() {
       if (msgs.length < 20) { hasMoreRef.current = false; return; }
       const mas = await mensajesApi.getByCliente(chatId, 50, 20) as Mensaje[];
       if (fetchIdRef.current !== chatId) return;
-      idsRef.current = new Set([...idsRef.current].concat(mas.map((m: Mensaje) => m.id)));
-      setMensajes(prev => [...mas, ...prev]);
+      const todos = [...mas, ...msgs] as Mensaje[];
+      idsRef.current = new Set(todos.map(m => m.id));
+      setMensajes(todos);
       hasMoreRef.current = mas.length >= 50;
       offsetRef.current = 20 + mas.length;
     };
