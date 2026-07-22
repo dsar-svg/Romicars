@@ -74,6 +74,7 @@ function Inbox() {
   const hasMoreRef = useRef(true);
   const loadingMoreRef = useRef(false);
   const fetchIdRef = useRef<number | null>(null);
+  const cargarMasRef = useRef<() => Promise<void>>(async () => {});
 
   useEffect(() => {
     if (!window.__unreadChats) window.__unreadChats = new Set<number>();
@@ -193,9 +194,9 @@ function Inbox() {
   }, [mensajes]);
 
   const cargarMas = async () => {
-    if (!clienteId || loadingMoreRef.current || !hasMoreRef.current) return;
+    const chatId = fetchIdRef.current;
+    if (chatId === null || loadingMoreRef.current || !hasMoreRef.current) return;
     loadingMoreRef.current = true;
-    const chatId = Number(clienteId);
     const prevHeight = messagesContainerRef.current?.scrollHeight || 0;
     try {
       const msgs = await mensajesApi.getByCliente(chatId, 50, offsetRef.current);
@@ -214,16 +215,24 @@ function Inbox() {
       loadingMoreRef.current = false;
     }
   };
+  cargarMasRef.current = cargarMas;
 
   useEffect(() => {
     const el = messagesContainerRef.current;
     if (!el) return;
     const onScroll = () => {
-      if (el.scrollTop < 80) cargarMas();
+      if (el.scrollTop < 80) cargarMasRef.current();
     };
     el.addEventListener('scroll', onScroll);
     return () => el.removeEventListener('scroll', onScroll);
   }, [clienteId]);
+
+  useEffect(() => {
+    if (clienteId && clientes.length > 0) {
+      const id = Number(clienteId);
+      setSelectedCliente(prev => prev?.id === id ? prev : (clientes.find(c => c.id === id) || prev));
+    }
+  }, [clienteId, clientes]);
 
   useEffect(() => {
     if (clienteId && clientes.length > 0 && clientesFiltrados.length > 0) {
