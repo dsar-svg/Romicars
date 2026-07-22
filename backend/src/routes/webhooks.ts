@@ -132,7 +132,6 @@ router.post('/n8n', async (req: Request, res: Response) => {
         [contenido, clienteId]
       );
 
-      getIO().to(`chat:${clienteId}`).emit('message:new', msg);
       getIO().emit('message:new', msg);
       getIO().emit('chat:updated', { cliente_id: clienteId });
 
