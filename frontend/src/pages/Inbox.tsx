@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Search, Send, MessageSquare, Bot, CheckCheck, Paperclip, Smile, Phone, PanelRightOpen, PanelRightClose, FileText, FileSpreadsheet, FileImage, FileAudio, FileVideo, File as FileIcon } from 'lucide-react';
+import { Search, Send, MessageSquare, Bot, CheckCheck, Paperclip, Smile, Phone, PanelRightOpen, PanelRightClose, FileText, FileSpreadsheet, Image as ImageIcon, Music, Video, File as FileIcon } from 'lucide-react';
 import { clientesApi, mensajesApi } from '../services/api';
 import { connectSocket, getSocket } from '../services/socket';
 import { toast } from '../components/Toast';
@@ -41,6 +41,65 @@ function SkeletonChats() {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function AudioPlayer({ src, isAgent }: { src: string; isAgent: boolean }) {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+
+  useEffect(() => {
+    const el = audioRef.current;
+    if (!el) return;
+    const onTime = () => setProgress(el.currentTime / (el.duration || 1));
+    const onMeta = () => setDuration(el.duration);
+    const onEnd = () => { setPlaying(false); setProgress(0); };
+    el.addEventListener('timeupdate', onTime);
+    el.addEventListener('loadedmetadata', onMeta);
+    el.addEventListener('ended', onEnd);
+    return () => { el.removeEventListener('timeupdate', onTime); el.removeEventListener('loadedmetadata', onMeta); el.removeEventListener('ended', onEnd); };
+  }, []);
+
+  const toggle = () => {
+    const el = audioRef.current;
+    if (!el) return;
+    if (playing) { el.pause(); setPlaying(false); }
+    else { el.play().then(() => setPlaying(true)).catch(() => {}); }
+  };
+
+  const fmt = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', maxWidth: 280 }}>
+      <audio ref={audioRef} src={src} preload="metadata" />
+      <div onClick={toggle} style={{
+        width: 34, height: 34, borderRadius: '50%', flexShrink: 0, cursor: 'pointer',
+        background: isAgent ? '#fff' : '#b51822',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        {playing ? (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill={isAgent ? '#002045' : '#fff'}>
+            <rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" />
+          </svg>
+        ) : (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill={isAgent ? '#002045' : '#fff'}>
+            <polygon points="8,5 19,12 8,19" />
+          </svg>
+        )}
+      </div>
+      <div style={{ flex: 1, height: 3, borderRadius: 2, background: isAgent ? 'rgba(255,255,255,0.2)' : 'rgba(0,32,69,0.1)', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ width: `${progress * 100}%`, height: '100%', borderRadius: 2, background: isAgent ? '#fff' : '#b51822', transition: 'width 0.3s' }} />
+      </div>
+      <span style={{ fontSize: 11, color: isAgent ? 'rgba(255,255,255,0.6)' : '#8896ab', flexShrink: 0, minWidth: 30, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+        {duration ? fmt(progress * duration) : fmt(0)} / {duration ? fmt(duration) : '...'}
+      </span>
     </div>
   );
 }
@@ -665,11 +724,18 @@ function Inbox() {
                               </div>
                             )}
                             {msg.tipo === 'imagen' && msg.url_multimedia && (
-                              <img src={msg.url_multimedia} alt="imagen" style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 8, marginBottom: 4, cursor: 'pointer' }}
-                                onClick={() => window.open(msg.url_multimedia!, '_blank')} />
+                              <>
+                                <img src={msg.url_multimedia} alt="imagen" style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 8, marginBottom: msg.contenido ? 2 : 4, cursor: 'pointer', display: 'block' }}
+                                  onClick={() => window.open(msg.url_multimedia!, '_blank')} />
+                                {msg.contenido && (
+                                  <div style={{ fontSize: 12, color: isBot ? 'var(--text-secondary)' : isAgent ? 'rgba(255,255,255,0.75)' : 'rgba(0,32,69,0.6)', marginBottom: 4, fontStyle: 'italic' }}>
+                                    {msg.contenido}
+                                  </div>
+                                )}
+                              </>
                             )}
                             {msg.tipo === 'audio' && msg.url_multimedia && (
-                              <audio controls src={msg.url_multimedia} style={{ width: '100%', maxWidth: 280, marginBottom: 4 }} />
+                              <AudioPlayer src={msg.url_multimedia} isAgent={isAgent} />
                             )}
                             {msg.tipo === 'video' && msg.url_multimedia && (
                               <video controls src={msg.url_multimedia} style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 8, marginBottom: 4 }} />
@@ -684,17 +750,17 @@ function Inbox() {
                                   xls: { icon: FileSpreadsheet, color: '#217346', bg: '#e6f4ea', label: 'XLS' },
                                   xlsx: { icon: FileSpreadsheet, color: '#217346', bg: '#e6f4ea', label: 'XLSX' },
                                   csv: { icon: FileSpreadsheet, color: '#217346', bg: '#e6f4ea', label: 'CSV' },
-                                  jpg: { icon: FileImage, color: '#e67e22', bg: '#fef5e7', label: 'JPG' },
-                                  jpeg: { icon: FileImage, color: '#e67e22', bg: '#fef5e7', label: 'JPEG' },
-                                  png: { icon: FileImage, color: '#e67e22', bg: '#fef5e7', label: 'PNG' },
-                                  gif: { icon: FileImage, color: '#e67e22', bg: '#fef5e7', label: 'GIF' },
-                                  webp: { icon: FileImage, color: '#e67e22', bg: '#fef5e7', label: 'WEBP' },
-                                  mp3: { icon: FileAudio, color: '#8e44ad', bg: '#f4ecf7', label: 'MP3' },
-                                  wav: { icon: FileAudio, color: '#8e44ad', bg: '#f4ecf7', label: 'WAV' },
-                                  ogg: { icon: FileAudio, color: '#8e44ad', bg: '#f4ecf7', label: 'OGG' },
-                                  mp4: { icon: FileVideo, color: '#2980b9', bg: '#e8f0fe', label: 'MP4' },
-                                  mov: { icon: FileVideo, color: '#2980b9', bg: '#e8f0fe', label: 'MOV' },
-                                  webm: { icon: FileVideo, color: '#2980b9', bg: '#e8f0fe', label: 'WEBM' },
+                                  jpg: { icon: ImageIcon, color: '#e67e22', bg: '#fef5e7', label: 'JPG' },
+                                  jpeg: { icon: ImageIcon, color: '#e67e22', bg: '#fef5e7', label: 'JPEG' },
+                                  png: { icon: ImageIcon, color: '#e67e22', bg: '#fef5e7', label: 'PNG' },
+                                  gif: { icon: ImageIcon, color: '#e67e22', bg: '#fef5e7', label: 'GIF' },
+                                  webp: { icon: ImageIcon, color: '#e67e22', bg: '#fef5e7', label: 'WEBP' },
+                                  mp3: { icon: Music, color: '#8e44ad', bg: '#f4ecf7', label: 'MP3' },
+                                  wav: { icon: Music, color: '#8e44ad', bg: '#f4ecf7', label: 'WAV' },
+                                  ogg: { icon: Music, color: '#8e44ad', bg: '#f4ecf7', label: 'OGG' },
+                                  mp4: { icon: Video, color: '#2980b9', bg: '#e8f0fe', label: 'MP4' },
+                                  mov: { icon: Video, color: '#2980b9', bg: '#e8f0fe', label: 'MOV' },
+                                  webm: { icon: Video, color: '#2980b9', bg: '#e8f0fe', label: 'WEBM' },
                                 };
                                 const info = extMap[ext] || { icon: FileIcon, color: '#8896ab', bg: '#f0f2f5', label: ext.toUpperCase() };
                                 const Icon = info.icon;
