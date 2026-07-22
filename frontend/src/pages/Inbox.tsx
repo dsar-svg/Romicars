@@ -5,6 +5,7 @@ import { clientesApi, mensajesApi } from '../services/api';
 import { connectSocket, getSocket } from '../services/socket';
 import { toast } from '../components/Toast';
 import ClientPanel from '../components/ClientPanel';
+import { useNotifications } from '../hooks/useNotifications';
 import type { Cliente, Mensaje } from '../types';
 
 const canalIcono: Record<string, string> = {
@@ -48,6 +49,7 @@ function Inbox() {
   const [filtroIA, setFiltroIA] = useState(false);
   const [urgenciaFiltro, setUrgenciaFiltro] = useState('todos');
   const [searchTerm, setSearchTerm] = useState('');
+  const { notify, clearNotifications } = useNotifications();
   const [loading, setLoading] = useState(true);
   const [showPanel, setShowPanel] = useState(false);
 
@@ -75,9 +77,11 @@ function Inbox() {
     };
 
     socket.on('message:new', (mensaje: Mensaje) => {
-      if (currentClienteId.current === mensaje.cliente_id) {
+      const isCurrent = currentClienteId.current === mensaje.cliente_id;
+      if (isCurrent) {
         setMensajes(prev => [...prev, mensaje]);
       }
+      notify(mensaje, isCurrent);
       refrescarClienteEnLista(mensaje.cliente_id);
     });
 
@@ -111,6 +115,13 @@ function Inbox() {
       setMensajes(msgs);
       setLoading(false);
     });
+  }, [clienteId]);
+
+  useEffect(() => {
+    clearNotifications();
+    const handleVisibility = () => { if (!document.hidden) clearNotifications(); };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, [clienteId]);
 
   useEffect(() => {

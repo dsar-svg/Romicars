@@ -18,6 +18,13 @@ function Layout() {
   const { agente, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark');
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    const handler = (e: Event) => setUnread((e as CustomEvent).detail);
+    window.addEventListener('unread-changed', handler);
+    return () => window.removeEventListener('unread-changed', handler);
+  }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
@@ -108,7 +115,16 @@ function Layout() {
                   if (!active) e.currentTarget.style.background = 'transparent';
                 }}
               >
-                <Icon size={20} />
+                <div style={{ position: 'relative' }}>
+                  <Icon size={20} />
+                  {item.path === '/inbox' && unread > 0 && (
+                    <div style={{
+                      position: 'absolute', top: -6, right: -8, width: 10, height: 10,
+                      borderRadius: '50%', background: '#DC2626',
+                      border: '2px solid #0A1628',
+                    }} />
+                  )}
+                </div>
                 {!collapsed && <span>{item.label}</span>}
                 {active && !collapsed && (
                   <div style={{
