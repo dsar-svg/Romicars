@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { MessageSquare, LayoutDashboard, Send, Shield, Menu, ChevronLeft, LogOut, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { connectSocket } from '../services/socket';
+import type { Mensaje } from '../types';
+
+declare global {
+  interface Window { __unreadChats?: Set<number>; }
+}
 
 const navItems = [
   { path: '/inbox', label: 'Inbox', icon: MessageSquare },
@@ -19,12 +25,31 @@ function Layout() {
   const [collapsed, setCollapsed] = useState(false);
   const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark');
   const [unread, setUnread] = useState(0);
+  const inboxActive = location.pathname.startsWith('/inbox');
 
   useEffect(() => {
-    const handler = (e: Event) => setUnread((e as CustomEvent).detail);
-    window.addEventListener('unread-changed', handler);
-    return () => window.removeEventListener('unread-changed', handler);
-  }, []);
+    if (!window.__unreadChats) window.__unreadChats = new Set<number>();
+    const socket = connectSocket();
+
+    socket.on('message:new', (mensaje: Mensaje) => {
+      const set = window.__unreadChats!;
+      if (!inboxActive) {
+        set.add(mensaje.cliente_id);
+        setUnread(set.size);
+        window.dispatchEvent(new CustomEvent('unread-sync'));
+      }
+    });
+
+    return () => {
+      socket.off('message:new');
+    };
+  }, [inboxActive]);
+
+  useEffect(() => {
+    if (inboxActive) {
+      setUnread(0);
+    }
+  }, [inboxActive]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');

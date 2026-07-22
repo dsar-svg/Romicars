@@ -72,8 +72,12 @@ function Inbox() {
   const [showPanel, setShowPanel] = useState(true);
 
   useEffect(() => {
-    window.dispatchEvent(new CustomEvent('unread-changed', { detail: unreadChats.size }));
-  }, [unreadChats.size]);
+    if (!window.__unreadChats) window.__unreadChats = new Set<number>();
+    setUnreadChats(new Set(window.__unreadChats));
+    const handler = () => setUnreadChats(new Set(window.__unreadChats!));
+    window.addEventListener('unread-sync', handler);
+    return () => window.removeEventListener('unread-sync', handler);
+  }, []);
 
   useEffect(() => {
     const socket = connectSocket();
@@ -103,7 +107,8 @@ function Inbox() {
       if (isCurrent) {
         agregarMensaje(mensaje);
       } else {
-        setUnreadChats(prev => new Set(prev).add(mensaje.cliente_id));
+        window.__unreadChats?.add(mensaje.cliente_id);
+        setUnreadChats(new Set(window.__unreadChats));
       }
       notify(mensaje, isCurrent);
       refrescarClienteEnLista(mensaje.cliente_id);
@@ -130,7 +135,6 @@ function Inbox() {
       socket.off('message:new');
       socket.off('chat:updated');
       socket.off('cliente:updated');
-      window.dispatchEvent(new CustomEvent('unread-changed', { detail: 0 }));
     };
   }, []);
 
@@ -145,7 +149,8 @@ function Inbox() {
     const id = Number(clienteId);
     socket.emit('join:chat', id);
     currentClienteId.current = id;
-    setUnreadChats(prev => { const next = new Set(prev); next.delete(id); return next; });
+    window.__unreadChats?.delete(id);
+    setUnreadChats(new Set(window.__unreadChats || []));
     setMessagesLoading(true);
     Promise.all([
       clientesApi.getById(id),
