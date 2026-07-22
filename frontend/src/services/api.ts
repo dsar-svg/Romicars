@@ -33,8 +33,13 @@ export const mensajesApi = {
   getByCliente: (clienteId: number, limit?: number, offset?: number) =>
     api.get(`/mensajes/${clienteId}`, { params: { limit, offset } }).then(r => r.data),
   marcarLeido: (id: number) => api.put(`/mensajes/${id}/leer`).then(r => r.data),
-  enviar: (data: { cliente_id: number; contenido: string; remitente: string; tipo?: string }) =>
+  enviar: (data: { cliente_id: number; contenido?: string; remitente: string; tipo?: string; url_multimedia?: string }) =>
     api.post('/mensajes/enviar', data).then(r => r.data),
+  upload: (file: File) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    return api.post('/mensajes/upload', fd).then(r => r.data);
+  },
 };
 
 export const profitApi = {

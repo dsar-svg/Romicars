@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS mensajes (
     cliente_id INT NOT NULL,
     remitente ENUM('cliente', 'agente', 'bot') NOT NULL,
     contenido TEXT NOT NULL,
-    tipo ENUM('texto', 'imagen', 'archivo') DEFAULT 'texto',
+    tipo ENUM('texto', 'imagen', 'archivo', 'audio', 'video') DEFAULT 'texto',
     url_multimedia TEXT,
     leido BOOLEAN DEFAULT FALSE,
     asignado_a INT,
@@ -98,3 +98,5 @@ CREATE INDEX idx_clientes_promos ON clientes(acepta_promos);
 -- ALTER TABLE clientes
 --   ADD COLUMN facebook_psid VARCHAR(100) UNIQUE AFTER telefono,
 --   ADD COLUMN instagram_psid VARCHAR(100) UNIQUE AFTER facebook_psid;
+
+ALTER TABLE mensajes MODIFY COLUMN tipo ENUM('texto','imagen','archivo','audio','video') DEFAULT 'texto';

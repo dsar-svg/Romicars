@@ -32,10 +32,26 @@ router.post('/facebook', async (req: Request, res: Response) => {
     for (const entry of body.entry || []) {
       for (const event of entry.messaging || []) {
         const sender = event.sender?.id;
-        const message = event.message?.text;
-        const timestamp = event.timestamp ? new Date(event.timestamp).toISOString() : new Date().toISOString();
+        let message = event.message?.text || '';
+        let msgTipo = 'texto';
+        let urlMultimedia = null;
 
-        if (!sender || !message) continue;
+        if (event.message?.attachments) {
+          const att = event.message.attachments[0];
+          if (att) {
+            const type = att.type;
+            if (['image','photo'].includes(type)) msgTipo = 'imagen';
+            else if (type === 'audio') msgTipo = 'audio';
+            else if (type === 'video') msgTipo = 'video';
+            else msgTipo = 'archivo';
+
+            if (att.payload?.url) urlMultimedia = att.payload.url;
+            else if (att.payload?.facebook_url) urlMultimedia = att.payload.facebook_url;
+            message = message || att.title || '';
+          }
+        }
+
+        if (!sender) continue;
 
         let name = '';
         if (FB_PAGE_TOKEN) {
@@ -66,9 +82,9 @@ router.post('/facebook', async (req: Request, res: Response) => {
         }
 
         const msgResult = await query(
-          `INSERT INTO mensajes (cliente_id, remitente, contenido, tipo)
-           VALUES (?, 'cliente', ?, 'texto')`,
-          [clienteId, message]
+          `INSERT INTO mensajes (cliente_id, remitente, contenido, tipo, url_multimedia)
+           VALUES (?, 'cliente', ?, ?, ?)`,
+          [clienteId, message, msgTipo, urlMultimedia]
         ) as any;
 
         const mensajes = await query('SELECT * FROM mensajes WHERE id = ?', [msgResult.insertId]) as any[];
@@ -76,7 +92,7 @@ router.post('/facebook', async (req: Request, res: Response) => {
 
         await query(
           'UPDATE clientes SET ultimo_mensaje = ?, ultima_interaccion = NOW() WHERE id = ?',
-          [message, clienteId]
+          [message || (urlMultimedia || msgTipo), clienteId]
         );
 
         getIO().to(`chat:${clienteId}`).emit('message:new', msg);
@@ -96,21 +112,23 @@ router.post('/n8n', async (req: Request, res: Response) => {
     const body = req.body;
     const tipo = body.tipo || (body.remitente === 'cliente' ? 'nuevo_mensaje' : body.tipo);
     const clienteId = body.cliente_id || body.clienteId;
-    const contenido = body.contenido || body.mensaje || body.message;
+    const contenido = body.contenido || body.mensaje || body.message || '';
+    const msgTipo = body.msg_tipo || 'texto';
+    const urlMultimedia = body.url_multimedia || null;
 
     console.log('[webhook:n8n] recibido:', JSON.stringify(body));
 
-    if (!clienteId || !contenido) {
-      console.log('[webhook:n8n] falta clienteId o contenido');
+    if (!clienteId) {
+      console.log('[webhook:n8n] falta clienteId');
       res.json({ success: false, error: 'faltan datos' });
       return;
     }
 
     if (tipo === 'nuevo_mensaje' || body.remitente === 'cliente') {
       const result = await query(
-        `INSERT INTO mensajes (cliente_id, remitente, contenido, tipo)
-         VALUES (?, ?, ?, 'texto')`,
-        [clienteId, body.remitente || 'cliente', contenido]
+        `INSERT INTO mensajes (cliente_id, remitente, contenido, tipo, url_multimedia)
+         VALUES (?, ?, ?, ?, ?)`,
+        [clienteId, body.remitente || 'cliente', contenido, msgTipo, urlMultimedia]
       ) as any;
 
       const mensajes = await query('SELECT * FROM mensajes WHERE id = ?', [result.insertId]) as any[];
@@ -118,7 +136,7 @@ router.post('/n8n', async (req: Request, res: Response) => {
 
       await query(
         'UPDATE clientes SET ultimo_mensaje = ?, ultima_interaccion = NOW() WHERE id = ?',
-        [contenido, clienteId]
+        [contenido || (urlMultimedia || msgTipo), clienteId]
       );
 
       getIO().emit('message:new', msg);
@@ -149,10 +167,24 @@ router.post('/whatsapp', async (req: Request, res: Response) => {
   try {
     const body = req.body;
     const sender = body.key?.remoteJid?.replace('@s.whatsapp.net', '') || body.from;
-    const message = body.message?.conversation || body.message?.extendedTextMessage?.text || body.text || body.message;
+    const msgObj = body.message || {};
+    let message = msgObj.conversation || msgObj.extendedTextMessage?.text || body.text || body.message || '';
+    let msgTipo = 'texto';
+    let urlMultimedia = null;
+
+    const mm = msgObj.imageMessage || msgObj.audioMessage || msgObj.videoMessage || msgObj.documentMessage;
+    if (mm) {
+      if (msgObj.imageMessage) msgTipo = 'imagen';
+      else if (msgObj.audioMessage) msgTipo = 'audio';
+      else if (msgObj.videoMessage) msgTipo = 'video';
+      else msgTipo = 'archivo';
+      urlMultimedia = mm.url || mm.directPath || mm.mimetype || null;
+      message = message || mm.caption || '';
+    }
+
     const pushName = body.pushName || body.key?.participant || sender;
 
-    if (!sender || !message) {
+    if (!sender) {
       res.sendStatus(200);
       return;
     }
@@ -173,9 +205,9 @@ router.post('/whatsapp', async (req: Request, res: Response) => {
     }
 
     const msgResult = await query(
-      `INSERT INTO mensajes (cliente_id, remitente, contenido, tipo)
-       VALUES (?, 'cliente', ?, 'texto')`,
-      [clienteId, message]
+      `INSERT INTO mensajes (cliente_id, remitente, contenido, tipo, url_multimedia)
+       VALUES (?, 'cliente', ?, ?, ?)`,
+      [clienteId, message, msgTipo, urlMultimedia]
     ) as any;
 
     const mensajes = await query('SELECT * FROM mensajes WHERE id = ?', [msgResult.insertId]) as any[];
@@ -183,7 +215,7 @@ router.post('/whatsapp', async (req: Request, res: Response) => {
 
     await query(
       'UPDATE clientes SET ultimo_mensaje = ?, ultima_interaccion = NOW() WHERE id = ?',
-      [message, clienteId]
+      [message || (urlMultimedia || msgTipo), clienteId]
     );
 
     getIO().to(`chat:${clienteId}`).emit('message:new', msg);

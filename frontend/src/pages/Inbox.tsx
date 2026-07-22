@@ -80,6 +80,7 @@ function Inbox() {
   const loadingMoreRef = useRef(false);
   const fetchIdRef = useRef<number | null>(null);
   const cargarMasRef = useRef<() => Promise<void>>(async () => {});
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!window.__unreadChats) window.__unreadChats = new Set<number>();
@@ -663,9 +664,26 @@ function Inbox() {
                                 <Bot size={10} /> Bot IA
                               </div>
                             )}
-                            <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                              {msg.contenido}
-                            </div>
+                            {msg.tipo === 'imagen' && msg.url_multimedia && (
+                              <img src={msg.url_multimedia} alt="imagen" style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 8, marginBottom: 4, cursor: 'pointer' }}
+                                onClick={() => window.open(msg.url_multimedia!, '_blank')} />
+                            )}
+                            {msg.tipo === 'audio' && msg.url_multimedia && (
+                              <audio controls src={msg.url_multimedia} style={{ width: '100%', maxWidth: 280, marginBottom: 4 }} />
+                            )}
+                            {msg.tipo === 'video' && msg.url_multimedia && (
+                              <video controls src={msg.url_multimedia} style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 8, marginBottom: 4 }} />
+                            )}
+                            {msg.tipo === 'archivo' && msg.url_multimedia && (
+                              <a href={msg.url_multimedia} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 0', color: isAgent ? '#fff' : '#b51822', textDecoration: 'underline', fontSize: 13 }}>
+                                {msg.contenido || 'Descargar archivo'}
+                              </a>
+                            )}
+                            {msg.contenido && (
+                              <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                                {msg.contenido}
+                              </div>
+                            )}
                             <div style={{
                               fontSize: 10, marginTop: 5,
                               color: isBot ? 'var(--text-secondary)' : isAgent ? 'rgba(255,255,255,0.6)' : 'rgba(0,32,69,0.5)',
@@ -713,7 +731,21 @@ function Inbox() {
                   background: '#fff',
                   display: 'flex', gap: 8, alignItems: 'center',
                 }}>
-                  <button style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid #e0e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+                  <input ref={fileInputRef} type="file" hidden accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                    onChange={async e => {
+                      const file = e.target.files?.[0];
+                      if (!file || !selectedCliente) return;
+                      try {
+                        const { url, tipo } = await mensajesApi.upload(file);
+                        await mensajesApi.enviar({
+                          cliente_id: selectedCliente.id, remitente: 'agente',
+                          contenido: file.name, tipo, url_multimedia: url,
+                        });
+                      } catch { toast('error', 'Error al subir archivo'); }
+                      e.target.value = '';
+                    }}
+                  />
+                  <button onClick={() => fileInputRef.current?.click()} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid #e0e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
                     <Paperclip size={14} style={{ color: '#8896ab' }} />
                   </button>
                   <div style={{ flex: 1 }}>

@@ -24,7 +24,7 @@ export interface Mensaje {
   cliente_id: number;
   remitente: 'cliente' | 'agente' | 'bot';
   contenido: string;
-  tipo: 'texto' | 'imagen' | 'archivo';
+  tipo: 'texto' | 'imagen' | 'archivo' | 'audio' | 'video';
   url_multimedia: string | null;
   leido: boolean;
   asignado_a: number | null;

@@ -1,6 +1,17 @@
 import { Router, Request, Response } from 'express';
+import multer from 'multer';
+import path from 'path';
 import { query } from '../database';
 import { getIO } from '../socket';
+
+const storage = multer.diskStorage({
+  destination: path.join(__dirname, '../../uploads'),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`);
+  },
+});
+const upload = multer({ storage, limits: { fileSize: 20 * 1024 * 1024 } });
 
 const router = Router();
 
@@ -27,24 +38,39 @@ router.put('/:id/leer', async (req: Request, res: Response) => {
   }
 });
 
+router.post('/upload', upload.single('file'), async (req: Request, res: Response) => {
+  try {
+    if (!req.file) { res.status(400).json({ error: 'Archivo requerido' }); return; }
+    const ext = path.extname(req.file.originalname).toLowerCase();
+    let tipo: string = 'archivo';
+    if (['.jpg','.jpeg','.png','.gif','.webp','.svg'].includes(ext)) tipo = 'imagen';
+    else if (['.mp3','.wav','.ogg','.aac','.m4a'].includes(ext)) tipo = 'audio';
+    else if (['.mp4','.webm','.mov','.avi'].includes(ext)) tipo = 'video';
+    res.json({ url: `/uploads/${req.file.filename}`, tipo });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al subir archivo' });
+  }
+});
+
 router.post('/enviar', async (req: Request, res: Response) => {
   try {
-    const { cliente_id, contenido, remitente, tipo } = req.body;
-    if (!cliente_id || !contenido || !remitente) {
-      res.status(400).json({ error: 'cliente_id, contenido y remitente requeridos' });
+    const { cliente_id, contenido, remitente, tipo, url_multimedia } = req.body;
+    if (!cliente_id || !remitente) {
+      res.status(400).json({ error: 'cliente_id y remitente requeridos' });
       return;
     }
+    const msgTipo = tipo || 'texto';
 
     const result = await query(
-      `INSERT INTO mensajes (cliente_id, remitente, contenido, tipo)
-       VALUES (?, ?, ?, ?)`,
-      [cliente_id, remitente, contenido, tipo || 'texto']
+      `INSERT INTO mensajes (cliente_id, remitente, contenido, tipo, url_multimedia)
+       VALUES (?, ?, ?, ?, ?)`,
+      [cliente_id, remitente, contenido || '', msgTipo, url_multimedia || null]
     ) as any;
 
     await query(
       `UPDATE clientes SET ultimo_mensaje = ?, ultima_interaccion = NOW()
        WHERE id = ?`,
-      [contenido, cliente_id]
+      [contenido || (url_multimedia || msgTipo), cliente_id]
     );
 
     const mensajes = await query('SELECT * FROM mensajes WHERE id = ?', [result.insertId]) as any[];
@@ -70,7 +96,9 @@ router.post('/enviar', async (req: Request, res: Response) => {
               body: JSON.stringify({
                 type: 'enviar_mensaje',
                 cliente_id,
-                contenido,
+                contenido: contenido || '',
+                tipo: msgTipo,
+                url_multimedia: url_multimedia || null,
                 canal: cliente.canal_origen || 'whatsapp',
                 telefono: cliente.telefono || null,
                 facebook_psid: cliente.facebook_psid || null,
@@ -88,11 +116,24 @@ router.post('/enviar', async (req: Request, res: Response) => {
         const EVO_INSTANCE = process.env.EVOLUTION_INSTANCE || 'romicars';
         if (cliente.telefono && EVO_KEY) {
           try {
-            await fetch(`${EVO_URL}/message/sendText/${EVO_INSTANCE}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', apikey: EVO_KEY },
-              body: JSON.stringify({ number: cliente.telefono, text: contenido }),
-            });
+            if (msgTipo === 'texto') {
+              await fetch(`${EVO_URL}/message/sendText/${EVO_INSTANCE}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', apikey: EVO_KEY },
+                body: JSON.stringify({ number: cliente.telefono, text: contenido }),
+              });
+            } else if (url_multimedia) {
+              await fetch(`${EVO_URL}/message/sendMedia/${EVO_INSTANCE}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', apikey: EVO_KEY },
+                body: JSON.stringify({
+                  number: cliente.telefono,
+                  media: url_multimedia,
+                  mediatype: msgTipo === 'imagen' ? 'image' : msgTipo === 'audio' ? 'audio' : 'document',
+                  caption: contenido || '',
+                }),
+              });
+            }
           } catch (evoErr) {
             console.error('Error al enviar a Evolution API:', evoErr);
           }

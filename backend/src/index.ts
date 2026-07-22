@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import http from 'http';
+import path from 'path';
 import dotenv from 'dotenv';
 import routes from './routes';
 import { setupSocket } from './socket';
@@ -20,7 +21,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   exposedHeaders: ['X-RateLimit-Remaining'],
 }));
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '10mb' }));
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.use('/api', apiLimiter, routes);
 

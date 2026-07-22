@@ -1,0 +1,1113 @@
+{
+  "name": "Recepción Unificada",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "facebook-reception",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1328,
+        -192
+      ],
+      "id": "6fb67e3f-bdf6-4192-b5e5-bd4dd24e357d",
+      "name": "Verificación Facebook (GET)",
+      "webhookId": "0c94675b-40b0-4dbd-9536-3f95beb98ee2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "3fc47c15-2d59-496e-a890-deca9f3a8fec",
+              "leftValue": "={{ $json.query['hub.mode'] }}",
+              "rightValue": "subscribe",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1088,
+        -192
+      ],
+      "id": "9f1cdaef-e043-4d40-886a-3432f3d87fc8",
+      "name": "¿hub.mode = subscribe?"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.query['hub.challenge'] }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -848,
+        -272
+      ],
+      "id": "08c2e269-91ea-405c-9721-1057c108f06a",
+      "name": "Responder hub.challenge"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Token inválido",
+        "options": {
+          "responseCode": 403
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -848,
+        -112
+      ],
+      "id": "0db4bb02-61be-46eb-b085-bcdfed984023",
+      "name": "Rechazar Verificación"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "facebook-reception",
+        "options": {}
+      },
+      "id": "dd165255-e89a-4ccb-83c7-19f5afdb3e81",
+      "name": "Webhook Reception",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -832,
+        320
+      ],
+      "webhookId": "webhook-reception-unificada"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "assign-sender-id",
+              "name": "senderId",
+              "value": "={{ String($json.body?.entry?.[0]?.messaging?.[0]?.sender?.id || $json.body?.sender || $json.senderId || '') }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-msg",
+              "name": "message",
+              "value": "={{ $json.body?.entry?.[0]?.messaging?.[0]?.message?.text || $json.body?.message || $json.message || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-channel",
+              "name": "channel",
+              "value": "={{ $json.body?.object === 'page' ? 'facebook' : ($json.body?.object === 'instagram' ? 'instagram' : ($json.body?.channel ?? $json.channel ?? 'whatsapp')) }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-ts",
+              "name": "timestamp",
+              "value": "={{ $json.body?.entry?.[0]?.messaging?.[0]?.timestamp ? DateTime.fromMillis($json.body.entry[0].messaging[0].timestamp).toISO() : ($json.body?.timestamp ?? $now.toISO()) }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-name",
+              "name": "clientName",
+              "value": "={{ $json.body?.name ?? $json.body?.pushName ?? $json.name ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-conv-id",
+              "name": "conversacionId",
+              "value": "={{ String($json.body?.entry?.[0]?.messaging?.[0]?.sender?.id || $json.body?.conversacionId || $json.conversacionId || $json.senderId) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7452260f-e271-43d5-8a5b-9b13365a0d30",
+      "name": "Normalizar Mensaje",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -544,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $json.conversacionId?.toString() }}",
+        "messageData": "={{ JSON.stringify({ mensaje: $json.message, timestamp: $json.timestamp, senderId: $json.senderId, channel: $json.channel, clientName: $json.clientName, conversacionId: $json.conversacionId }) }}",
+        "tail": true
+      },
+      "id": "32de98ec-df1e-4861-99cf-c01834859400",
+      "name": "Agregar Mensaje a Cola",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        320
+      ],
+      "credentials": {
+        "redis": {
+          "id": "S83gW8p0Ur2w6Pv6",
+          "name": "Redis n8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "Mensaje",
+        "key": "={{ $('Normalizar Mensaje').item.json.conversacionId?.toString() }}",
+        "keyType": "list",
+        "options": {}
+      },
+      "id": "ffe41e27-d64d-4889-8528-ed8ca931ce19",
+      "name": "Consultar Historial Temporal",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        128,
+        320
+      ],
+      "credentials": {
+        "redis": {
+          "id": "S83gW8p0Ur2w6Pv6",
+          "name": "Redis n8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "31e593cc-8eab-4ae9-9620-0528b6c81014",
+                    "leftValue": "={{ JSON.parse($json.Mensaje.slice(-1)[0]).conversacionId || JSON.parse($json.Mensaje.slice(-1)[0]).senderId }}",
+                    "rightValue": "={{ $('Normalizar Mensaje').item.json.conversacionId || $('Normalizar Mensaje').item.json.senderId }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Mensaje de otro cliente"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b2d7ac7a-5d3e-4ee8-9bfb-9e1c09cffb27",
+                    "leftValue": "={{ DateTime.fromISO(JSON.parse($json.Mensaje.slice(-1)[0]).timestamp).toMillis() }}",
+                    "rightValue": "={{ Date.now() - 7000 }}",
+                    "operator": {
+                      "type": "number",
+                      "operation": "lt"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Aún escribiendo (Reintentar)"
+        }
+      },
+      "id": "a28398a2-43d7-489e-b858-d5a37eac8d3e",
+      "name": "Pasaron 7s de silencio",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        416,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 7
+      },
+      "id": "ce733172-7501-4fff-adde-d481afc7c531",
+      "name": "Ciclo de Debounce (7s)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        656,
+        496
+      ],
+      "webhookId": "wait-debounce-recepcion"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $('Normalizar Mensaje').item.json.conversacionId?.toString() }}"
+      },
+      "id": "d6551165-61c8-4762-9175-a426ad524172",
+      "name": "Limpiar Buffer de Conversación",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        656,
+        320
+      ],
+      "credentials": {
+        "redis": {
+          "id": "S83gW8p0Ur2w6Pv6",
+          "name": "Redis n8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "concat-msg",
+              "name": "message",
+              "value": "={{ $json.Mensaje.map(m => JSON.parse(m).mensaje).filter(Boolean).join('\\n') }}",
+              "type": "string"
+            },
+            {
+              "id": "concat-sid",
+              "name": "senderId",
+              "value": "={{ JSON.parse($json.Mensaje[0]).senderId }}",
+              "type": "string"
+            },
+            {
+              "id": "concat-chn",
+              "name": "channel",
+              "value": "={{ $('Normalizar Mensaje').item.json.channel }}",
+              "type": "string"
+            },
+            {
+              "id": "concat-cid",
+              "name": "conversacionId",
+              "value": "={{ JSON.parse($json.Mensaje[0]).conversacionId ?? JSON.parse($json.Mensaje[0]).senderId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "58b41065-9b3e-4a6d-acf5-1e07f7bc0b4f",
+      "name": "Concatenar Mensajes",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        896,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "search-col",
+              "name": "searchColumn",
+              "value": "={{ $json.channel == \"whatsapp\" ? \"telefono\" : ($json.channel == \"facebook\" ? \"facebook_psid\" : \"instagram_psid\") }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "0a8a423c-7a7e-4618-9b86-fafed8f4fba1",
+      "name": "Definir Columna Búsqueda",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1136,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM clientes WHERE {{ $json.searchColumn }} = '{{ $json.senderId }}' LIMIT 1",
+        "options": {}
+      },
+      "id": "2524b0de-a0eb-4f49-92b3-05d8ee9291ae",
+      "name": "Buscar Cliente",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        1376,
+        320
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "mySql": {
+          "id": "bkZ82eBiEWx85IDh",
+          "name": "MySQL Demo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-cliente-id",
+              "leftValue": "={{ $json.id }}",
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "264410f9-5a10-40d5-8a6a-eb2b05fd8b24",
+      "name": "Cliente existe?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1616,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "is-fb",
+              "leftValue": "={{ $('Concatenar Mensajes').item.json.channel }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "facebook"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "96801e37-bc5a-42ab-b27e-c08730ed5d18",
+      "name": "¿Es Canal Facebook?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1616,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.facebook.com/{{ $('Concatenar Mensajes').item.json.senderId }}?fields=first_name,last_name&access_token=EAAakFzGaqnYBSLhi34XUKaZCCmAxqqQ4CVUhEPrkA1Uh4dYNzOtlx71nPTURulNZAg8DFZCZCjui3gCrazWrl99QqNZClO1PrwSIN3TWeXtBfjRdZCfHZCxqEYsDiOtGpoA1bo8defKwTCJ6jlcVp9xXXhyJVHGnb6pPjFEbd0SZCDC0y3TdKfZBt5JW3vEN50kZBOAcFsfwZDZD",
+        "options": {}
+      },
+      "id": "0c794cb2-a2ea-4196-9466-ec2e77622ade",
+      "name": "Fetch FB Profile Name",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1776,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "clientes"
+        },
+        "dataMode": "defineBelow",
+        "valuesToSend": {
+          "values": [
+            {
+              "column": "telefono",
+              "value": "={{ $('Concatenar Mensajes').item.json.channel == \"whatsapp\" ? $('Concatenar Mensajes').item.json.senderId : null }}"
+            },
+            {
+              "column": "facebook_psid",
+              "value": "={{ $('Concatenar Mensajes').item.json.channel == \"facebook\" ? $('Concatenar Mensajes').item.json.senderId : null }}"
+            },
+            {
+              "column": "instagram_psid",
+              "value": "={{ $('Concatenar Mensajes').item.json.channel == \"instagram\" ? $('Concatenar Mensajes').item.json.senderId : null }}"
+            },
+            {
+              "column": "nombre",
+              "value": "={{ $json.Nombre }}"
+            },
+            {
+              "column": "canal_origen",
+              "value": "={{ $('Concatenar Mensajes').item.json.channel }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4aaf7f54-34b3-46dd-b254-1c1ce8b44a76",
+      "name": "Crear Cliente Nuevo",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        2144,
+        624
+      ],
+      "credentials": {
+        "mySql": {
+          "id": "bkZ82eBiEWx85IDh",
+          "name": "MySQL Demo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "assign-cliente-id",
+              "name": "clienteId",
+              "value": "={{ $('Buscar Cliente').item.json.id ?? $json.insertId ?? $json.id }}",
+              "type": "number"
+            },
+            {
+              "id": "restore-msg",
+              "name": "message",
+              "value": "={{ $('Concatenar Mensajes').item.json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "restore-sid",
+              "name": "senderId",
+              "value": "={{ $('Concatenar Mensajes').item.json.senderId }}",
+              "type": "string"
+            },
+            {
+              "id": "restore-chn",
+              "name": "channel",
+              "value": "={{ $('Concatenar Mensajes').item.json.channel }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8cbc941f-274f-49be-8d71-b609debc7be4",
+      "name": "Preparar ID Cliente",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2496,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT COUNT(*) as agente_respondio \nFROM mensajes \nWHERE cliente_id = {{ $('Preparar ID Cliente').item.json.clienteId }} \n  AND remitente = 'agente' \n  AND fecha_envio >= NOW() - INTERVAL 15 MINUTE",
+        "options": {}
+      },
+      "id": "1bcbff36-69a1-4f85-a543-cac28ae4a04e",
+      "name": "Verificar SLA 15 min",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        3088,
+        304
+      ],
+      "credentials": {
+        "mySql": {
+          "id": "bkZ82eBiEWx85IDh",
+          "name": "MySQL Demo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond-sla",
+              "leftValue": "={{ $json.agente_respondio }}",
+              "operator": {
+                "type": "number",
+                "operation": "larger",
+                "singleValue": true
+              },
+              "rightValue": "0"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a63d31f1-5453-4a85-9a26-dbb81b6a7320",
+      "name": "Agente respondió?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3344,
+        304
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "53c86fd8-6881-456e-8679-8604b7ab4b9b",
+      "name": "SLA OK - Agente responde",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3584,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WEBHOOK_BOT_URL || \"http://n8n:5678/webhook/bot-contingencia\" }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"clienteId\": {{ $json.clienteId }},\n  \"message\": \"{{ $json.message }}\",\n  \"senderId\": \"{{ $json.senderId }}\",\n  \"channel\": \"{{ $json.channel }}\"\n}",
+        "options": {}
+      },
+      "id": "40e21b82-3ec9-4006-ace1-85ffc710636b",
+      "name": "Activar Bot IA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        3600,
+        432
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        656,
+        176
+      ],
+      "id": "f6b836cf-c80f-483e-a37c-9ee798671b74",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "df550ae2-192f-430c-b508-9fc9cbe79fdb",
+              "name": "Nombre",
+              "value": "={{ ($json.first_name + ' ' + $json.last_name).trim() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1952,
+        496
+      ],
+      "id": "4a2cf7eb-d37e-4045-ba8c-90682e639047",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1fe3e5f6-df60-4fb0-9d3f-0013f24b41a2",
+              "name": "=Nombre",
+              "value": "={{ $('Concatenar Mensajes').item.json.clientName || 'Cliente Nuevo' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1856,
+        624
+      ],
+      "id": "51d2a99a-d65d-425f-8843-9b4e5462c73c",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id FROM clientes \nWHERE \n  (facebook_psid = '{{ $('Concatenar Mensajes').item.json.senderId }}' AND '{{ $('Concatenar Mensajes').item.json.channel }}' = 'facebook')\n  OR (instagram_psid = '{{ $('Concatenar Mensajes').item.json.senderId }}' AND '{{ $('Concatenar Mensajes').item.json.channel }}' = 'instagram')\n  OR (telefono = '{{ $('Concatenar Mensajes').item.json.senderId }}' AND '{{ $('Concatenar Mensajes').item.json.channel }}' = 'whatsapp')\nLIMIT 1;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        2320,
+        624
+      ],
+      "id": "47edfc4a-fdd3-49ba-b16f-be67900a9504",
+      "name": "Obtener ID Cliente Nuevo",
+      "credentials": {
+        "mySql": {
+          "id": "bkZ82eBiEWx85IDh",
+          "name": "MySQL Demo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://dashboard-frontenddemo.larlxe.easypanel.host/api/webhook/n8n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ \n  JSON.stringify({\n    clienteId: $json.clienteId,\n    message: $json.message,\n    senderId: $json.senderId,\n    channel: $json.channel,\n    remitente: \"cliente\",\n    timestamp: $now.toISO()\n  }) \n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2720,
+        304
+      ],
+      "id": "a1e45b3a-1820-473f-8ce1-55005c9f20f6",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {
+    "Webhook Reception": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.supricom.com.ve",
+            "user-agent": "facebookexternalua",
+            "content-length": "313",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1",
+            "cf-connecting-ip": "2a03:2880:22ff:4d::",
+            "cf-ipcountry": "US",
+            "cf-ray": "a1f2a49b9ea0d64b-IAD",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "content-type": "application/json",
+            "facebook-api-version": "v25.0",
+            "x-forwarded-for": "2a03:2880:22ff:4d::, 172.70.34.246",
+            "x-forwarded-host": "n8n.supricom.com.ve",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "28bb15f7f4c2",
+            "x-hub-signature": "sha1=305898f5daa8cdd847766780006e029eb10a63f1",
+            "x-hub-signature-256": "sha256=c76a4a29ba9b3d8ff29fcb9a89c9ba1ff3d43c72d507a8402b38e687d9639c41",
+            "x-real-ip": "172.70.34.246"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "object": "page",
+            "entry": [
+              {
+                "time": 1784725380116,
+                "id": "940246375838445",
+                "messaging": [
+                  {
+                    "sender": {
+                      "id": "25783373751338504"
+                    },
+                    "recipient": {
+                      "id": "940246375838445"
+                    },
+                    "timestamp": 1784725379447,
+                    "message": {
+                      "mid": "m_z-Trr7BgTlo4rWDO45MoOuKHhWsV-F6iWuum8blO2TrrkqsdfMWkLrObJZA82LtdGzePGD74UREb4-spsjeeEw",
+                      "text": "buenas"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "webhookUrl": "https://n8n.supricom.com.ve/webhook/facebook-reception",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Verificación Facebook (GET)": {
+      "main": [
+        [
+          {
+            "node": "¿hub.mode = subscribe?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿hub.mode = subscribe?": {
+      "main": [
+        [
+          {
+            "node": "Responder hub.challenge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rechazar Verificación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Reception": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Mensaje": {
+      "main": [
+        [
+          {
+            "node": "Agregar Mensaje a Cola",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agregar Mensaje a Cola": {
+      "main": [
+        [
+          {
+            "node": "Consultar Historial Temporal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Historial Temporal": {
+      "main": [
+        [
+          {
+            "node": "Pasaron 7s de silencio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pasaron 7s de silencio": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Limpiar Buffer de Conversación",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ciclo de Debounce (7s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ciclo de Debounce (7s)": {
+      "main": [
+        [
+          {
+            "node": "Consultar Historial Temporal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpiar Buffer de Conversación": {
+      "main": [
+        [
+          {
+            "node": "Concatenar Mensajes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Concatenar Mensajes": {
+      "main": [
+        [
+          {
+            "node": "Definir Columna Búsqueda",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Definir Columna Búsqueda": {
+      "main": [
+        [
+          {
+            "node": "Buscar Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Cliente": {
+      "main": [
+        [
+          {
+            "node": "Cliente existe?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cliente existe?": {
+      "main": [
+        [
+          {
+            "node": "Preparar ID Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "¿Es Canal Facebook?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Es Canal Facebook?": {
+      "main": [
+        [
+          {
+            "node": "Fetch FB Profile Name",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch FB Profile Name": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Cliente Nuevo": {
+      "main": [
+        [
+          {
+            "node": "Obtener ID Cliente Nuevo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar ID Cliente": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar SLA 15 min": {
+      "main": [
+        [
+          {
+            "node": "Agente respondió?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente respondió?": {
+      "main": [
+        [
+          {
+            "node": "SLA OK - Agente responde",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Activar Bot IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Crear Cliente Nuevo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Crear Cliente Nuevo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener ID Cliente Nuevo": {
+      "main": [
+        [
+          {
+            "node": "Preparar ID Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Verificar SLA 15 min",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "b37ead79-46f8-499f-b3a0-67d3c88fb4d0",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1683493ca79f362f0cdd6311bf11f1609621e8cd207e078485d8ca15ccb3975a"
+  },
+  "id": "T9Lp4ls4WgzrXeUZ",
+  "tags": []
+}
