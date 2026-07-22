@@ -110,13 +110,25 @@ router.post('/facebook', async (req: Request, res: Response) => {
 router.post('/n8n', async (req: Request, res: Response) => {
   try {
     const body = req.body;
-    const tipo = body.tipo || (body.remitente === 'cliente' ? 'nuevo_mensaje' : body.tipo);
-    const clienteId = body.cliente_id || body.clienteId;
-    const contenido = body.contenido || body.mensaje || body.message || '';
-    const msgTipo = body.msg_tipo || 'texto';
-    const urlMultimedia = body.url_multimedia || null;
+    const entry = Array.isArray(body) ? body[0] : body;
+    const tipo = entry.tipo || (entry.remitente === 'cliente' ? 'nuevo_mensaje' : entry.tipo);
+    const clienteId = entry.cliente_id || entry.clienteId;
+    const contenido = entry.contenido || entry.mensaje || entry.message || '';
+    let msgTipo = 'texto';
+    let urlMultimedia = null;
 
-    console.log('[webhook:n8n] recibido:', JSON.stringify(body));
+    if (entry.tipo === 'image') msgTipo = 'imagen';
+    else if (entry.tipo === 'audio') msgTipo = 'audio';
+    else if (entry.tipo === 'video') msgTipo = 'video';
+    else if (entry.tipo && entry.tipo !== 'nuevo_mensaje') msgTipo = 'archivo';
+
+    if (entry.mediaUrls && entry.mediaUrls.length > 0) {
+      urlMultimedia = entry.mediaUrls[0];
+    } else if (entry.url_multimedia) {
+      urlMultimedia = entry.url_multimedia;
+    }
+
+    console.log('[webhook:n8n] recibido:', JSON.stringify(entry));
 
     if (!clienteId) {
       console.log('[webhook:n8n] falta clienteId');
@@ -124,11 +136,11 @@ router.post('/n8n', async (req: Request, res: Response) => {
       return;
     }
 
-    if (tipo === 'nuevo_mensaje' || body.remitente === 'cliente') {
+    if (tipo === 'nuevo_mensaje' || entry.remitente === 'cliente' || !tipo || msgTipo !== 'texto') {
       const result = await query(
         `INSERT INTO mensajes (cliente_id, remitente, contenido, tipo, url_multimedia)
          VALUES (?, ?, ?, ?, ?)`,
-        [clienteId, body.remitente || 'cliente', contenido, msgTipo, urlMultimedia]
+        [clienteId, entry.remitente || 'cliente', contenido, msgTipo, urlMultimedia]
       ) as any;
 
       const mensajes = await query('SELECT * FROM mensajes WHERE id = ?', [result.insertId]) as any[];
@@ -142,7 +154,7 @@ router.post('/n8n', async (req: Request, res: Response) => {
       getIO().emit('message:new', msg);
       getIO().emit('chat:updated', { cliente_id: clienteId });
 
-      console.log('[webhook:n8n] mensaje guardado y emitido:', msg.id, 'para cliente:', clienteId);
+      console.log('[webhook:n8n] mensaje guardado y emitido:', msg.id, 'tipo:', msgTipo, 'para cliente:', clienteId);
     }
 
     if (tipo === 'resumen_actualizado' && clienteId) {
