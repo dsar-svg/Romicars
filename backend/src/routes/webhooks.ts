@@ -105,11 +105,11 @@ router.post('/facebook', async (req: Request, res: Response) => {
 router.post('/n8n', async (req: Request, res: Response) => {
   try {
     const body = req.body;
-    const tipo = body.tipo;
+    const tipo = body.tipo || (body.remitente === 'cliente' ? 'nuevo_mensaje' : body.tipo);
     const clienteId = body.cliente_id || body.clienteId;
     const contenido = body.contenido || body.mensaje;
 
-    if (tipo === 'nuevo_mensaje' && clienteId && contenido) {
+    if ((tipo === 'nuevo_mensaje' || (clienteId && contenido && body.remitente === 'cliente')) && clienteId && contenido) {
       const result = await query(
         `INSERT INTO mensajes (cliente_id, remitente, contenido, tipo)
          VALUES (?, 'cliente', ?, 'texto')`,

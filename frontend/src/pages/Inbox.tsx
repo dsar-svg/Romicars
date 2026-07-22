@@ -73,7 +73,9 @@ function Inbox() {
           });
           return prev;
         }
-        clientesApi.getAll().then(setClientes);
+        clientesApi.getAll().then(actualizados => {
+          setClientes(actualizados);
+        });
         return prev;
       });
     });
