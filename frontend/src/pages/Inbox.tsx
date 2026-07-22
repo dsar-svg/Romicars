@@ -53,7 +53,7 @@ function Inbox() {
   const [nuevoMensaje, setNuevoMensaje] = useState('');
   const [canalFiltro, setCanalFiltro] = useState('todos');
   const [filtroIA, setFiltroIA] = useState(false);
-  const urgenciaFiltro = 'todos';
+  const [urgenciaFiltro, setUrgenciaFiltro] = useState('todos');
   const [searchTerm, setSearchTerm] = useState('');
   const { notify, clearNotifications } = useNotifications();
   const [loading, setLoading] = useState(true);
@@ -185,27 +185,10 @@ function Inbox() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         height: 60, flexShrink: 0,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <h1 style={{ fontSize: 18, fontWeight: 700, color: '#002045', fontFamily: "'Hanken Grotesk', sans-serif" }}>
             Inbox Multicanal
           </h1>
-          <div style={{ display: 'flex', gap: 4, height: 60, alignItems: 'stretch' }}>
-            {[
-              { key: 'direct', label: 'Direct' },
-              { key: 'groups', label: 'Groups' },
-              { key: 'archived', label: 'Archived' },
-            ].map(t => (
-              <button key={t.key} style={{
-                padding: '0 16px', fontSize: 13, fontWeight: t.key === 'direct' ? 700 : 500,
-                color: t.key === 'direct' ? '#002045' : '#8896ab',
-                background: 'none', border: 'none', cursor: 'pointer',
-                borderBottom: t.key === 'direct' ? '2px solid #b51822' : '2px solid transparent',
-                fontFamily: "'Inter', sans-serif",
-              }}>
-                {t.label}
-              </button>
-            ))}
-          </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button style={{ padding: '6px 14px', fontSize: 12, fontWeight: 600, color: '#002045', background: '#f0f4fa', border: '1px solid #e0e8f0', borderRadius: 6, cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}>
@@ -245,34 +228,67 @@ function Inbox() {
                 }}
               />
             </div>
-            <div style={{ display: 'flex', gap: 4 }}>
-              {[
-                { key: 'todos', label: 'All' },
-                { key: 'whatsapp', label: 'WA', color: '#25D366' },
-                { key: 'instagram', label: 'IG', color: '#E4405F' },
-                { key: 'facebook', label: 'FB', color: '#1877F2' },
-              ].map(f => (
-                <button key={f.key} onClick={() => setCanalFiltro(f.key)}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {[
+                  { key: 'todos', label: 'All' },
+                  { key: 'whatsapp', label: 'WA', color: '#25D366', icon: 'whatsapp' },
+                  { key: 'instagram', label: 'IG', color: '#E4405F', icon: 'instagram' },
+                  { key: 'facebook', label: 'FB', color: '#1877F2', icon: 'facebook' },
+                ].map(f => (
+                  <button key={f.key} onClick={() => setCanalFiltro(f.key)}
+                    style={{
+                      padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
+                      background: canalFiltro === f.key ? '#002045' : 'transparent',
+                      color: canalFiltro === f.key ? '#fff' : '#8896ab',
+                      border: canalFiltro === f.key ? 'none' : '1px solid #e0e8f0',
+                      cursor: 'pointer', fontFamily: "'Inter', sans-serif",
+                      display: 'flex', alignItems: 'center', gap: 4,
+                    }}>
+                    {f.icon && (
+                      <svg width={12} height={12} style={{ flexShrink: 0 }}>
+                        <use href={`${canalIcono[f.icon]}`} />
+                      </svg>
+                    )}
+                    {f.label}
+                  </button>
+                ))}
+                <button onClick={() => setFiltroIA(!filtroIA)}
                   style={{
                     padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-                    background: canalFiltro === f.key ? '#002045' : 'transparent',
-                    color: canalFiltro === f.key ? '#fff' : '#8896ab',
-                    border: canalFiltro === f.key ? 'none' : '1px solid #e0e8f0',
+                    background: filtroIA ? '#002045' : 'transparent',
+                    color: filtroIA ? '#fff' : '#8896ab',
+                    border: filtroIA ? 'none' : '1px solid #e0e8f0',
                     cursor: 'pointer', fontFamily: "'Inter', sans-serif",
+                    display: 'flex', alignItems: 'center', gap: 4,
                   }}>
-                  {f.label}
+                  <Bot size={11} />
+                  IA
                 </button>
-              ))}
-              <button onClick={() => setFiltroIA(!filtroIA)}
-                style={{
-                  padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-                  background: filtroIA ? '#002045' : 'transparent',
-                  color: filtroIA ? '#fff' : '#8896ab',
-                  border: filtroIA ? 'none' : '1px solid #e0e8f0',
-                  cursor: 'pointer', fontFamily: "'Inter', sans-serif",
-                }}>
-                IA
-              </button>
+              </div>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {[
+                  { key: 'todos', label: 'All' },
+                  { key: 'urgentes', label: 'Urgent', dot: '#DC2626' },
+                  { key: 'interesado', label: 'Interested', dot: '#D97706' },
+                  { key: 'neutro', label: 'Neutral', dot: '#9CA3AF' },
+                ].map(f => (
+                  <button key={f.key} onClick={() => setUrgenciaFiltro(f.key)}
+                    style={{
+                      padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
+                      background: urgenciaFiltro === f.key ? '#002045' : 'transparent',
+                      color: urgenciaFiltro === f.key ? '#fff' : '#8896ab',
+                      border: urgenciaFiltro === f.key ? 'none' : '1px solid #e0e8f0',
+                      cursor: 'pointer', fontFamily: "'Inter', sans-serif",
+                      display: 'flex', alignItems: 'center', gap: 4,
+                    }}>
+                    {f.dot && (
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: f.dot }} />
+                    )}
+                    {f.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -451,15 +467,30 @@ function Inbox() {
                       const isAgent = msg.remitente === 'agente';
                       const isBot = msg.remitente === 'bot';
                       const isRight = isAgent || isBot;
+                      const showAvatar = !isRight && (i === 0 || mensajes[i - 1]?.remitente === 'agente' || mensajes[i - 1]?.remitente === 'bot');
                       return (
                         <div key={msg.id} className="fade-in-up" style={{
-                          marginBottom: 8,
+                          marginBottom: 6,
                           display: 'flex',
                           flexDirection: isRight ? 'row-reverse' : 'row',
                           alignItems: 'flex-end',
                           gap: 8,
+                          paddingLeft: isRight ? 0 : 0,
                           animationDelay: `${i * 20}ms`,
                         }}>
+                          {!isRight && (
+                            <div style={{
+                              width: 28, height: 28, borderRadius: '50%',
+                              background: showAvatar ? '#002045' : 'transparent',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: 11, fontWeight: 700, color: showAvatar ? '#fff' : 'transparent',
+                              flexShrink: 0,
+                              transition: 'all 0.15s',
+                              visibility: showAvatar ? 'visible' : 'hidden',
+                            }}>
+                              {showAvatar && (selectedCliente?.nombre || '?').charAt(0).toUpperCase()}
+                            </div>
+                          )}
                           <div style={{
                             maxWidth: '70%',
                             padding: '10px 14px',
@@ -470,6 +501,7 @@ function Inbox() {
                             fontSize: 13,
                             lineHeight: 1.5,
                             color: isRight ? '#fff' : '#002045',
+                            marginLeft: !isRight && !showAvatar ? 36 : 0,
                           }}>
                             <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                               {msg.contenido}
