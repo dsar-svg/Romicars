@@ -518,7 +518,7 @@ function Inbox() {
 
         {/* Centro — conversación */}
         <div style={{ display: 'flex', flex: 1 }}>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#f6f9fc' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#f6f9fc', position: 'relative' }}>
             {selectedCliente ? (
               <>
                 {/* Chat Header */}
@@ -591,33 +591,7 @@ function Inbox() {
                   </div>
                 )}
                 {/* Messages */}
-                <div ref={messagesContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', position: 'relative' }}>
-                  {showScrollBtn && (
-                    <div onClick={() => {
-                      messagesContainerRef.current?.scrollTo({ top: messagesContainerRef.current.scrollHeight, behavior: 'smooth' });
-                      setShowScrollBtn(false);
-                      newMsgCountRef.current = 0;
-                      setNewMsgCount(0);
-                    }} style={{
-                      position: 'sticky', bottom: 16, zIndex: 10, display: 'flex', justifyContent: 'center',
-                    }}>
-                      <div style={{
-                        width: 36, height: 36, borderRadius: '50%', background: '#b51822', color: '#fff',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)', fontSize: 18, position: 'relative',
-                      }} title="Ir al final">
-                        &#x2193;
-                        {newMsgCount > 0 && (
-                          <span style={{
-                            position: 'absolute', top: -6, right: -6, background: '#ff4444', color: '#fff',
-                            fontSize: 10, fontWeight: 700, minWidth: 18, height: 18, borderRadius: 9,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                          }}>{newMsgCount}</span>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                <div ref={messagesContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
                   {messagesLoading ? (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12 }}>
                       <div className="skeleton" style={{ width: '60%', height: 14 }} />
@@ -707,6 +681,30 @@ function Inbox() {
                   )}
                 </div>
 
+                {/* Floating scroll button */}
+                {showScrollBtn && (
+                  <div onClick={() => {
+                    messagesContainerRef.current?.scrollTo({ top: messagesContainerRef.current.scrollHeight, behavior: 'smooth' });
+                    setShowScrollBtn(false);
+                    newMsgCountRef.current = 0;
+                    setNewMsgCount(0);
+                  }} style={{
+                    position: 'absolute', bottom: 76, right: 24, zIndex: 20,
+                    width: 40, height: 40, borderRadius: '50%', background: '#b51822', color: '#fff',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.25)', fontSize: 20,
+                  }} title="Ir al final">
+                    &#x2193;
+                    {newMsgCount > 0 && (
+                      <span style={{
+                        position: 'absolute', top: -6, right: -6, background: '#ff4444', color: '#fff',
+                        fontSize: 11, fontWeight: 700, minWidth: 20, height: 20, borderRadius: 10,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                      }}>{newMsgCount}</span>
+                    )}
+                  </div>
+                )}
                 {/* Input */}
                 <div style={{
                   padding: '12px 20px',
