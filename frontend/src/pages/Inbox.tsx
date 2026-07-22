@@ -49,6 +49,12 @@ function Inbox() {
   const currentClienteId = useRef<number | null>(null);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
+  const idsRef = useRef<Set<number>>(new Set());
+  const agregarMensaje = (msg: Mensaje) => {
+    if (idsRef.current.has(msg.id)) return;
+    idsRef.current = new Set(idsRef.current).add(msg.id);
+    setMensajes(prev => [...prev, msg]);
+  };
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
   const [nuevoMensaje, setNuevoMensaje] = useState('');
   const [canalFiltro, setCanalFiltro] = useState('todos');
@@ -88,7 +94,7 @@ function Inbox() {
     socket.on('message:new', (mensaje: Mensaje) => {
       const isCurrent = currentClienteId.current === mensaje.cliente_id;
       if (isCurrent) {
-        setMensajes(prev => prev.some(m => m.id === mensaje.id) ? prev : [...prev, mensaje]);
+        agregarMensaje(mensaje);
       } else {
         setUnreadChats(prev => new Set(prev).add(mensaje.cliente_id));
       }
@@ -124,6 +130,7 @@ function Inbox() {
       mensajesApi.getByCliente(id),
     ]).then(([cliente, msgs]) => {
       setSelectedCliente(cliente);
+      idsRef.current = new Set(msgs.map(m => m.id));
       setMensajes(msgs);
       setMessagesLoading(false);
     });
@@ -157,7 +164,7 @@ function Inbox() {
         contenido: nuevoMensaje,
         remitente: 'agente',
       });
-      setMensajes(prev => prev.some(m => m.id === msg.id) ? prev : [...prev, msg]);
+      agregarMensaje(msg);
       setNuevoMensaje('');
       toast('success', 'Mensaje enviado');
     } catch {
