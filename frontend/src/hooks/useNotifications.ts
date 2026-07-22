@@ -54,6 +54,23 @@ export function playNotificationSound() {
   } catch {}
 }
 
+export function playChatSound() {
+  try {
+    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+    osc.frequency.setValueAtTime(680, audioCtx.currentTime + 0.08);
+    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.15);
+  } catch {}
+}
+
 function dispatchCountChange() {
   window.dispatchEvent(new CustomEvent('unread-changed', { detail: globalUnreadCount }));
 }
@@ -65,18 +82,21 @@ export function useNotifications() {
     const isClient = mensaje.remitente === 'cliente';
     if (!isClient) return;
 
-    if (document.hidden || !isCurrentChat) {
-      unreadCount.current += 1;
-      globalUnreadCount += 1;
-      if (!hasUnread) {
-        hasUnread = true;
-        setFaviconBadge(true);
-      }
-      if (document.hidden) {
-        playNotificationSound();
-      }
-      dispatchCountChange();
+    if (isCurrentChat && !document.hidden) {
+      playChatSound();
+      return;
     }
+
+    unreadCount.current += 1;
+    globalUnreadCount += 1;
+    if (!hasUnread) {
+      hasUnread = true;
+      setFaviconBadge(true);
+    }
+    if (document.hidden) {
+      playNotificationSound();
+    }
+    dispatchCountChange();
   }, []);
 
   const clearNotifications = useCallback(() => {
