@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Search, Send, MessageSquare, Bot, CheckCheck, Paperclip, Phone, PanelRightOpen, PanelRightClose } from 'lucide-react';
+import { Search, Send, MessageSquare, Bot, CheckCheck, Paperclip, Phone, PanelRightOpen, PanelRightClose, FileText, X } from 'lucide-react';
 import { clientesApi, mensajesApi } from '../services/api';
 import { connectSocket, getSocket } from '../services/socket';
 import { toast } from '../components/Toast';
@@ -89,6 +89,7 @@ function Inbox() {
   const sendingAgentMsgRef = useRef(false);
   const scrollToBottomRef = useRef(false);
   const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
+  const [pendingAttach, setPendingAttach] = useState<{ url: string; tipo: Mensaje['tipo']; name: string } | null>(null);
 
   useEffect(() => {
     if (!window.__unreadChats) window.__unreadChats = new Set<number>();
@@ -277,29 +278,60 @@ function Inbox() {
   }, [canalFiltro, urgenciaFiltro, filtroIA, searchTerm]);
 
   const enviarMensaje = async () => {
-    if (!nuevoMensaje.trim() || !selectedCliente) return;
-    const contenido = nuevoMensaje;
-    const tempId = Date.now();
-    const tempMsg: Mensaje = {
-      id: tempId, cliente_id: selectedCliente.id, remitente: 'agente',
-      contenido, tipo: 'texto', leido: true, url_multimedia: null,
-      asignado_a: null, fecha_envio: new Date().toISOString(),
-    };
-    agregarMensaje(tempMsg);
-    setNuevoMensaje('');
+    if (!selectedCliente) return;
+    const hasText = nuevoMensaje.trim().length > 0;
+    const attach = pendingAttach;
+    if (!hasText && !attach) return;
     sendingAgentMsgRef.current = true;
+
+    const sendOne = async (payload: { cliente_id: number; contenido: string; remitente: string; tipo?: string; url_multimedia?: string }, tempId: number) => {
+      agregarMensaje({
+        id: tempId, cliente_id: selectedCliente.id, remitente: 'agente',
+        contenido: payload.contenido, tipo: (payload.tipo || 'texto') as Mensaje['tipo'],
+        url_multimedia: payload.url_multimedia || null,
+        leido: true, asignado_a: null, fecha_envio: new Date().toISOString(),
+        _uploading: !(payload as any)._noUpload,
+      } as Mensaje);
+      try {
+        const msg = await mensajesApi.enviar(payload);
+        setMensajes(prev => {
+          if (prev.some(m => m.id === msg.id)) return prev.filter(m => m.id !== tempId);
+          return prev.map(m => m.id === tempId ? msg : m);
+        });
+        idsRef.current = new Set([...idsRef.current].filter(x => x !== tempId).concat(msg.id));
+      } catch {
+        setMensajes(prev => prev.filter(m => m.id !== tempId));
+        idsRef.current = new Set([...idsRef.current].filter(x => x !== tempId));
+        throw new Error('Error');
+      }
+    };
+
     try {
-      const msg = await mensajesApi.enviar({
-        cliente_id: selectedCliente.id, contenido, remitente: 'agente',
-      });
-      setMensajes(prev => {
-        if (prev.some(m => m.id === msg.id)) return prev.filter(m => m.id !== tempId);
-        return prev.map(m => m.id === tempId ? msg : m);
-      });
-      idsRef.current = new Set([...idsRef.current].filter(x => x !== tempId).concat(msg.id));
+      if (attach && hasText) {
+        // Send file with caption, then text separately
+        const t1 = Date.now();
+        await sendOne({
+          cliente_id: selectedCliente.id, remitente: 'agente',
+          contenido: nuevoMensaje.trim(), tipo: attach.tipo, url_multimedia: attach.url,
+        }, t1);
+        setPendingAttach(null);
+        setNuevoMensaje('');
+      } else if (attach) {
+        const t1 = Date.now();
+        await sendOne({
+          cliente_id: selectedCliente.id, remitente: 'agente',
+          contenido: attach.name, tipo: attach.tipo, url_multimedia: attach.url,
+        }, t1);
+        setPendingAttach(null);
+      } else {
+        const t1 = Date.now();
+        await sendOne({
+          cliente_id: selectedCliente.id, remitente: 'agente',
+          contenido: nuevoMensaje.trim(),
+        }, t1);
+        setNuevoMensaje('');
+      }
     } catch {
-      setMensajes(prev => prev.filter(m => m.id !== tempId));
-      idsRef.current = new Set([...idsRef.current].filter(x => x !== tempId));
       toast('error', 'Error al enviar mensaje');
     }
     sendingAgentMsgRef.current = false;
@@ -809,10 +841,26 @@ function Inbox() {
                     )}
                   </div>
                 )}
+                {/* Pending attachment preview */}
+                {pendingAttach && (
+                  <div style={{
+                    padding: '8px 20px', background: '#fff5f5', borderTop: '1px solid #e0e8f0',
+                    display: 'flex', alignItems: 'center', gap: 10, fontSize: 13,
+                  }}>
+                    {pendingAttach.tipo === 'imagen'
+                      ? <img src={pendingAttach.url} alt="" style={{ width: 36, height: 36, borderRadius: 4, objectFit: 'cover' }} />
+                      : <FileText size={18} style={{ color: '#b51822' }} />
+                    }
+                    <span style={{ flex: 1, color: '#333', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pendingAttach.name}</span>
+                    <button onClick={() => setPendingAttach(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#b51822', padding: 4 }}>
+                      <X size={16} />
+                    </button>
+                  </div>
+                )}
                 {/* Input */}
                 <div style={{
                   padding: '12px 20px',
-                  borderTop: '1px solid #e0e8f0',
+                  borderTop: pendingAttach ? 'none' : '1px solid #e0e8f0',
                   background: '#fff',
                   display: 'flex', gap: 8, alignItems: 'center',
                 }}>
@@ -820,37 +868,16 @@ function Inbox() {
                     onChange={async e => {
                       const file = e.target.files?.[0];
                       if (!file || !selectedCliente) return;
-                      const tempId = Date.now() + Math.random();
+                      e.target.value = '';
                       const ext = file.name.split('.').pop()?.toLowerCase() || '';
                       let tipo: Mensaje['tipo'] = 'archivo';
                       if (['jpg','jpeg','png','gif','webp','svg'].includes(ext)) tipo = 'imagen';
                       else if (['mp3','wav','ogg','aac','m4a'].includes(ext)) tipo = 'audio';
                       else if (['mp4','webm','mov','avi'].includes(ext)) tipo = 'video';
-                      const tempMsg: Mensaje = {
-                        id: tempId, cliente_id: selectedCliente.id, remitente: 'agente',
-                        contenido: file.name, tipo, url_multimedia: null,
-                        leido: true, asignado_a: null, fecha_envio: new Date().toISOString(),
-                        _uploading: true,
-                      };
-                      agregarMensaje(tempMsg);
-                      e.target.value = '';
-                      sendingAgentMsgRef.current = true;
                       try {
                         const { url } = await mensajesApi.upload(file);
-                        const msg = await mensajesApi.enviar({
-                          cliente_id: selectedCliente.id, remitente: 'agente',
-                          contenido: file.name, tipo, url_multimedia: url,
-                        });
-                        setMensajes(prev => {
-                          if (prev.some(m => m.id === msg.id)) return prev.filter(m => m.id !== tempId);
-                          return prev.map(m => m.id === tempId ? msg : m);
-                        });
-                        idsRef.current = new Set([...idsRef.current].filter(x => x !== tempId).concat(msg.id));
-                      } catch {
-                        setMensajes(prev => prev.map(m => m.id === tempId ? { ...m, _uploading: false, _error: true } : m));
-                        toast('error', 'Error al subir archivo');
-                      }
-                      sendingAgentMsgRef.current = false;
+                        setPendingAttach({ url, tipo, name: file.name });
+                      } catch { toast('error', 'Error al subir archivo'); }
                     }}
                   />
                   <button onClick={() => fileInputRef.current?.click()} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid #e0e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
@@ -875,16 +902,17 @@ function Inbox() {
                   <EmojiPicker onSelect={emoji => setNuevoMensaje(prev => prev + emoji)} />
                   <button
                     onClick={enviarMensaje}
+                    disabled={!nuevoMensaje.trim() && !pendingAttach}
                     style={{
                       width: 36, height: 36, borderRadius: '50%',
-                      background: nuevoMensaje.trim() ? '#b51822' : '#e0e8f0',
+                      background: nuevoMensaje.trim() || pendingAttach ? '#b51822' : '#e0e8f0',
                       border: 'none',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      cursor: nuevoMensaje.trim() ? 'pointer' : 'not-allowed',
+                      cursor: nuevoMensaje.trim() || pendingAttach ? 'pointer' : 'not-allowed',
                       flexShrink: 0, transition: 'all 0.15s',
                     }}
                   >
-                    <Send size={14} style={{ color: nuevoMensaje.trim() ? '#fff' : '#8896ab' }} />
+                    <Send size={14} style={{ color: nuevoMensaje.trim() || pendingAttach ? '#fff' : '#8896ab' }} />
                   </button>
                 </div>
               </>
