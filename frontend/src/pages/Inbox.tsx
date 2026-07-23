@@ -85,6 +85,7 @@ function Inbox() {
   const cargarMasRef = useRef<() => Promise<void>>(async () => {});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sendingAgentMsgRef = useRef(false);
+  const scrollToBottomRef = useRef(false);
   const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
 
   useEffect(() => {
@@ -185,6 +186,7 @@ function Inbox() {
       if (fetchIdRef.current !== chatId) return;
       idsRef.current = new Set(msgs.map(m => m.id));
       setMensajes(msgs);
+      scrollToBottomRef.current = true;
       offsetRef.current = msgs.length;
       setMessagesLoading(false);
       if (msgs.length < 20) { hasMoreRef.current = false; return; }
@@ -209,6 +211,11 @@ function Inbox() {
   useEffect(() => {
     const el = messagesContainerRef.current;
     if (!el || loadingMoreRef.current) return;
+    if (scrollToBottomRef.current) {
+      scrollToBottomRef.current = false;
+      el.scrollTop = el.scrollHeight;
+      return;
+    }
     const cerca = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
     if (cerca) el.scrollTop = el.scrollHeight;
   }, [mensajes]);
