@@ -35,11 +35,11 @@ function getFileName(url: string) {
   return decodeURIComponent(url.includes('?') ? url.split('?')[0].split('/').pop() || '' : url.split('/').pop() || '');
 }
 
-export default function FileCard({ url, contenido, isAgent }: { url: string; contenido?: string | null; isAgent: boolean }) {
+export default function FileCard({ url, isAgent }: { url: string; isAgent: boolean }) {
   const [downloading, setDownloading] = useState(false);
   const info = getExtInfo(url);
   const Icon = info.icon;
-  const fileName = contenido || getFileName(url);
+  const fileName = getFileName(url);
 
   const handleDownload = async (e: React.MouseEvent) => {
     e.preventDefault();

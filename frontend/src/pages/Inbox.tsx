@@ -697,7 +697,7 @@ function Inbox() {
                                 }} />
                             )}
                             {msg.tipo === 'archivo' && msg.url_multimedia && (
-                              <FileCard url={msg.url_multimedia} contenido={msg.contenido} isAgent={isAgent} />
+                              <FileCard url={msg.url_multimedia} isAgent={isAgent} />
                             )}
                             {(msg.tipo === 'texto' || !msg.url_multimedia) && msg.contenido && (
                               <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
