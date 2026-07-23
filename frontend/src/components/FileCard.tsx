@@ -27,12 +27,14 @@ const extMap: Record<string, { icon: any; color: string; bg: string; label: stri
 };
 
 function getExtInfo(url: string) {
-  const ext = (url.split('.').pop() || '').split('?')[0].toLowerCase();
+  const cleanUrl = url.split('?')[0];
+  const ext = (cleanUrl.split('.').pop() || '').toLowerCase();
   return extMap[ext] || { icon: FileIcon, color: '#8896ab', bg: '#f0f2f5', label: ext.toUpperCase() || 'FILE' };
 }
 
 function getFileName(url: string) {
-  return decodeURIComponent(url.includes('?') ? url.split('?')[0].split('/').pop() || '' : url.split('/').pop() || '');
+  const cleanUrl = url.split('?')[0];
+  return decodeURIComponent(cleanUrl.split('/').pop() || 'Archivo');
 }
 
 export default function FileCard({ url, isAgent }: { url: string; isAgent: boolean }) {
