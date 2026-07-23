@@ -35,6 +35,7 @@ services:
       DB_NAME: autoparts_flow
       JWT_SECRET: ${JWT_SECRET:-autoparts-flow-secret}
       FRONTEND_URL: ""
+      BACKEND_URL: ${BACKEND_URL:-}
       PROFIT_API_URL: ${PROFIT_API_URL:-http://profit-api:8000}
       PROFIT_API_USER: ${PROFIT_API_USER:-admin}
       PROFIT_API_PASSWORD: ${PROFIT_API_PASSWORD:-Profit123!}

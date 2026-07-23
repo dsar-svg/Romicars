@@ -4,6 +4,8 @@ import path from 'path';
 import { query } from '../database';
 import { getIO } from '../socket';
 
+const PUBLIC_URL = (process.env.BACKEND_URL || '').replace(/\/+$/, '');
+
 const storage = multer.diskStorage({
   destination: path.join(__dirname, '../../uploads'),
   filename: (_req, file, cb) => {
@@ -46,7 +48,10 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
     if (['.jpg','.jpeg','.png','.gif','.webp','.svg'].includes(ext)) tipo = 'imagen';
     else if (['.mp3','.wav','.ogg','.aac','.m4a'].includes(ext)) tipo = 'audio';
     else if (['.mp4','.webm','.mov','.avi'].includes(ext)) tipo = 'video';
-    res.json({ url: `/uploads/${req.file.filename}`, tipo });
+    const url = PUBLIC_URL
+      ? `${PUBLIC_URL}/uploads/${req.file.filename}`
+      : `/uploads/${req.file.filename}`;
+    res.json({ url, tipo });
   } catch (error) {
     res.status(500).json({ error: 'Error al subir archivo' });
   }
@@ -89,6 +94,10 @@ router.post('/enviar', async (req: Request, res: Response) => {
       if (cliente) {
         const n8nUrl = process.env.N8N_OUTBOUND_URL || process.env.N8N_RECEIVE_URL;
         if (n8nUrl) {
+          let mediaUrl = url_multimedia || null;
+          if (mediaUrl && mediaUrl.startsWith('/') && PUBLIC_URL) {
+            mediaUrl = `${PUBLIC_URL}${mediaUrl}`;
+          }
           try {
             await fetch(n8nUrl, {
               method: 'POST',
@@ -98,7 +107,7 @@ router.post('/enviar', async (req: Request, res: Response) => {
                 cliente_id,
                 contenido: contenido || '',
                 tipo: msgTipo,
-                url_multimedia: url_multimedia || null,
+                url_multimedia: mediaUrl,
                 canal: cliente.canal_origen || 'whatsapp',
                 telefono: cliente.telefono || null,
                 facebook_psid: cliente.facebook_psid || null,
