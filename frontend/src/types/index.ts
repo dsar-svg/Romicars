@@ -29,6 +29,10 @@ export interface Mensaje {
   leido: boolean;
   asignado_a: number | null;
   fecha_envio: string;
+  /** Solo frontend: true mientras se sube el archivo */
+  _uploading?: boolean;
+  /** Solo frontend: true si falló la subida */
+  _error?: boolean;
 }
 
 export interface Agente {

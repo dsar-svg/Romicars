@@ -713,8 +713,19 @@ function Inbox() {
                               textAlign: 'right',
                               display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 3,
                             }}>
-                              {new Date(msg.fecha_envio).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
-                              {isAgent && <CheckCheck size={10} />}
+                              {msg._uploading ? (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                                  <span className="msg-spinner" />
+                                  Enviando...
+                                </span>
+                              ) : msg._error ? (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, color: '#e74c3c' }}>
+                                  Error
+                                </span>
+                              ) : (
+                                new Date(msg.fecha_envio).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
+                              )}
+                              {isAgent && !msg._uploading && !msg._error && <CheckCheck size={10} />}
                             </div>
                           </div>
                         </div>
@@ -758,14 +769,35 @@ function Inbox() {
                     onChange={async e => {
                       const file = e.target.files?.[0];
                       if (!file || !selectedCliente) return;
+                      const tempId = Date.now() + Math.random();
+                      const ext = file.name.split('.').pop()?.toLowerCase() || '';
+                      let tipo: Mensaje['tipo'] = 'archivo';
+                      if (['jpg','jpeg','png','gif','webp','svg'].includes(ext)) tipo = 'imagen';
+                      else if (['mp3','wav','ogg','aac','m4a'].includes(ext)) tipo = 'audio';
+                      else if (['mp4','webm','mov','avi'].includes(ext)) tipo = 'video';
+                      const tempMsg: Mensaje = {
+                        id: tempId, cliente_id: selectedCliente.id, remitente: 'agente',
+                        contenido: file.name, tipo, url_multimedia: null,
+                        leido: true, asignado_a: null, fecha_envio: new Date().toISOString(),
+                        _uploading: true,
+                      };
+                      agregarMensaje(tempMsg);
+                      e.target.value = '';
                       try {
-                        const { url, tipo } = await mensajesApi.upload(file);
-                        await mensajesApi.enviar({
+                        const { url } = await mensajesApi.upload(file);
+                        const msg = await mensajesApi.enviar({
                           cliente_id: selectedCliente.id, remitente: 'agente',
                           contenido: file.name, tipo, url_multimedia: url,
                         });
-                      } catch { toast('error', 'Error al subir archivo'); }
-                      e.target.value = '';
+                        setMensajes(prev => {
+                          if (prev.some(m => m.id === msg.id)) return prev.filter(m => m.id !== tempId);
+                          return prev.map(m => m.id === tempId ? msg : m);
+                        });
+                        idsRef.current = new Set([...idsRef.current].filter(x => x !== tempId).concat(msg.id));
+                      } catch {
+                        setMensajes(prev => prev.map(m => m.id === tempId ? { ...m, _uploading: false, _error: true } : m));
+                        toast('error', 'Error al subir archivo');
+                      }
                     }}
                   />
                   <button onClick={() => fileInputRef.current?.click()} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid #e0e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
