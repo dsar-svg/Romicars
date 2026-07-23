@@ -89,7 +89,7 @@ function Inbox() {
   const sendingAgentMsgRef = useRef(false);
   const scrollToBottomRef = useRef(false);
   const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
-  const [pendingAttach, setPendingAttach] = useState<{ url: string; tipo: Mensaje['tipo']; name: string } | null>(null);
+  const [pendingAttach, setPendingAttach] = useState<{ url?: string; tipo: Mensaje['tipo']; name: string; _loading?: boolean } | null>(null);
 
   useEffect(() => {
     if (!window.__unreadChats) window.__unreadChats = new Set<number>();
@@ -284,13 +284,13 @@ function Inbox() {
     if (!hasText && !attach) return;
     sendingAgentMsgRef.current = true;
 
-    const sendOne = async (payload: { cliente_id: number; contenido: string; remitente: string; tipo?: string; url_multimedia?: string }, tempId: number) => {
+    const sendOne = async (payload: { cliente_id: number; contenido: string; remitente: string; tipo?: string; url_multimedia?: string }, tempId: number, noUpload?: boolean) => {
       agregarMensaje({
         id: tempId, cliente_id: selectedCliente.id, remitente: 'agente',
         contenido: payload.contenido, tipo: (payload.tipo || 'texto') as Mensaje['tipo'],
         url_multimedia: payload.url_multimedia || null,
         leido: true, asignado_a: null, fecha_envio: new Date().toISOString(),
-        _uploading: !(payload as any)._noUpload,
+        _uploading: !noUpload,
       } as Mensaje);
       try {
         const msg = await mensajesApi.enviar(payload);
@@ -308,12 +308,11 @@ function Inbox() {
 
     try {
       if (attach && hasText) {
-        // Send file with caption, then text separately
         const t1 = Date.now();
         await sendOne({
           cliente_id: selectedCliente.id, remitente: 'agente',
           contenido: nuevoMensaje.trim(), tipo: attach.tipo, url_multimedia: attach.url,
-        }, t1);
+        }, t1, true);
         setPendingAttach(null);
         setNuevoMensaje('');
       } else if (attach) {
@@ -321,7 +320,7 @@ function Inbox() {
         await sendOne({
           cliente_id: selectedCliente.id, remitente: 'agente',
           contenido: attach.name, tipo: attach.tipo, url_multimedia: attach.url,
-        }, t1);
+        }, t1, true);
         setPendingAttach(null);
       } else {
         const t1 = Date.now();
@@ -847,14 +846,22 @@ function Inbox() {
                     padding: '8px 20px', background: '#fff5f5', borderTop: '1px solid #e0e8f0',
                     display: 'flex', alignItems: 'center', gap: 10, fontSize: 13,
                   }}>
-                    {pendingAttach.tipo === 'imagen'
+                    {pendingAttach._loading ? (
+                      <div style={{ width: 36, height: 36, borderRadius: 4, background: '#f0f2f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span className="msg-spinner" style={{ borderColor: '#8896ab', borderTopColor: 'transparent', width: 14, height: 14, borderWidth: 2 }} />
+                      </div>
+                    ) : pendingAttach.tipo === 'imagen' && pendingAttach.url
                       ? <img src={pendingAttach.url} alt="" style={{ width: 36, height: 36, borderRadius: 4, objectFit: 'cover' }} />
                       : <FileText size={18} style={{ color: '#b51822' }} />
                     }
                     <span style={{ flex: 1, color: '#333', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pendingAttach.name}</span>
-                    <button onClick={() => setPendingAttach(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#b51822', padding: 4 }}>
-                      <X size={16} />
-                    </button>
+                    {pendingAttach._loading ? (
+                      <span style={{ fontSize: 11, color: '#8896ab' }}>Subiendo...</span>
+                    ) : (
+                      <button onClick={() => setPendingAttach(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#b51822', padding: 4 }}>
+                        <X size={16} />
+                      </button>
+                    )}
                   </div>
                 )}
                 {/* Input */}
@@ -874,10 +881,14 @@ function Inbox() {
                       if (['jpg','jpeg','png','gif','webp','svg'].includes(ext)) tipo = 'imagen';
                       else if (['mp3','wav','ogg','aac','m4a'].includes(ext)) tipo = 'audio';
                       else if (['mp4','webm','mov','avi'].includes(ext)) tipo = 'video';
+                      setPendingAttach({ _loading: true, tipo, name: file.name });
                       try {
                         const { url } = await mensajesApi.upload(file);
-                        setPendingAttach({ url, tipo, name: file.name });
-                      } catch { toast('error', 'Error al subir archivo'); }
+                        setPendingAttach(prev => prev ? { ...prev, url, _loading: false } : null);
+                      } catch {
+                        setPendingAttach(null);
+                        toast('error', 'Error al subir archivo');
+                      }
                     }}
                   />
                   <button onClick={() => fileInputRef.current?.click()} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid #e0e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
@@ -888,7 +899,7 @@ function Inbox() {
                     <input
                       value={nuevoMensaje}
                       onChange={e => setNuevoMensaje(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), enviarMensaje())}
+                      onKeyDown={e => e.key === 'Enter' && !e.shiftKey && !pendingAttach?._loading && (e.preventDefault(), enviarMensaje())}
                       placeholder="Type a message..."
                     style={{
                       width: '100%', padding: '10px 14px', borderRadius: 8, fontSize: 13,
@@ -905,14 +916,14 @@ function Inbox() {
                     disabled={!nuevoMensaje.trim() && !pendingAttach}
                     style={{
                       width: 36, height: 36, borderRadius: '50%',
-                      background: nuevoMensaje.trim() || pendingAttach ? '#b51822' : '#e0e8f0',
+                      background: (nuevoMensaje.trim() || pendingAttach) && !pendingAttach?._loading ? '#b51822' : '#e0e8f0',
                       border: 'none',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      cursor: nuevoMensaje.trim() || pendingAttach ? 'pointer' : 'not-allowed',
+                      cursor: (nuevoMensaje.trim() || pendingAttach) && !pendingAttach?._loading ? 'pointer' : 'not-allowed',
                       flexShrink: 0, transition: 'all 0.15s',
                     }}
                   >
-                    <Send size={14} style={{ color: nuevoMensaje.trim() || pendingAttach ? '#fff' : '#8896ab' }} />
+                    <Send size={14} style={{ color: (nuevoMensaje.trim() || pendingAttach) && !pendingAttach?._loading ? '#fff' : '#8896ab' }} />
                   </button>
                 </div>
               </>
