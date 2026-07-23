@@ -88,6 +88,7 @@ function Inbox() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sendingAgentMsgRef = useRef(false);
   const scrollToBottomRef = useRef(false);
+  const esUrlImagen = (url: string) => /\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(url.split('?')[0]);
   const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
   const [pendingAttach, setPendingAttach] = useState<{ url?: string; tipo: Mensaje['tipo']; name: string; _loading?: boolean } | null>(null);
   const uploadIdRef = useRef(0);
@@ -362,7 +363,7 @@ function Inbox() {
   };
 
   const galleryMedia = mensajes
-    .filter(m => (m.tipo === 'imagen' || m.tipo === 'video') && m.url_multimedia)
+    .filter(m => m.url_multimedia && (m.tipo === 'imagen' || m.tipo === 'video' || (m.tipo === 'archivo' && esUrlImagen(m.url_multimedia))))
     .map(m => ({ url: m.url_multimedia!, nombre: m.contenido || undefined }));
 
   return (
@@ -773,7 +774,15 @@ function Inbox() {
                               </div>
                             )}
                             {msg.tipo === 'archivo' && msg.url_multimedia && !msg._uploading && (
-                              <><FileCard url={msg.url_multimedia} isAgent={isAgent} />
+                              <>{esUrlImagen(msg.url_multimedia) ? (
+                                <img src={msg.url_multimedia} alt="imagen" style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 8, marginBottom: msg.contenido ? 2 : 4, cursor: 'pointer', display: 'block' }}
+                                  onClick={() => {
+                                    const idx = galleryMedia.findIndex(m => m.url === msg.url_multimedia);
+                                    setGalleryIndex(idx >= 0 ? idx : 0);
+                                  }} />
+                              ) : (
+                                <FileCard url={msg.url_multimedia} isAgent={isAgent} />
+                              )}
                                 {msg.contenido && (
                                   <div style={{ fontSize: 12, color: isBot ? 'var(--text-secondary)' : isAgent ? 'rgba(255,255,255,0.75)' : 'rgba(0,32,69,0.6)', marginTop: 4, fontStyle: 'italic' }}>
                                     {msg.contenido}
@@ -906,10 +915,10 @@ function Inbox() {
                         const { url } = await mensajesApi.upload(file);
                         if (uploadIdRef.current !== uploadId) return;
                         setPendingAttach(prev => prev ? { ...prev, url, _loading: false } : null);
-                      } catch {
+                      } catch (err: any) {
                         if (uploadIdRef.current !== uploadId) return;
                         setPendingAttach(null);
-                        toast('error', 'Error al subir archivo');
+                        toast('error', err?.response?.data?.error || err?.message || 'Error al subir archivo');
                       }
                     }}
                   />

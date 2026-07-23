@@ -38,7 +38,7 @@ export const mensajesApi = {
   upload: (file: File) => {
     const fd = new FormData();
     fd.append('file', file);
-    return api.post('/mensajes/upload', fd).then(r => r.data);
+    return api.post('/mensajes/upload', fd, { timeout: 60000 }).then(r => r.data);
   },
 };
 
