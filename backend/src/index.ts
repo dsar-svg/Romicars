@@ -22,7 +22,13 @@ app.use(cors({
   exposedHeaders: ['X-RateLimit-Remaining'],
 }));
 app.use(express.json({ limit: '10mb' }));
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/uploads', (req, res, next) => {
+  if (req.query.filename) {
+    const cleanName = encodeURIComponent(req.query.filename as string);
+    res.setHeader('Content-Disposition', `inline; filename="${cleanName}"; filename*=UTF-8''${cleanName}`);
+  }
+  next();
+}, express.static(path.join(__dirname, '../uploads')));
 
 app.use('/api', apiLimiter, routes);
 

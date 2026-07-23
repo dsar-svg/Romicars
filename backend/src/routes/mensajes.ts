@@ -48,9 +48,10 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
     if (['.jpg','.jpeg','.png','.gif','.webp','.svg'].includes(ext)) tipo = 'imagen';
     else if (['.mp3','.wav','.ogg','.aac','.m4a'].includes(ext)) tipo = 'audio';
     else if (['.mp4','.webm','.mov','.avi'].includes(ext)) tipo = 'video';
+    const originalName = encodeURIComponent(req.file.originalname);
     const url = BACKEND_PUBLIC_URL
-      ? `${BACKEND_PUBLIC_URL}/uploads/${req.file.filename}`
-      : `/uploads/${req.file.filename}`;
+      ? `${BACKEND_PUBLIC_URL}/uploads/${req.file.filename}?filename=${originalName}`
+      : `/uploads/${req.file.filename}?filename=${originalName}`;
     res.json({ url, tipo });
   } catch (error) {
     res.status(500).json({ error: 'Error al subir archivo' });
