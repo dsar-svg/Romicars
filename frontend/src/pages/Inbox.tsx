@@ -84,6 +84,7 @@ function Inbox() {
   const fetchIdRef = useRef<number | null>(null);
   const cargarMasRef = useRef<() => Promise<void>>(async () => {});
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const sendingAgentMsgRef = useRef(false);
   const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
 
   useEffect(() => {
@@ -118,6 +119,7 @@ function Inbox() {
     };
 
     socket.on('message:new', (mensaje: Mensaje) => {
+      if (sendingAgentMsgRef.current && mensaje.remitente === 'agente') return;
       const isCurrent = currentClienteId.current === mensaje.cliente_id;
       if (isCurrent) {
         agregarMensaje(mensaje);
@@ -276,6 +278,7 @@ function Inbox() {
     };
     agregarMensaje(tempMsg);
     setNuevoMensaje('');
+    sendingAgentMsgRef.current = true;
     try {
       const msg = await mensajesApi.enviar({
         cliente_id: selectedCliente.id, contenido, remitente: 'agente',
@@ -290,6 +293,7 @@ function Inbox() {
       idsRef.current = new Set([...idsRef.current].filter(x => x !== tempId));
       toast('error', 'Error al enviar mensaje');
     }
+    sendingAgentMsgRef.current = false;
   };
 
   const clientesFiltrados = clientes.filter(c => {
@@ -699,10 +703,38 @@ function Inbox() {
                                   setGalleryIndex(idx >= 0 ? idx : 0);
                                 }} />
                             )}
-                            {msg.tipo === 'archivo' && msg.url_multimedia && (
+                            {msg._uploading && (
+                              <div style={{
+                                display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', marginBottom: 4,
+                                borderRadius: 8,
+                                background: isAgent ? 'rgba(255,255,255,0.1)' : 'rgba(0,32,69,0.04)',
+                                border: `1px solid ${isAgent ? 'rgba(255,255,255,0.15)' : 'rgba(0,32,69,0.1)'}`,
+                              }}>
+                                <div style={{
+                                  width: 38, height: 38, borderRadius: 8, flexShrink: 0,
+                                  background: isAgent ? '#8896ab' : '#f0f2f5',
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                }}>
+                                  <span className="msg-spinner" style={{ borderColor: isAgent ? 'rgba(255,255,255,0.6)' : '#8896ab', borderTopColor: 'transparent', width: 16, height: 16, borderWidth: 2 }} />
+                                </div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{
+                                    fontSize: 13, fontWeight: 600,
+                                    color: isAgent ? '#fff' : '#002045',
+                                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                  }}>
+                                    {msg.contenido}
+                                  </div>
+                                  <div style={{ fontSize: 11, color: isAgent ? 'rgba(255,255,255,0.6)' : '#8896ab', marginTop: 2 }}>
+                                    Subiendo...
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            {msg.tipo === 'archivo' && msg.url_multimedia && !msg._uploading && (
                               <FileCard url={msg.url_multimedia} isAgent={isAgent} />
                             )}
-                            {(msg.tipo === 'texto' || !msg.url_multimedia) && msg.contenido && (
+                            {(msg.tipo === 'texto' || (!msg.url_multimedia && !msg._uploading)) && msg.contenido && (
                               <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                                 {msg.contenido}
                               </div>
@@ -783,6 +815,7 @@ function Inbox() {
                       };
                       agregarMensaje(tempMsg);
                       e.target.value = '';
+                      sendingAgentMsgRef.current = true;
                       try {
                         const { url } = await mensajesApi.upload(file);
                         const msg = await mensajesApi.enviar({
@@ -798,6 +831,7 @@ function Inbox() {
                         setMensajes(prev => prev.map(m => m.id === tempId ? { ...m, _uploading: false, _error: true } : m));
                         toast('error', 'Error al subir archivo');
                       }
+                      sendingAgentMsgRef.current = false;
                     }}
                   />
                   <button onClick={() => fileInputRef.current?.click()} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid #e0e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
