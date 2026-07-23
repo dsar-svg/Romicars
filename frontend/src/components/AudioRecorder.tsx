@@ -15,18 +15,21 @@ export default function AudioRecorder({ clienteId, onStart, onEnd }: AudioRecord
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const cancelledRef = useRef(false);
 
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
       chunksRef.current = [];
+      cancelledRef.current = false;
       recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
       recorder.onstop = async () => {
         stream.getTracks().forEach(t => t.stop());
         if (timerRef.current) clearInterval(timerRef.current);
         timerRef.current = null;
         setTimer(0);
+        if (cancelledRef.current) { chunksRef.current = []; setState('idle'); return; }
         if (chunksRef.current.length === 0) { setState('idle'); return; }
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
         if (blob.size < 100) { setState('idle'); return; }
@@ -60,10 +63,13 @@ export default function AudioRecorder({ clienteId, onStart, onEnd }: AudioRecord
   };
 
   const cancelRecording = () => {
+    cancelledRef.current = true;
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = null;
     setTimer(0);
-    mediaRecorderRef.current?.stream.getTracks().forEach(t => t.stop());
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stream.getTracks().forEach(t => t.stop());
+    }
     mediaRecorderRef.current = null;
     chunksRef.current = [];
     setState('idle');
