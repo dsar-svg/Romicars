@@ -280,7 +280,10 @@ function Inbox() {
       const msg = await mensajesApi.enviar({
         cliente_id: selectedCliente.id, contenido, remitente: 'agente',
       });
-      setMensajes(prev => prev.map(m => m.id === tempId ? msg : m));
+      setMensajes(prev => {
+        if (prev.some(m => m.id === msg.id)) return prev.filter(m => m.id !== tempId);
+        return prev.map(m => m.id === tempId ? msg : m);
+      });
       idsRef.current = new Set([...idsRef.current].filter(x => x !== tempId).concat(msg.id));
     } catch {
       setMensajes(prev => prev.filter(m => m.id !== tempId));
