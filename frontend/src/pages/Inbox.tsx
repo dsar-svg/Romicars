@@ -90,6 +90,7 @@ function Inbox() {
   const scrollToBottomRef = useRef(false);
   const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
   const [pendingAttach, setPendingAttach] = useState<{ url?: string; tipo: Mensaje['tipo']; name: string; _loading?: boolean } | null>(null);
+  const uploadIdRef = useRef(0);
 
   useEffect(() => {
     if (!window.__unreadChats) window.__unreadChats = new Set<number>();
@@ -729,7 +730,7 @@ function Inbox() {
                                 <Bot size={10} /> Bot IA
                               </div>
                             )}
-                            {msg.tipo === 'imagen' && msg.url_multimedia && (
+                            {msg.tipo === 'imagen' && msg.url_multimedia && !msg._uploading && (
                               <>
                                 <img src={msg.url_multimedia} alt="imagen" style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 8, marginBottom: msg.contenido ? 2 : 4, cursor: 'pointer', display: 'block' }}
                                   onClick={() => {
@@ -742,16 +743,6 @@ function Inbox() {
                                   </div>
                                 )}
                               </>
-                            )}
-                            {msg.tipo === 'audio' && msg.url_multimedia && (
-                              <AudioPlayer src={msg.url_multimedia} isAgent={isAgent} />
-                            )}
-                            {msg.tipo === 'video' && msg.url_multimedia && (
-                              <video controls src={msg.url_multimedia} style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 8, marginBottom: 4, cursor: 'pointer' }}
-                                onClick={() => {
-                                  const idx = galleryMedia.findIndex(m => m.url === msg.url_multimedia);
-                                  setGalleryIndex(idx >= 0 ? idx : 0);
-                                }} />
                             )}
                             {msg._uploading && (
                               <div style={{
@@ -782,7 +773,35 @@ function Inbox() {
                               </div>
                             )}
                             {msg.tipo === 'archivo' && msg.url_multimedia && !msg._uploading && (
-                              <FileCard url={msg.url_multimedia} isAgent={isAgent} />
+                              <><FileCard url={msg.url_multimedia} isAgent={isAgent} />
+                                {msg.contenido && (
+                                  <div style={{ fontSize: 12, color: isBot ? 'var(--text-secondary)' : isAgent ? 'rgba(255,255,255,0.75)' : 'rgba(0,32,69,0.6)', marginTop: 4, fontStyle: 'italic' }}>
+                                    {msg.contenido}
+                                  </div>
+                                )}
+                              </>
+                            )}
+                            {msg.tipo === 'audio' && msg.url_multimedia && !msg._uploading && (
+                              <><AudioPlayer src={msg.url_multimedia} isAgent={isAgent} />
+                                {msg.contenido && (
+                                  <div style={{ fontSize: 12, color: isBot ? 'var(--text-secondary)' : isAgent ? 'rgba(255,255,255,0.75)' : 'rgba(0,32,69,0.6)', marginTop: 4, fontStyle: 'italic' }}>
+                                    {msg.contenido}
+                                  </div>
+                                )}
+                              </>
+                            )}
+                            {msg.tipo === 'video' && msg.url_multimedia && !msg._uploading && (
+                              <><video controls src={msg.url_multimedia} style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 8, marginBottom: 4, cursor: 'pointer' }}
+                                onClick={() => {
+                                  const idx = galleryMedia.findIndex(m => m.url === msg.url_multimedia);
+                                  setGalleryIndex(idx >= 0 ? idx : 0);
+                                }} />
+                                {msg.contenido && (
+                                  <div style={{ fontSize: 12, color: isBot ? 'var(--text-secondary)' : isAgent ? 'rgba(255,255,255,0.75)' : 'rgba(0,32,69,0.6)', marginTop: 4, fontStyle: 'italic' }}>
+                                    {msg.contenido}
+                                  </div>
+                                )}
+                              </>
                             )}
                             {(msg.tipo === 'texto' || (!msg.url_multimedia && !msg._uploading)) && msg.contenido && (
                               <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
@@ -881,11 +900,14 @@ function Inbox() {
                       if (['jpg','jpeg','png','gif','webp','svg'].includes(ext)) tipo = 'imagen';
                       else if (['mp3','wav','ogg','aac','m4a'].includes(ext)) tipo = 'audio';
                       else if (['mp4','webm','mov','avi'].includes(ext)) tipo = 'video';
+                      const uploadId = ++uploadIdRef.current;
                       setPendingAttach({ _loading: true, tipo, name: file.name });
                       try {
                         const { url } = await mensajesApi.upload(file);
+                        if (uploadIdRef.current !== uploadId) return;
                         setPendingAttach(prev => prev ? { ...prev, url, _loading: false } : null);
                       } catch {
+                        if (uploadIdRef.current !== uploadId) return;
                         setPendingAttach(null);
                         toast('error', 'Error al subir archivo');
                       }
