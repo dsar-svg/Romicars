@@ -896,33 +896,24 @@ function Inbox() {
                       const isBot = msg.remitente === 'bot';
                       const isClient = !isAgent && !isBot;
                       return (
-                        <div key={msg.id} id={`msg-${msg.id}`} style={{
-                          marginBottom: 6,
-                          display: 'flex',
-                          flexDirection: isAgent ? 'row-reverse' : 'row',
-                          alignItems: 'flex-end',
-                          gap: 8,
-                          position: 'relative',
-                        }}
+                        <div style={{ display: 'flex', flexDirection: isAgent ? 'row-reverse' : 'row', alignItems: 'flex-end', gap: 4 }}
                           onMouseEnter={() => setHoveredMsg(msg.id)}
-                          onMouseLeave={() => { setHoveredMsg(null); }}
+                          onMouseLeave={() => { setHoveredMsg(null); setActiveMsgMenu(null); }}
                         >
                           {hoveredMsg === msg.id && activeMsgMenu !== msg.id && (
                             <button onClick={(e) => { e.stopPropagation(); setActiveMsgMenu(msg.id); }} style={{
-                              position: 'absolute', top: -6, [isAgent ? 'left' : 'right']: 4,
-                              width: 24, height: 24, borderRadius: 4, border: 'none',
-                              background: '#fff', cursor: 'pointer', zIndex: 10,
+                              width: 22, height: 22, borderRadius: 4, border: 'none',
+                              background: '#fff', cursor: 'pointer', zIndex: 10, flexShrink: 0,
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+                              boxShadow: '0 1px 4px rgba(0,0,0,0.15)', marginBottom: 2,
                             }}>
                               <span style={{ fontSize: 14, color: '#5a6a7c', lineHeight: 1 }}>⋮</span>
                             </button>
                           )}
                           {activeMsgMenu === msg.id && (
                             <div style={{
-                              position: 'absolute', top: -6, [isAgent ? 'left' : 'right']: 4,
                               background: '#fff', borderRadius: 8, boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                              zIndex: 20, minWidth: 140, padding: '4px 0',
+                              zIndex: 20, minWidth: 140, padding: '4px 0', flexShrink: 0, marginBottom: 2,
                             }} onClick={e => e.stopPropagation()}>
                               <button onClick={() => handleCopyMessage(msg)} style={{
                                 display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
@@ -954,6 +945,10 @@ function Inbox() {
                               </button>
                             </div>
                           )}
+                          <div key={msg.id} id={`msg-${msg.id}`} style={{
+                            marginBottom: 6,
+                            maxWidth: '85%',
+                          }}>
                           {isBot && (
                             <div style={{
                               width: 28, height: 28, borderRadius: '50%',
@@ -1106,6 +1101,7 @@ function Inbox() {
                               {isAgent && !msg._uploading && !msg._error && <CheckCheck size={10} />}
                             </div>
                           </div>
+                        </div>
                         </div>
                       );
                     })}
