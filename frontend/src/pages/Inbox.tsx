@@ -100,6 +100,7 @@ function Inbox() {
   const [chatContextMenu, setChatContextMenu] = useState<{ x: number; y: number; cliente: Cliente } | null>(null);
   const [hoveredMsg, setHoveredMsg] = useState<number | null>(null);
   const [hoveredChat, setHoveredChat] = useState<number | null>(null);
+  const [activeMsgMenu, setActiveMsgMenu] = useState<number | null>(null);
 
   useEffect(() => {
     if (!window.__unreadChats) window.__unreadChats = new Set<number>();
@@ -128,12 +129,21 @@ function Inbox() {
   const handleDeleteMessage = async (msg: Mensaje) => {
     if (!confirm('Eliminar este mensaje?')) return;
     try { await mensajesApi.delete(msg.id); } catch { toast('error', 'Error al eliminar mensaje'); }
-    setMsgContextMenu(null);
+    setActiveMsgMenu(null);
   };
 
   const handlePinMessage = async (msg: Mensaje) => {
     try { await mensajesApi.togglePin(msg.id); } catch { toast('error', 'Error al fijar mensaje'); }
-    setMsgContextMenu(null);
+    setActiveMsgMenu(null);
+  };
+
+  const handleCopyMessage = (msg: Mensaje) => {
+    navigator.clipboard.writeText(msg.contenido).then(() => {
+      toast('success', 'Mensaje copiado');
+    }).catch(() => {
+      toast('error', 'Error al copiar');
+    });
+    setActiveMsgMenu(null);
   };
 
   const handleDeleteChat = async (cliente: Cliente) => {
@@ -291,7 +301,7 @@ function Inbox() {
   }, [clienteId]);
 
   useEffect(() => {
-    const handleClick = () => { setMsgContextMenu(null); setChatContextMenu(null); };
+    const handleClick = () => { setMsgContextMenu(null); setChatContextMenu(null); setActiveMsgMenu(null); };
     document.addEventListener('click', handleClick);
     return () => document.removeEventListener('click', handleClick);
   }, []);
@@ -849,17 +859,44 @@ function Inbox() {
                   ) : mensajes.length === 0 ? (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#8896ab' }}>
                       <MessageSquare size={48} style={{ opacity: 0.12, marginBottom: 16, color: '#b51822' }} />
-                      <p style={{ fontSize: 15, fontWeight: 600, color: '#002045' }}>Sin mensajes aún</p>
-                      <p style={{ fontSize: 13, marginTop: 4 }}>Envía el primer mensaje para iniciar la conversación</p>
+                      <p style={{ fontSize: 15, fontWeight: 600, color: '#002045' }}>Sin mensajes aun</p>
+                      <p style={{ fontSize: 13, marginTop: 4 }}>Envia el primer mensaje para iniciar la conversacion</p>
                     </div>
                   ) : (
-                    mensajes.filter(msg => msg.cliente_id === Number(clienteId) &&
+                    <>
+                      {mensajes.some(m => m.pinned) && (
+                        <div style={{
+                          marginBottom: 12, padding: '8px 12px', background: '#FEF3C7',
+                          borderRadius: 8, border: '1px solid #FDE68A',
+                          display: 'flex', alignItems: 'center', gap: 8,
+                        }}>
+                          <Pin size={14} style={{ color: '#D97706', flexShrink: 0 }} />
+                          <span style={{ fontSize: 12, color: '#92400E', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {mensajes.filter(m => m.pinned).length === 1
+                              ? `Mensaje fijado: "${mensajes.find(m => m.pinned)?.contenido}"`
+                              : `${mensajes.filter(m => m.pinned).length} mensajes fijados`}
+                          </span>
+                          <button onClick={() => {
+                            const firstPinned = mensajes.find(m => m.pinned);
+                            if (firstPinned) {
+                              const el = document.getElementById(`msg-${firstPinned.id}`);
+                              el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                          }} style={{
+                            fontSize: 12, color: '#D97706', fontWeight: 600, background: 'none',
+                            border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
+                          }}>
+                            Ver
+                          </button>
+                        </div>
+                      )}
+                      {mensajes.filter(msg => msg.cliente_id === Number(clienteId) &&
                       (!searchMsg || msg.contenido.toLowerCase().includes(searchMsg.toLowerCase()))).map((msg) => {
                       const isAgent = msg.remitente === 'agente';
                       const isBot = msg.remitente === 'bot';
                       const isClient = !isAgent && !isBot;
                       return (
-                        <div key={msg.id} style={{
+                        <div key={msg.id} id={`msg-${msg.id}`} style={{
                           marginBottom: 6,
                           display: 'flex',
                           flexDirection: isAgent ? 'row-reverse' : 'row',
@@ -871,29 +908,52 @@ function Inbox() {
                           padding: msg.pinned ? '4px 0' : 0,
                         }}
                           onMouseEnter={() => setHoveredMsg(msg.id)}
-                          onMouseLeave={() => setHoveredMsg(null)}
-                          onContextMenu={e => { e.preventDefault(); e.stopPropagation(); setMsgContextMenu({ x: e.clientX, y: e.clientY, msg }); }}
+                          onMouseLeave={() => { setHoveredMsg(null); }}
                         >
-                          {hoveredMsg === msg.id && (
-                            <div style={{
-                              position: 'absolute', top: -8, [isAgent ? 'left' : 'right']: -4,
-                              display: 'flex', gap: 2, zIndex: 10,
-                              background: '#fff', borderRadius: 6, padding: '2px',
-                              boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+                          {hoveredMsg === msg.id && activeMsgMenu !== msg.id && (
+                            <button onClick={(e) => { e.stopPropagation(); setActiveMsgMenu(msg.id); }} style={{
+                              position: 'absolute', top: -6, [isAgent ? 'left' : 'right']: 4,
+                              width: 24, height: 24, borderRadius: 4, border: 'none',
+                              background: '#fff', cursor: 'pointer', zIndex: 10,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
                             }}>
+                              <span style={{ fontSize: 14, color: '#5a6a7c', lineHeight: 1 }}>⋮</span>
+                            </button>
+                          )}
+                          {activeMsgMenu === msg.id && (
+                            <div style={{
+                              position: 'absolute', top: -6, [isAgent ? 'left' : 'right']: 4,
+                              background: '#fff', borderRadius: 8, boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                              zIndex: 20, minWidth: 140, padding: '4px 0',
+                            }} onClick={e => e.stopPropagation()}>
+                              <button onClick={() => handleCopyMessage(msg)} style={{
+                                display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
+                                border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
+                              }}
+                                onMouseEnter={e => e.currentTarget.style.background = '#f6f9fc'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                              >
+                                Copiar
+                              </button>
                               <button onClick={() => handlePinMessage(msg)} style={{
-                                width: 24, height: 24, borderRadius: 4, border: 'none',
-                                background: msg.pinned ? '#FEF3C7' : 'transparent',
-                                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              }} title={msg.pinned ? 'Desfijar' : 'Fijar'}>
-                                <Pin size={12} style={{ color: msg.pinned ? '#D97706' : '#8896ab' }} />
+                                display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
+                                border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
+                              }}
+                                onMouseEnter={e => e.currentTarget.style.background = '#f6f9fc'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                              >
+                                {msg.pinned ? 'Desfijar' : 'Fijar'}
                               </button>
                               <button onClick={() => handleDeleteMessage(msg)} style={{
-                                width: 24, height: 24, borderRadius: 4, border: 'none',
-                                background: 'transparent', cursor: 'pointer',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              }} title="Eliminar">
-                                <Trash2 size={12} style={{ color: '#DC2626' }} />
+                                display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
+                                border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
+                                color: '#DC2626',
+                              }}
+                                onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                              >
+                                Eliminar
                               </button>
                             </div>
                           )}
@@ -1048,7 +1108,8 @@ function Inbox() {
                           </div>
                         </div>
                       );
-                    })
+                    })}
+                    </>
                   )}
                 </div>
 
