@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Search, Send, MessageSquare, Bot, CheckCheck, Paperclip, Phone, PanelRightOpen, PanelRightClose, FileText, X, UserCheck, UserPlus } from 'lucide-react';
+import { Search, Send, MessageSquare, Bot, CheckCheck, Paperclip, Phone, PanelRightOpen, PanelRightClose, FileText, X, UserCheck, UserPlus, Trash2, Pin } from 'lucide-react';
 import { clientesApi, mensajesApi } from '../services/api';
 import { connectSocket, getSocket } from '../services/socket';
 import { toast } from '../components/Toast';
@@ -98,6 +98,8 @@ function Inbox() {
   const [filtroAtencion, setFiltroAtencion] = useState('todos');
   const [msgContextMenu, setMsgContextMenu] = useState<{ x: number; y: number; msg: Mensaje } | null>(null);
   const [chatContextMenu, setChatContextMenu] = useState<{ x: number; y: number; cliente: Cliente } | null>(null);
+  const [hoveredMsg, setHoveredMsg] = useState<number | null>(null);
+  const [hoveredChat, setHoveredChat] = useState<number | null>(null);
 
   useEffect(() => {
     if (!window.__unreadChats) window.__unreadChats = new Set<number>();
@@ -293,6 +295,27 @@ function Inbox() {
     document.addEventListener('click', handleClick);
     return () => document.removeEventListener('click', handleClick);
   }, []);
+
+  // Polling para sincronizar con cambios en la BD (eliminaciones directas)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      clientesApi.getAll().then(data => setClientes(data)).catch(() => {});
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (!clienteId) return;
+    const interval = setInterval(() => {
+      const id = Number(clienteId);
+      mensajesApi.getByCliente(id, 200).then((msgs: Mensaje[]) => {
+        if (fetchIdRef.current !== id) return;
+        idsRef.current = new Set(msgs.map(m => m.id));
+        setMensajes(msgs);
+      }).catch(() => {});
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [clienteId]);
 
   useEffect(() => {
     const el = messagesContainerRef.current;
@@ -589,8 +612,8 @@ function Inbox() {
                         transition: 'all 0.15s',
                         animationDelay: `${i * 30}ms`,
                       }}
-                      onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#f6f9fc'; }}
-                      onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
+                      onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#f6f9fc'; setHoveredChat(cliente.id); }}
+                      onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent'; setHoveredChat(null); }}
                     >
                       <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                         {/* Avatar con badge de canal */}
@@ -642,14 +665,33 @@ function Inbox() {
                                 {cliente.nombre || cliente.telefono || 'Sin nombre'}
                               </strong>
                             </div>
-                            <span style={{
-                              fontSize: 11,
-                              fontWeight: unreadChats.has(cliente.id) ? 600 : 400,
-                              color: unreadChats.has(cliente.id) ? '#b51822' : '#8896ab',
-                              flexShrink: 0, marginLeft: 8,
-                            }}>
-                              {new Date(cliente.ultima_interaccion || Date.now()).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
-                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                              {hoveredChat === cliente.id && (
+                                <>
+                                  <button onClick={e => { e.stopPropagation(); handlePinChat(cliente); }} style={{
+                                    width: 22, height: 22, borderRadius: 4, border: 'none',
+                                    background: cliente.pinned ? '#FEF3C7' : 'transparent',
+                                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  }} title={cliente.pinned ? 'Desfijar' : 'Fijar'}>
+                                    <Pin size={11} style={{ color: cliente.pinned ? '#D97706' : '#8896ab' }} />
+                                  </button>
+                                  <button onClick={e => { e.stopPropagation(); handleDeleteChat(cliente); }} style={{
+                                    width: 22, height: 22, borderRadius: 4, border: 'none',
+                                    background: 'transparent', cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  }} title="Eliminar chat">
+                                    <Trash2 size={11} style={{ color: '#DC2626' }} />
+                                  </button>
+                                </>
+                              )}
+                              <span style={{
+                                fontSize: 11,
+                                fontWeight: unreadChats.has(cliente.id) ? 600 : 400,
+                                color: unreadChats.has(cliente.id) ? '#b51822' : '#8896ab',
+                              }}>
+                                {new Date(cliente.ultima_interaccion || Date.now()).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
                           </div>
                           <div style={{ display: 'flex', gap: 6, marginBottom: 4, alignItems: 'center' }}>
                             {canalLabel[canal] && (
@@ -828,8 +870,33 @@ function Inbox() {
                           borderRadius: 8,
                           padding: msg.pinned ? '4px 0' : 0,
                         }}
+                          onMouseEnter={() => setHoveredMsg(msg.id)}
+                          onMouseLeave={() => setHoveredMsg(null)}
                           onContextMenu={e => { e.preventDefault(); e.stopPropagation(); setMsgContextMenu({ x: e.clientX, y: e.clientY, msg }); }}
                         >
+                          {hoveredMsg === msg.id && (
+                            <div style={{
+                              position: 'absolute', top: -8, [isAgent ? 'left' : 'right']: -4,
+                              display: 'flex', gap: 2, zIndex: 10,
+                              background: '#fff', borderRadius: 6, padding: '2px',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+                            }}>
+                              <button onClick={() => handlePinMessage(msg)} style={{
+                                width: 24, height: 24, borderRadius: 4, border: 'none',
+                                background: msg.pinned ? '#FEF3C7' : 'transparent',
+                                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              }} title={msg.pinned ? 'Desfijar' : 'Fijar'}>
+                                <Pin size={12} style={{ color: msg.pinned ? '#D97706' : '#8896ab' }} />
+                              </button>
+                              <button onClick={() => handleDeleteMessage(msg)} style={{
+                                width: 24, height: 24, borderRadius: 4, border: 'none',
+                                background: 'transparent', cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              }} title="Eliminar">
+                                <Trash2 size={12} style={{ color: '#DC2626' }} />
+                              </button>
+                            </div>
+                          )}
                           {isBot && (
                             <div style={{
                               width: 28, height: 28, borderRadius: '50%',
