@@ -1,16 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Search, Send, MessageSquare, Bot, CheckCheck, Paperclip, Phone, PanelRightOpen, PanelRightClose, FileText, X } from 'lucide-react';
+import { Search, Send, MessageSquare, Bot, CheckCheck, Paperclip, Phone, PanelRightOpen, PanelRightClose, FileText, X, UserCheck, UserPlus } from 'lucide-react';
 import { clientesApi, mensajesApi } from '../services/api';
 import { connectSocket, getSocket } from '../services/socket';
 import { toast } from '../components/Toast';
 import ClientPanel from '../components/ClientPanel';
+import TransferAlert from '../components/TransferAlert';
 import AudioPlayer from '../components/AudioPlayer';
 import FileCard from '../components/FileCard';
 import GalleryView from '../components/GalleryView';
 import AudioRecorder from '../components/AudioRecorder';
 import EmojiPicker from '../components/EmojiPicker';
 import { useNotifications } from '../hooks/useNotifications';
+import { useAuth } from '../contexts/AuthContext';
 import type { Cliente, Mensaje } from '../types';
 
 const canalIcono: Record<string, string> = {
@@ -53,6 +55,7 @@ function SkeletonChats() {
 function Inbox() {
   const { clienteId } = useParams();
   const navigate = useNavigate();
+  const { agente } = useAuth();
   const prevClienteId = useRef<string | undefined>(undefined);
   const currentClienteId = useRef<number | null>(null);
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -92,6 +95,9 @@ function Inbox() {
   const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
   const [pendingAttach, setPendingAttach] = useState<{ url?: string; tipo: Mensaje['tipo']; name: string; _loading?: boolean } | null>(null);
   const uploadIdRef = useRef(0);
+  const [filtroAtencion, setFiltroAtencion] = useState('todos');
+  const [msgContextMenu, setMsgContextMenu] = useState<{ x: number; y: number; msg: Mensaje } | null>(null);
+  const [chatContextMenu, setChatContextMenu] = useState<{ x: number; y: number; cliente: Cliente } | null>(null);
 
   useEffect(() => {
     if (!window.__unreadChats) window.__unreadChats = new Set<number>();
@@ -101,28 +107,50 @@ function Inbox() {
     return () => window.removeEventListener('unread-sync', handler);
   }, []);
 
+  const refrescarClienteEnLista = useCallback((clienteId: number) => {
+    clientesApi.getById(clienteId).then(actualizado => {
+      setClientes(cs => {
+        const idx = cs.findIndex(c => c.id === actualizado.id);
+        if (idx >= 0) {
+          const copy = [...cs];
+          copy[idx] = actualizado;
+          return copy;
+        }
+        return [actualizado, ...cs];
+      });
+    }).catch(() => {
+      clientesApi.getAll().then(setClientes);
+    });
+  }, []);
+
+  const handleDeleteMessage = async (msg: Mensaje) => {
+    if (!confirm('Eliminar este mensaje?')) return;
+    try { await mensajesApi.delete(msg.id); } catch { toast('error', 'Error al eliminar mensaje'); }
+    setMsgContextMenu(null);
+  };
+
+  const handlePinMessage = async (msg: Mensaje) => {
+    try { await mensajesApi.togglePin(msg.id); } catch { toast('error', 'Error al fijar mensaje'); }
+    setMsgContextMenu(null);
+  };
+
+  const handleDeleteChat = async (cliente: Cliente) => {
+    if (!confirm(`Eliminar todos los mensajes de ${cliente.nombre || cliente.telefono}?`)) return;
+    try { await clientesApi.deleteChat(cliente.id); } catch { toast('error', 'Error al eliminar chat'); }
+    setChatContextMenu(null);
+  };
+
+  const handlePinChat = async (cliente: Cliente) => {
+    try { await clientesApi.togglePin(cliente.id); } catch { toast('error', 'Error al fijar chat'); }
+    setChatContextMenu(null);
+  };
+
   useEffect(() => {
     const socket = connectSocket();
     clientesApi.getAll().then(data => {
       setClientes(data);
       setLoading(false);
     });
-
-    const refrescarClienteEnLista = (clienteId: number) => {
-      clientesApi.getById(clienteId).then(actualizado => {
-        setClientes(cs => {
-          const idx = cs.findIndex(c => c.id === actualizado.id);
-          if (idx >= 0) {
-            const copy = [...cs];
-            copy[idx] = actualizado;
-            return copy;
-          }
-          return [actualizado, ...cs];
-        });
-      }).catch(() => {
-        clientesApi.getAll().then(setClientes);
-      });
-    };
 
     socket.on('message:new', (mensaje: Mensaje) => {
       if (sendingAgentMsgRef.current && mensaje.remitente === 'agente') return;
@@ -158,12 +186,59 @@ function Inbox() {
       setSelectedCliente(prev => prev?.id === cliente.id ? cliente : prev);
     });
 
+    socket.on('chat:transferido', (cliente: Cliente) => {
+      new Audio('/sounds/notification.mp3').play().catch(() => {});
+      toast('info', `Nuevo chat: ${cliente.nombre || cliente.telefono}`);
+      refrescarClienteEnLista(cliente.id);
+    });
+
+    socket.on('chat:asignado', (data: { cliente: Cliente; agente: any }) => {
+      refrescarClienteEnLista(data.cliente.id);
+      if (data.agente.id !== agente?.id) {
+        toast('info', `${data.agente.nombre} tomo el chat de ${data.cliente.nombre || data.cliente.telefono}`);
+      }
+    });
+
+    socket.on('chat:liberado', (cliente: Cliente) => {
+      refrescarClienteEnLista(cliente.id);
+      toast('info', `Chat liberado: ${cliente.nombre || cliente.telefono}`);
+    });
+
+    socket.on('chat:deleted', (data: { cliente_id: number }) => {
+      setClientes(prev => prev.filter(c => c.id !== data.cliente_id));
+      if (selectedCliente?.id === data.cliente_id) { navigate('/inbox'); }
+      toast('info', 'Chat eliminado');
+    });
+
+    socket.on('message:deleted', (data: { mensaje_id: number; cliente_id: number }) => {
+      setMensajes(prev => prev.filter(m => m.id !== data.mensaje_id));
+      idsRef.current.delete(data.mensaje_id);
+    });
+
+    socket.on('chat:pinned', (data: { cliente_id: number; pinned: boolean }) => {
+      setClientes(prev => {
+        const updated = prev.map(c => c.id === data.cliente_id ? { ...c, pinned: data.pinned } : c);
+        return [...updated].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+      });
+    });
+
+    socket.on('message:pinned', (data: { mensaje_id: number; pinned: boolean }) => {
+      setMensajes(prev => prev.map(m => m.id === data.mensaje_id ? { ...m, pinned: data.pinned } : m));
+    });
+
     return () => {
       socket.off('message:new');
       socket.off('chat:updated');
       socket.off('cliente:updated');
+      socket.off('chat:transferido');
+      socket.off('chat:asignado');
+      socket.off('chat:liberado');
+      socket.off('chat:deleted');
+      socket.off('message:deleted');
+      socket.off('chat:pinned');
+      socket.off('message:pinned');
     };
-  }, []);
+  }, [refrescarClienteEnLista, agente, selectedCliente, navigate]);
 
   useEffect(() => {
     const socket = getSocket();
@@ -212,6 +287,12 @@ function Inbox() {
     document.addEventListener('visibilitychange', handleVisibility);
     return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, [clienteId]);
+
+  useEffect(() => {
+    const handleClick = () => { setMsgContextMenu(null); setChatContextMenu(null); };
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, []);
 
   useEffect(() => {
     const el = messagesContainerRef.current;
@@ -344,6 +425,9 @@ function Inbox() {
     if (urgenciaFiltro === 'interesado' && c.estado_venta !== 'Interesado') return false;
     if (urgenciaFiltro === 'neutro' && c.estado_venta !== 'Lead') return false;
     if (filtroIA && !c.resumen_busqueda) return false;
+    if (filtroAtencion === 'sin_asignar' && c.asignado_a !== null) return false;
+    if (filtroAtencion === 'mis_chats' && c.asignado_a !== agente?.id) return false;
+    if (filtroAtencion === 'bot' && c.modo_atencion !== 'bot') return false;
     if (searchTerm) {
       const s = searchTerm.toLowerCase();
       const name = (c.nombre || '').toLowerCase();
@@ -449,6 +533,29 @@ function Inbox() {
                   </button>
                 ))}
               </div>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {[
+                  { key: 'todos', label: 'All' },
+                  { key: 'sin_asignar', label: 'Sin Asignar', icon: UserPlus },
+                  { key: 'mis_chats', label: 'Mis Chats', icon: UserCheck },
+                  { key: 'bot', label: 'Bot', icon: Bot },
+                ].map(f => (
+                  <button key={f.key} onClick={() => setFiltroAtencion(f.key)}
+                    style={{
+                      padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
+                      background: filtroAtencion === f.key
+                        ? (f.key === 'sin_asignar' ? '#D97706' : f.key === 'mis_chats' ? '#002045' : '#b51822')
+                        : 'transparent',
+                      color: filtroAtencion === f.key ? '#fff' : '#8896ab',
+                      border: filtroAtencion === f.key ? 'none' : '1px solid #e0e8f0',
+                      cursor: 'pointer', fontFamily: "'Inter', sans-serif",
+                      display: 'flex', alignItems: 'center', gap: 4,
+                    }}>
+                    {f.icon && <f.icon size={11} />}
+                    {f.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -471,6 +578,7 @@ function Inbox() {
                   return (
                     <div key={cliente.id}
                       onClick={() => navigate(`/inbox/${cliente.id}`)}
+                      onContextMenu={e => { e.preventDefault(); e.stopPropagation(); setChatContextMenu({ x: e.clientX, y: e.clientY, cliente }); }}
                       className="fade-in-up"
                       style={{
                         padding: '14px 16px',
@@ -521,14 +629,19 @@ function Inbox() {
 
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                            <strong style={{
-                              fontSize: 14,
-                              fontWeight: unreadChats.has(cliente.id) ? 700 : 600,
-                              color: unreadChats.has(cliente.id) ? '#b51822' : '#002045',
-                              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                            }}>
-                              {cliente.nombre || cliente.telefono || 'Sin nombre'}
-                            </strong>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0, flex: 1 }}>
+                              {cliente.pinned && (
+                                <span style={{ fontSize: 11, color: '#D97706', flexShrink: 0 }} title="Chat fijado">📌</span>
+                              )}
+                              <strong style={{
+                                fontSize: 14,
+                                fontWeight: unreadChats.has(cliente.id) ? 700 : 600,
+                                color: unreadChats.has(cliente.id) ? '#b51822' : '#002045',
+                                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                              }}>
+                                {cliente.nombre || cliente.telefono || 'Sin nombre'}
+                              </strong>
+                            </div>
                             <span style={{
                               fontSize: 11,
                               fontWeight: unreadChats.has(cliente.id) ? 600 : 400,
@@ -545,6 +658,21 @@ function Inbox() {
                                 color: '#fff', background: canalColor[canal],
                               }}>
                                 {canalLabel[canal]}
+                              </span>
+                            )}
+                            {cliente.modo_atencion === 'transfiriendo' && (
+                              <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, color: '#fff', background: '#D97706' }}>
+                                Pendiente
+                              </span>
+                            )}
+                            {cliente.modo_atencion === 'bot' && (
+                              <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, color: '#fff', background: '#6B7280', display: 'flex', alignItems: 'center', gap: 3 }}>
+                                <Bot size={9} /> Bot
+                              </span>
+                            )}
+                            {cliente.modo_atencion === 'agente' && (
+                              <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, color: '#fff', background: '#002045', display: 'flex', alignItems: 'center', gap: 3 }}>
+                                <UserCheck size={9} /> Agente
                               </span>
                             )}
                             <div style={{
@@ -654,11 +782,18 @@ function Inbox() {
                     <input autoFocus
                       value={searchMsg}
                       onChange={e => setSearchMsg(e.target.value)}
-                      placeholder="Buscar en la conversación..."
+                      placeholder="Buscar en la conversacion..."
                       style={{ width: '100%', padding: '8px 12px', border: '1px solid #d0d8e0', borderRadius: 8, fontSize: 13, outline: 'none' }}
                     />
                   </div>
                 )}
+                <TransferAlert
+                  cliente={selectedCliente}
+                  onTakeover={(updated) => {
+                    setSelectedCliente(updated);
+                    refrescarClienteEnLista(updated.id);
+                  }}
+                />
                 {/* Messages */}
                 <div ref={messagesContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
                   {messagesLoading ? (
@@ -688,7 +823,13 @@ function Inbox() {
                           flexDirection: isAgent ? 'row-reverse' : 'row',
                           alignItems: 'flex-end',
                           gap: 8,
-                        }}>
+                          position: 'relative',
+                          background: msg.pinned ? 'rgba(217,119,6,0.08)' : 'transparent',
+                          borderRadius: 8,
+                          padding: msg.pinned ? '4px 0' : 0,
+                        }}
+                          onContextMenu={e => { e.preventDefault(); e.stopPropagation(); setMsgContextMenu({ x: e.clientX, y: e.clientY, msg }); }}
+                        >
                           {isBot && (
                             <div style={{
                               width: 28, height: 28, borderRadius: '50%',
@@ -984,6 +1125,62 @@ function Inbox() {
           initialIndex={galleryIndex}
           onClose={() => setGalleryIndex(null)}
         />
+      )}
+
+      {msgContextMenu && (
+        <div style={{
+          position: 'fixed', left: msgContextMenu.x, top: msgContextMenu.y,
+          background: '#fff', borderRadius: 8, boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+          zIndex: 9999, minWidth: 160, padding: '4px 0',
+        }} onClick={e => e.stopPropagation()}>
+          <button onClick={() => handlePinMessage(msgContextMenu.msg)} style={{
+            display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
+            border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
+          }}
+            onMouseEnter={e => e.currentTarget.style.background = '#f6f9fc'}
+            onMouseLeave={e => e.currentTarget.style.background = 'none'}
+          >
+            {msgContextMenu.msg.pinned ? 'Desfijar mensaje' : 'Fijar mensaje'}
+          </button>
+          <button onClick={() => handleDeleteMessage(msgContextMenu.msg)} style={{
+            display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
+            border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
+            color: '#DC2626',
+          }}
+            onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'}
+            onMouseLeave={e => e.currentTarget.style.background = 'none'}
+          >
+            Eliminar mensaje
+          </button>
+        </div>
+      )}
+
+      {chatContextMenu && (
+        <div style={{
+          position: 'fixed', left: chatContextMenu.x, top: chatContextMenu.y,
+          background: '#fff', borderRadius: 8, boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+          zIndex: 9999, minWidth: 180, padding: '4px 0',
+        }} onClick={e => e.stopPropagation()}>
+          <button onClick={() => handlePinChat(chatContextMenu.cliente)} style={{
+            display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
+            border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
+          }}
+            onMouseEnter={e => e.currentTarget.style.background = '#f6f9fc'}
+            onMouseLeave={e => e.currentTarget.style.background = 'none'}
+          >
+            {chatContextMenu.cliente.pinned ? 'Desfijar chat' : 'Fijar chat'}
+          </button>
+          <button onClick={() => handleDeleteChat(chatContextMenu.cliente)} style={{
+            display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
+            border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
+            color: '#DC2626',
+          }}
+            onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'}
+            onMouseLeave={e => e.currentTarget.style.background = 'none'}
+          >
+            Eliminar chat
+          </button>
+        </div>
       )}
     </>
   );

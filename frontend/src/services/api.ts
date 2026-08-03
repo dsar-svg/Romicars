@@ -27,6 +27,16 @@ export const clientesApi = {
   getAll: () => api.get('/clientes').then(r => r.data),
   getById: (id: number) => api.get(`/clientes/${id}`).then(r => r.data),
   update: (id: number, data: any) => api.put(`/clientes/${id}`, data).then(r => r.data),
+  transferir: (id: number, data: { resumen?: string; motivo?: string }) =>
+    api.post(`/clientes/${id}/transferir`, data).then(r => r.data),
+  takeover: (id: number) =>
+    api.post(`/clientes/${id}/takeover`).then(r => r.data),
+  release: (id: number) =>
+    api.post(`/clientes/${id}/release`).then(r => r.data),
+  deleteChat: (id: number) =>
+    api.delete(`/clientes/${id}/chat`).then(r => r.data),
+  togglePin: (id: number) =>
+    api.put(`/clientes/${id}/pin`).then(r => r.data),
 };
 
 export const mensajesApi = {
@@ -40,6 +50,10 @@ export const mensajesApi = {
     fd.append('file', file);
     return api.post('/mensajes/upload', fd, { timeout: 60000 }).then(r => r.data);
   },
+  delete: (id: number) =>
+    api.delete(`/mensajes/${id}`).then(r => r.data),
+  togglePin: (id: number) =>
+    api.put(`/mensajes/${id}/pin`).then(r => r.data),
 };
 
 export const profitApi = {

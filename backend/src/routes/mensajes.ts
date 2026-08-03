@@ -22,7 +22,7 @@ router.get('/:clienteId', async (req: Request, res: Response) => {
     const limit = Math.min(Number(req.query.limit) || 50, 200);
     const offset = Number(req.query.offset) || 0;
     const rows = await query(
-      `SELECT * FROM mensajes WHERE cliente_id = ? ORDER BY fecha_envio DESC LIMIT ${limit} OFFSET ${offset}`,
+      `SELECT * FROM mensajes WHERE cliente_id = ? AND eliminado = 0 ORDER BY fecha_envio DESC LIMIT ${limit} OFFSET ${offset}`,
       [req.params.clienteId]
     ) as any[];
     res.json(rows.reverse());
@@ -37,6 +37,32 @@ router.put('/:id/leer', async (req: Request, res: Response) => {
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Error al marcar mensaje como leído' });
+  }
+});
+
+router.delete('/:id', async (req: Request, res: Response) => {
+  try {
+    const rows = await query('SELECT cliente_id FROM mensajes WHERE id = ?', [req.params.id]) as any[];
+    if (rows.length === 0) { res.status(404).json({ error: 'Mensaje no encontrado' }); return; }
+    const clienteId = rows[0].cliente_id;
+    await query('DELETE FROM mensajes WHERE id = ?', [req.params.id]);
+    getIO().to(`chat:${clienteId}`).emit('message:deleted', { mensaje_id: Number(req.params.id), cliente_id: clienteId });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar mensaje' });
+  }
+});
+
+router.put('/:id/pin', async (req: Request, res: Response) => {
+  try {
+    const rows = await query('SELECT pinned, cliente_id FROM mensajes WHERE id = ?', [req.params.id]) as any[];
+    if (rows.length === 0) { res.status(404).json({ error: 'Mensaje no encontrado' }); return; }
+    const nuevoEstado = !rows[0].pinned;
+    await query('UPDATE mensajes SET pinned = ? WHERE id = ?', [nuevoEstado ? 1 : 0, req.params.id]);
+    getIO().to(`chat:${rows[0].cliente_id}`).emit('message:pinned', { mensaje_id: Number(req.params.id), pinned: nuevoEstado, cliente_id: rows[0].cliente_id });
+    res.json({ success: true, pinned: nuevoEstado });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al fijar mensaje' });
   }
 });
 

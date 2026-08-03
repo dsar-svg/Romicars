@@ -1,0 +1,1427 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "path": "facebook-reception",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        7584,
+        2816
+      ],
+      "id": "33858ceb-f057-4d7f-9503-7ced98204501",
+      "name": "Verificación Facebook (GET)",
+      "webhookId": "0c94675b-40b0-4dbd-9536-3f95beb98ee2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "3fc47c15-2d59-496e-a890-deca9f3a8fec",
+              "leftValue": "={{ $json.query['hub.mode'] }}",
+              "rightValue": "subscribe",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        7824,
+        2816
+      ],
+      "id": "0ca2bcc3-27b1-4622-89ac-ea8dc001ad4b",
+      "name": "¿hub.mode = subscribe?"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.query['hub.challenge'] }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        8064,
+        2736
+      ],
+      "id": "ee4dbb25-618b-405f-8db4-a31c89d3f344",
+      "name": "Responder hub.challenge"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Token inválido",
+        "options": {
+          "responseCode": 403
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        8064,
+        2896
+      ],
+      "id": "95ccfe9f-5fb6-4073-b89d-4cab116207e8",
+      "name": "Rechazar Verificación"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "facebook-reception",
+        "options": {}
+      },
+      "id": "8d4a1cab-b4ec-4fbd-b832-bbbde872f9be",
+      "name": "Webhook Reception",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        8080,
+        3328
+      ],
+      "webhookId": "webhook-reception-unificada"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "assign-sender-id",
+              "name": "senderId",
+              "value": "={{ String($json.body?.entry?.[0]?.messaging?.[0]?.sender?.id || $json.body?.sender || $json.senderId || '') }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-msg",
+              "name": "message",
+              "value": "={{ $json.body?.entry?.[0]?.messaging?.[0]?.message?.text || $json.body?.message || $json.message || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-channel",
+              "name": "channel",
+              "value": "={{ $json.body?.object === 'page' ? 'facebook' : ($json.body?.object === 'instagram' ? 'instagram' : ($json.body?.channel ?? $json.channel ?? 'whatsapp')) }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-ts",
+              "name": "timestamp",
+              "value": "={{ $json.body?.entry?.[0]?.messaging?.[0]?.timestamp ? DateTime.fromMillis($json.body.entry[0].messaging[0].timestamp).toISO() : ($json.body?.timestamp ?? $now.toISO()) }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-name",
+              "name": "clientName",
+              "value": "={{ $json.body?.name ?? $json.body?.pushName ?? $json.name ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-conv-id",
+              "name": "conversacionId",
+              "value": "={{ String($json.body?.entry?.[0]?.messaging?.[0]?.sender?.id || $json.body?.conversacionId || $json.conversacionId || $json.senderId) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0b905e2b-9293-4878-ab06-e85af7a49770",
+      "name": "Normalizar Mensaje",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        8368,
+        3328
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $json.conversacionId?.toString() }}",
+        "messageData": "={{ JSON.stringify({ mensaje: $json.message, timestamp: $json.timestamp, senderId: $json.senderId, channel: $json.channel, clientName: $json.clientName, conversacionId: $json.conversacionId }) }}",
+        "tail": true
+      },
+      "id": "c1b837c5-2268-44cc-ba91-2f5938fd2614",
+      "name": "Agregar Mensaje a Cola",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        8752,
+        3328
+      ],
+      "credentials": {
+        "redis": {
+          "id": "S83gW8p0Ur2w6Pv6",
+          "name": "Redis n8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "Mensaje",
+        "key": "={{ $('Normalizar Mensaje').item.json.conversacionId?.toString() }}",
+        "keyType": "list",
+        "options": {}
+      },
+      "id": "a61c5639-7444-4553-bf92-6b3da26f5edb",
+      "name": "Consultar Historial Temporal",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        9040,
+        3328
+      ],
+      "credentials": {
+        "redis": {
+          "id": "S83gW8p0Ur2w6Pv6",
+          "name": "Redis n8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "31e593cc-8eab-4ae9-9620-0528b6c81014",
+                    "leftValue": "={{ JSON.parse($json.Mensaje.slice(-1)[0]).conversacionId || JSON.parse($json.Mensaje.slice(-1)[0]).senderId }}",
+                    "rightValue": "={{ $('Normalizar Mensaje').item.json.conversacionId || $('Normalizar Mensaje').item.json.senderId }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Mensaje de otro cliente"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b2d7ac7a-5d3e-4ee8-9bfb-9e1c09cffb27",
+                    "leftValue": "={{ DateTime.fromISO(JSON.parse($json.Mensaje.slice(-1)[0]).timestamp).toMillis() }}",
+                    "rightValue": "={{ Date.now() - 7000 }}",
+                    "operator": {
+                      "type": "number",
+                      "operation": "lt"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Aún escribiendo (Reintentar)"
+        }
+      },
+      "id": "34950712-ed0a-4045-a9a0-b4c6448b33f5",
+      "name": "Pasaron 7s de silencio",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        9328,
+        3312
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 7
+      },
+      "id": "5364de64-f7fc-4a21-a640-dddd9b338994",
+      "name": "Ciclo de Debounce (7s)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        9568,
+        3504
+      ],
+      "webhookId": "wait-debounce-recepcion"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $('Normalizar Mensaje').item.json.conversacionId?.toString() }}"
+      },
+      "id": "fab953de-dd74-45d7-9b30-eaaf4c2e794b",
+      "name": "Limpiar Buffer de Conversación",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        9568,
+        3328
+      ],
+      "credentials": {
+        "redis": {
+          "id": "S83gW8p0Ur2w6Pv6",
+          "name": "Redis n8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "concat-msg",
+              "name": "message",
+              "value": "={{ $json.Mensaje.map(m => JSON.parse(m).mensaje).filter(Boolean).join('\\n') }}",
+              "type": "string"
+            },
+            {
+              "id": "concat-sid",
+              "name": "senderId",
+              "value": "={{ JSON.parse($json.Mensaje[0]).senderId }}",
+              "type": "string"
+            },
+            {
+              "id": "concat-chn",
+              "name": "channel",
+              "value": "={{ $('Normalizar Mensaje').item.json.channel }}",
+              "type": "string"
+            },
+            {
+              "id": "concat-cid",
+              "name": "conversacionId",
+              "value": "={{ JSON.parse($json.Mensaje[0]).conversacionId ?? JSON.parse($json.Mensaje[0]).senderId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "76500d67-54a4-41b3-9735-149002ac5034",
+      "name": "Concatenar Mensajes",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        9808,
+        3328
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "search-col",
+              "name": "searchColumn",
+              "value": "={{ $json.channel == \"whatsapp\" ? \"telefono\" : ($json.channel == \"facebook\" ? \"facebook_psid\" : \"instagram_psid\") }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "8c454076-ae0d-4108-bb95-39822f64403b",
+      "name": "Definir Columna Búsqueda",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        10048,
+        3328
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM clientes WHERE {{ $json.searchColumn }} = '{{ $json.senderId }}' LIMIT 1",
+        "options": {}
+      },
+      "id": "d49938e7-6e9f-45c0-bcb3-7664e9e137c7",
+      "name": "Buscar Cliente",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        10288,
+        3328
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "mySql": {
+          "id": "bkZ82eBiEWx85IDh",
+          "name": "MySQL Demo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-cliente-id",
+              "leftValue": "={{ $json.id }}",
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e4739357-7d1e-457d-b581-94b092898d92",
+      "name": "Cliente existe?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        10528,
+        3328
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "is-fb",
+              "leftValue": "={{ $('Concatenar Mensajes').item.json.channel }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "facebook"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6da39307-c2bf-4905-b41d-c8fefc2ffb85",
+      "name": "¿Es Canal Facebook?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        10528,
+        3616
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.facebook.com/{{ $('Concatenar Mensajes').item.json.senderId }}?fields=first_name,last_name&access_token=EAAakFzGaqnYBSLhi34XUKaZCCmAxqqQ4CVUhEPrkA1Uh4dYNzOtlx71nPTURulNZAg8DFZCZCjui3gCrazWrl99QqNZClO1PrwSIN3TWeXtBfjRdZCfHZCxqEYsDiOtGpoA1bo8defKwTCJ6jlcVp9xXXhyJVHGnb6pPjFEbd0SZCDC0y3TdKfZBt5JW3vEN50kZBOAcFsfwZDZD",
+        "options": {}
+      },
+      "id": "98a9c084-4426-40da-afc0-8018de94b278",
+      "name": "Fetch FB Profile Name",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        10688,
+        3504
+      ]
+    },
+    {
+      "parameters": {
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "clientes"
+        },
+        "dataMode": "defineBelow",
+        "valuesToSend": {
+          "values": [
+            {
+              "column": "telefono",
+              "value": "={{ $('Concatenar Mensajes').item.json.channel == \"whatsapp\" ? $('Concatenar Mensajes').item.json.senderId : null }}"
+            },
+            {
+              "column": "facebook_psid",
+              "value": "={{ $('Concatenar Mensajes').item.json.channel == \"facebook\" ? $('Concatenar Mensajes').item.json.senderId : null }}"
+            },
+            {
+              "column": "instagram_psid",
+              "value": "={{ $('Concatenar Mensajes').item.json.channel == \"instagram\" ? $('Concatenar Mensajes').item.json.senderId : null }}"
+            },
+            {
+              "column": "nombre",
+              "value": "={{ $json.Nombre }}"
+            },
+            {
+              "column": "canal_origen",
+              "value": "={{ $('Concatenar Mensajes').item.json.channel }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "208afb28-8a2b-49bd-8f03-ac9785121008",
+      "name": "Crear Cliente Nuevo",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        11056,
+        3632
+      ],
+      "credentials": {
+        "mySql": {
+          "id": "bkZ82eBiEWx85IDh",
+          "name": "MySQL Demo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "assign-cliente-id",
+              "name": "clienteId",
+              "value": "={{ $('Buscar Cliente').item.json.id ?? $json.insertId ?? $json.id }}",
+              "type": "number"
+            },
+            {
+              "id": "restore-msg",
+              "name": "message",
+              "value": "={{ $('Concatenar Mensajes').item.json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "restore-sid",
+              "name": "senderId",
+              "value": "={{ $('Concatenar Mensajes').item.json.senderId }}",
+              "type": "string"
+            },
+            {
+              "id": "restore-chn",
+              "name": "channel",
+              "value": "={{ $('Concatenar Mensajes').item.json.channel }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "51676df8-aa4b-4812-a3d1-e7509e52ac33",
+      "name": "Preparar ID Cliente",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        11408,
+        3312
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://dashboard-frontenddemo.larlxe.easypanel.host/api/webhook/n8n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ clienteId: $json.clienteId, message: $json.message, senderId: $json.senderId, channel: $json.channel, remitente: \"cliente\", timestamp: $now.toISO() }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        11632,
+        3312
+      ],
+      "id": "38ad53a5-6133-468a-8721-2f0c99176817",
+      "name": "Guardar Mensaje en BD"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT modo_atencion, resumen_busqueda, nombre, marca_carro, modelo_carro, anio_carro, motor_carro FROM clientes WHERE id = {{ $('Preparar ID Cliente').item.json.clienteId }}",
+        "options": {}
+      },
+      "id": "4a8ae5f2-9f84-4adc-b95d-635bdee219fc",
+      "name": "Consultar Modo Atención",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        11872,
+        3312
+      ],
+      "credentials": {
+        "mySql": {
+          "id": "bkZ82eBiEWx85IDh",
+          "name": "MySQL Demo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "modo-bot",
+                    "leftValue": "={{ $json.modo_atencion }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "bot"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Modo Bot"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "modo-agente",
+                    "leftValue": "={{ $json.modo_atencion }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "agente"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Modo Agente"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "modo-transfiriendo",
+                    "leftValue": "={{ $json.modo_atencion }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "transfiriendo"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Modo Transfiriendo"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e4822b1c-2f40-430e-b609-c9a7b921f392",
+      "name": "Verificar Modo Atención",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        12112,
+        3312
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "f662fa5b-74d0-4a81-a8fb-bd56cd3b0525",
+      "name": "Agente Responde (NoOp)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        12400,
+        3168
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "37f57a39-29c9-4f35-8e13-337c47d45df9",
+      "name": "Pendiente de Agente (NoOp)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        12400,
+        3456
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT contenido, remitente, fecha_envio FROM mensajes WHERE cliente_id = {{ $('Preparar ID Cliente').item.json.clienteId }} ORDER BY fecha_envio DESC LIMIT 20",
+        "options": {}
+      },
+      "id": "24fdd59c-f790-4939-9a0b-e0f59dccdfed",
+      "name": "Consultar Historial Cliente",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        12400,
+        3312
+      ],
+      "credentials": {
+        "mySql": {
+          "id": "bkZ82eBiEWx85IDh",
+          "name": "MySQL Demo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const historial = $input.all().map(item => {\n  const remitente = item.json.remitente === 'agente' ? 'Agente' : item.json.remitente === 'bot' ? 'Bot' : 'Cliente';\n  return `${remitente}: ${item.json.contenido}`;\n}).reverse().join('\\n');\n\nconst clienteData = $('Consultar Modo Atención').item.json;\nconst mensaje = $('Concatenar Mensajes').item.json.message;\n\nconst chatHistory = historial || 'No hay historial previo.';\nconst vehiculoInfo = `${clienteData.marca_carro || ''} ${clienteData.modelo_carro || ''} ${clienteData.anio_carro || ''} ${clienteData.motor_carro || ''}`.trim() || 'No especificado';\n\n// Contar interacciones previas del cliente\nconst msgsCliente = $input.all().filter(item => item.json.remitente === 'cliente').length;\nconst esPrimeraVez = msgsCliente <= 1;\n\n// Detectar urgencia por palabras clave\nconst urgenciaAlta = /urgente|varado|para hoy|ya|necesito ahora|se me dañó|rápido/i.test(mensaje);\n\nconst prompt = `Eres Carlos, el asesor estrella de ventas de Romicars, tienda de autopartes en Venezuela. Eres un experto automotriz, amable, persuasivo y muy eficiente.\n\n## 👤 IDENTIDAD Y TONO\n- Nombre: Carlos\n- Rol: Asesor de ventas de autopartes\n- Tono: Profesional, empático, directo y venezolano (sin exagerar, usa \"tú\" o \"usted\" según la confianza, pero mantén cercanía).\n- Regla 1: NUNCA digas que eres una Inteligencia Artificial, un bot o un asistente virtual. Eres Carlos.\n- Regla 2: NUNCA inventes precios, disponibilidad de inventario ni marcas específicas si no te las han dado.\n\n## 📋 DATOS DEL CLIENTE\n- Nombre: ${clienteData.nombre || 'Amigo/a'}\n- Vehículo actual: ${vehiculoInfo}\n- Notas previas: ${clienteData.resumen_busqueda || 'Ninguna'}\n- ¿Primera vez escribiendo?: ${esPrimeraVez ? 'Sí' : 'No'}\n- Urgencia del cliente: ${urgenciaAlta ? 'ALTA (Prioridad)' : 'Normal'}\n\n## 💬 HISTORIAL DE LA CONVERSACIÓN\n${chatHistory}\n\n## 📥 MENSAJE ACTUAL\nCliente: \"${mensaje}\"\n\n## 🎯 TUS OBJETIVOS E INSTRUCCIONES\n1. **Diagnóstico rápido:** Si no sabes para qué carro es el repuesto, PREGUNTA (Marca, Modelo, Año y Motor). Es indispensable.\n2. **Manejo de Precios/Stock:** Como no tienes la pantalla de inventario enfrente, tu objetivo es perfilar la venta. Si preguntan precio di algo como: \"Déjame verificar en nuestro sistema la disponibilidad y el mejor precio para ti\".\n3. **Concisión Extrema:** No envíes testamentos. Máximo 2 a 3 líneas (párrafos cortos). En redes sociales la gente no lee textos largos.\n\n## 🚀 REGLAS DE TRANSFERENCIA (¡CRÍTICO!)\nDebes pasar la conversación a un humano (usando el código [TRANSFERIR]) INMEDIATAMENTE si el cliente hace alguna de estas cosas:\n- Pide el precio exacto o pregunta por disponibilidad (\"¿cuánto cuesta?\", \"precio\", \"¿tienen?\").\n- Muestra intención de compra o pago (\"lo quiero\", \"voy a la tienda\", \"pago móvil\", \"zelle\").\n- Tiene una urgencia alta (\"estoy varado\", \"lo necesito urgente\").\n- Pide explícitamente hablar con un asesor humano.\n- Ya te dio los datos de su vehículo y el repuesto exacto que busca (¡ya hiciste tu trabajo, pasa el cliente al vendedor!).\n\nCuando decidas transferir, tu ÚNICA respuesta debe ser el comando [TRANSFERIR] seguido de un resumen MUY CLARO para el agente humano. No saludes ni digas nada más, el sistema automatizado se encargará de avisarle al cliente.\n*Formato estricto:* [TRANSFERIR] Cliente ${clienteData.nombre || ''} busca [Repuesto] para [Vehículo]. [Contexto adicional: ej. Pide precio / Pago móvil / Está varado].\n\n## 🛑 LO QUE NUNCA DEBES HACER\n- No ofrezcas servicios de mecánica (solo venden repuestos).\n- No uses más de 1 o 2 emojis por mensaje, mantén la seriedad.\n- No saludes si en el historial ya hubo un saludo previo.\n\n## 📝 TU RESPUESTA\nEscribe únicamente lo que respondería Carlos, sin comillas, sin explicaciones tuyas adicionales. Si aplica la transferencia según las reglas, responde SOLO con el formato [TRANSFERIR].`;\n\nreturn [{ json: { prompt, clienteId: $('Preparar ID Cliente').item.json.clienteId, channel: $('Preparar ID Cliente').item.json.channel, senderId: $('Preparar ID Cliente').item.json.senderId } }];"
+      },
+      "id": "e1d087a8-a827-4a0e-b4f3-b396e2a00433",
+      "name": "Preparar Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        12640,
+        3312
+      ]
+    },
+    {
+      "parameters": {
+        "agent": "conversationalAgent",
+        "promptType": "define",
+        "text": "={{ $('Concatenar Mensajes').item.json.message }}",
+        "options": {
+          "systemMessage": "={{ $json.prompt }}"
+        }
+      },
+      "id": "edb83543-1793-411f-94b5-390b12b2e5a0",
+      "name": "Bot IA",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        12832,
+        3312
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "id": "add6568f-59d5-45fb-abfb-789d20d84c85",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        12736,
+        3488
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "FqIVOCRxgytebxtx",
+          "name": "AgenteIA Dasboard"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Preparar ID Cliente').item.json.clienteId }}",
+        "contextWindowLength": 20
+      },
+      "id": "2c710856-fa93-4876-b5f7-1688724b757a",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        12928,
+        3488
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond-transfer",
+              "leftValue": "={{ $json.output }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "rightValue": "[TRANSFERIR]"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a31cbd35-ca55-4f97-a62a-0e95ea82b2dc",
+      "name": "¿Detectó Transferencia?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        13120,
+        3312
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.first().json.output;\nconst match = output.match(/\\[TRANSFERIR\\]\\s*(.*)/s);\nconst resumen = match ? match[1].trim() : output;\n\nreturn [{ json: {\n  resumen,\n  clienteId: $('Preparar ID Cliente').item.json.clienteId,\n  channel: $('Preparar ID Cliente').item.json.channel,\n  senderId: $('Preparar ID Cliente').item.json.senderId\n}}];"
+      },
+      "id": "ec5000be-d37c-4be6-b651-674f110603e4",
+      "name": "Extraer Resumen Transferencia",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        13360,
+        3216
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://dashboard-frontenddemo.larlxe.easypanel.host/api/clientes/{{ $json.clienteId }}/transferir",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ resumen: $json.resumen, motivo: ' Cliente interesado en comprar' }) }}",
+        "options": {}
+      },
+      "id": "d6d0c5eb-561f-45bf-902f-c13aa2f6d68b",
+      "name": "Transferir Chat",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        13600,
+        3216
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst prevData = $('Extraer Resumen Transferencia').item.json;\n\nconst mensajeTransferencia = `${prevData.resumen}\\n\\nUn asesor se comunicará con usted en breve.`;\n\n// 1. Guardar en BD via backend\nconst backendUrl = 'https://dashboard-frontenddemo.larlxe.easypanel.host';\nawait fetch(`${backendUrl}/api/webhook/n8n`, {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({\n    cliente_id: prevData.clienteId,\n    contenido: mensajeTransferencia,\n    remitente: 'bot',\n    tipo: 'texto'\n  })\n});\n\n// 2. Enviar via workflow de entrega (entregar-mensaje)\nconst n8nUrl = 'https://n8n.supricom.com.ve/webhook/entregar-mensaje';\nconst channel = prevData.channel;\nconst senderId = prevData.senderId;\n\nconst payload = {\n  canal: channel,\n  contenido: mensajeTransferencia,\n  tipo: 'texto',\n  cliente_id: prevData.clienteId\n};\n\n// Agregar identificador según canal\nif (channel === 'facebook') {\n  payload.facebook_psid = senderId;\n} else if (channel === 'instagram') {\n  payload.instagram_psid = senderId;\n} else if (channel === 'whatsapp') {\n  payload.telefono = senderId;\n}\n\nawait fetch(n8nUrl, {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify(payload)\n});\n\nreturn [{ json: { success: true } }];"
+      },
+      "id": "2ca96b55-d94d-4a4e-97d2-89b4110c81e2",
+      "name": "Enviar Msg Transferencia",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        13840,
+        3216
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.first().json.output;\nconst prevData = $('Preparar Prompt').item.json;\n\n// 1. Guardar en BD via backend\nconst backendUrl = 'https://dashboard-frontenddemo.larlxe.easypanel.host';\nawait fetch(`${backendUrl}/api/webhook/n8n`, {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({\n    cliente_id: prevData.clienteId,\n    contenido: output,\n    remitente: 'bot',\n    tipo: 'texto'\n  })\n});\n\n// 2. Enviar via workflow de entrega (entregar-mensaje)\nconst n8nUrl = 'https://n8n.supricom.com.ve/webhook/entregar-mensaje';\nconst channel = prevData.channel;\nconst senderId = prevData.senderId;\n\nconst payload = {\n  canal: channel,\n  contenido: output,\n  tipo: 'texto',\n  cliente_id: prevData.clienteId\n};\n\n// Agregar identificador según canal\nif (channel === 'facebook') {\n  payload.facebook_psid = senderId;\n} else if (channel === 'instagram') {\n  payload.instagram_psid = senderId;\n} else if (channel === 'whatsapp') {\n  payload.telefono = senderId;\n}\n\nawait fetch(n8nUrl, {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify(payload)\n});\n\nreturn [{ json: { success: true } }];"
+      },
+      "id": "bbc033e7-ebf0-4a67-8933-f68d0e96336f",
+      "name": "Enviar Respuesta Bot",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        13360,
+        3424
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        9568,
+        3184
+      ],
+      "id": "c3c400dd-f1da-4313-8914-b034569113fa",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "df550ae2-192f-430c-b508-9fc9cbe79fdb",
+              "name": "Nombre",
+              "value": "={{ ($json.first_name + ' ' + $json.last_name).trim() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        10864,
+        3504
+      ],
+      "id": "a9b88cc9-e743-460f-a09d-f43284d73dd0",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1fe3e5f6-df60-4fb0-9d3f-0013f24b41a2",
+              "name": "=Nombre",
+              "value": "={{ $('Concatenar Mensajes').item.json.clientName || 'Cliente Nuevo' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        10768,
+        3632
+      ],
+      "id": "e2eb7000-2e92-477a-8f79-f50229ea5427",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id FROM clientes WHERE (facebook_psid = '{{ $('Concatenar Mensajes').item.json.senderId }}' AND '{{ $('Concatenar Mensajes').item.json.channel }}' = 'facebook') OR (instagram_psid = '{{ $('Concatenar Mensajes').item.json.senderId }}' AND '{{ $('Concatenar Mensajes').item.json.channel }}' = 'instagram') OR (telefono = '{{ $('Concatenar Mensajes').item.json.senderId }}' AND '{{ $('Concatenar Mensajes').item.json.channel }}' = 'whatsapp') LIMIT 1;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        11232,
+        3632
+      ],
+      "id": "2727ca2d-b65b-4895-af99-d9d25d257bf0",
+      "name": "Obtener ID Cliente Nuevo",
+      "credentials": {
+        "mySql": {
+          "id": "bkZ82eBiEWx85IDh",
+          "name": "MySQL Demo"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Verificación Facebook (GET)": {
+      "main": [
+        [
+          {
+            "node": "¿hub.mode = subscribe?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿hub.mode = subscribe?": {
+      "main": [
+        [
+          {
+            "node": "Responder hub.challenge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rechazar Verificación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Reception": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Mensaje": {
+      "main": [
+        [
+          {
+            "node": "Agregar Mensaje a Cola",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agregar Mensaje a Cola": {
+      "main": [
+        [
+          {
+            "node": "Consultar Historial Temporal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Historial Temporal": {
+      "main": [
+        [
+          {
+            "node": "Pasaron 7s de silencio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pasaron 7s de silencio": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Limpiar Buffer de Conversación",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ciclo de Debounce (7s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ciclo de Debounce (7s)": {
+      "main": [
+        [
+          {
+            "node": "Consultar Historial Temporal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpiar Buffer de Conversación": {
+      "main": [
+        [
+          {
+            "node": "Concatenar Mensajes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Concatenar Mensajes": {
+      "main": [
+        [
+          {
+            "node": "Definir Columna Búsqueda",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Definir Columna Búsqueda": {
+      "main": [
+        [
+          {
+            "node": "Buscar Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Cliente": {
+      "main": [
+        [
+          {
+            "node": "Cliente existe?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cliente existe?": {
+      "main": [
+        [
+          {
+            "node": "Preparar ID Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "¿Es Canal Facebook?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Es Canal Facebook?": {
+      "main": [
+        [
+          {
+            "node": "Fetch FB Profile Name",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch FB Profile Name": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Cliente Nuevo": {
+      "main": [
+        [
+          {
+            "node": "Obtener ID Cliente Nuevo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar ID Cliente": {
+      "main": [
+        [
+          {
+            "node": "Guardar Mensaje en BD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar Mensaje en BD": {
+      "main": [
+        [
+          {
+            "node": "Consultar Modo Atención",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Modo Atención": {
+      "main": [
+        [
+          {
+            "node": "Verificar Modo Atención",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Modo Atención": {
+      "main": [
+        [
+          {
+            "node": "Consultar Historial Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agente Responde (NoOp)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pendiente de Agente (NoOp)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Historial Cliente": {
+      "main": [
+        [
+          {
+            "node": "Preparar Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Prompt": {
+      "main": [
+        [
+          {
+            "node": "Bot IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bot IA": {
+      "main": [
+        [
+          {
+            "node": "¿Detectó Transferencia?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Bot IA",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Bot IA",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Detectó Transferencia?": {
+      "main": [
+        [
+          {
+            "node": "Extraer Resumen Transferencia",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Respuesta Bot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Resumen Transferencia": {
+      "main": [
+        [
+          {
+            "node": "Transferir Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transferir Chat": {
+      "main": [
+        [
+          {
+            "node": "Enviar Msg Transferencia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Crear Cliente Nuevo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Crear Cliente Nuevo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener ID Cliente Nuevo": {
+      "main": [
+        [
+          {
+            "node": "Preparar ID Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Webhook Reception": [
+      {
+        "headers": {
+          "host": "n8n.supricom.com.ve",
+          "user-agent": "facebookexternalua",
+          "content-length": "311",
+          "accept": "*/*",
+          "accept-encoding": "gzip, br",
+          "cdn-loop": "cloudflare; loops=1",
+          "cf-connecting-ip": "2a03:2880:22ff:71::",
+          "cf-ipcountry": "US",
+          "cf-ray": "a25188d679ea2d22-IAD",
+          "cf-visitor": "{\"scheme\":\"https\"}",
+          "content-type": "application/json",
+          "facebook-api-version": "v25.0",
+          "x-forwarded-for": "2a03:2880:22ff:71::, 172.71.223.21",
+          "x-forwarded-host": "n8n.supricom.com.ve",
+          "x-forwarded-port": "443",
+          "x-forwarded-proto": "https",
+          "x-forwarded-server": "28bb15f7f4c2",
+          "x-hub-signature": "sha1=6c3e267bf681b219a7ca2c68f15066bf636275fa",
+          "x-hub-signature-256": "sha256=4e22ad0f90f5f57ae7694efa9044ff4f05569c8a5e2bc458d6d42a4573dea919",
+          "x-real-ip": "172.71.223.21"
+        },
+        "params": {},
+        "query": {},
+        "body": {
+          "object": "page",
+          "entry": [
+            {
+              "time": 1785720389847,
+              "id": "940246375838445",
+              "messaging": [
+                {
+                  "sender": {
+                    "id": "25783373751338504"
+                  },
+                  "recipient": {
+                    "id": "940246375838445"
+                  },
+                  "timestamp": 1785720388745,
+                  "message": {
+                    "mid": "m_zP4j7SUIRZh_MEmTlVe5T-KHhWsV-F6iWuum8blO2To9MjCRW_2esSLkHKW6mX8-Omc-50rci-eLNC61bV5-ug",
+                    "text": "hola"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "webhookUrl": "https://n8n.supricom.com.ve/webhook/facebook-reception",
+        "executionMode": "production"
+      }
+    ]
+  },
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1683493ca79f362f0cdd6311bf11f1609621e8cd207e078485d8ca15ccb3975a"
+  }
+}

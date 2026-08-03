@@ -52,6 +52,13 @@ export function setupSocket(httpServer: HttpServer): Server {
       }
     });
 
+    socket.on('chat:request-takeover', async (data: { cliente_id: number }) => {
+      socket.to(`chat:${data.cliente_id}`).emit('chat:being-taken', {
+        cliente_id: data.cliente_id,
+        taken_by: socket.id,
+      });
+    });
+
     socket.on('disconnect', () => {
       console.log(`Cliente desconectado: ${socket.id}`);
     });

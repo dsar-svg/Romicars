@@ -2,6 +2,8 @@ export interface Cliente {
   id: number;
   nombre: string | null;
   telefono: string;
+  facebook_psid: string | null;
+  instagram_psid: string | null;
   canal_origen: 'whatsapp' | 'instagram' | 'facebook';
   marca_carro: string | null;
   modelo_carro: string | null;
@@ -15,6 +17,11 @@ export interface Cliente {
   ultimo_mensaje: string | null;
   ultimo_remitente: string | null;
   ultima_interaccion: string | null;
+  modo_atencion: 'bot' | 'agente' | 'transfiriendo';
+  asignado_a: number | null;
+  resumen_transferencia: string | null;
+  pinned: boolean;
+  eliminado: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -28,10 +35,10 @@ export interface Mensaje {
   url_multimedia: string | null;
   leido: boolean;
   asignado_a: number | null;
+  pinned: boolean;
+  eliminado: boolean;
   fecha_envio: string;
-  /** Solo frontend: true mientras se sube el archivo */
   _uploading?: boolean;
-  /** Solo frontend: true si falló la subida */
   _error?: boolean;
 }
 

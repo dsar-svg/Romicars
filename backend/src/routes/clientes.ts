@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { query } from '../database';
 import { getIO } from '../socket';
+import { authMiddleware, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
@@ -8,11 +9,12 @@ router.get('/', async (_req: Request, res: Response) => {
   try {
     const clientes = await query(
       `SELECT c.*,
-        (SELECT contenido FROM mensajes WHERE cliente_id = c.id ORDER BY fecha_envio DESC LIMIT 1) as ultimo_mensaje,
-        (SELECT remitente FROM mensajes WHERE cliente_id = c.id ORDER BY fecha_envio DESC LIMIT 1) as ultimo_remitente,
-        (SELECT fecha_envio FROM mensajes WHERE cliente_id = c.id ORDER BY fecha_envio DESC LIMIT 1) as ultima_interaccion
+        (SELECT contenido FROM mensajes WHERE cliente_id = c.id AND eliminado = 0 ORDER BY fecha_envio DESC LIMIT 1) as ultimo_mensaje,
+        (SELECT remitente FROM mensajes WHERE cliente_id = c.id AND eliminado = 0 ORDER BY fecha_envio DESC LIMIT 1) as ultimo_remitente,
+        (SELECT fecha_envio FROM mensajes WHERE cliente_id = c.id AND eliminado = 0 ORDER BY fecha_envio DESC LIMIT 1) as ultima_interaccion
        FROM clientes c
-       ORDER BY ultima_interaccion DESC`
+       WHERE c.eliminado = 0
+       ORDER BY c.pinned DESC, ultima_interaccion DESC`
     );
     res.json(clientes);
   } catch (error) {
@@ -24,9 +26,9 @@ router.get('/:id', async (req: Request, res: Response) => {
   try {
     const [cliente] = await query(
       `SELECT c.*,
-        (SELECT contenido FROM mensajes WHERE cliente_id = c.id ORDER BY fecha_envio DESC LIMIT 1) as ultimo_mensaje,
-        (SELECT remitente FROM mensajes WHERE cliente_id = c.id ORDER BY fecha_envio DESC LIMIT 1) as ultimo_remitente,
-        (SELECT fecha_envio FROM mensajes WHERE cliente_id = c.id ORDER BY fecha_envio DESC LIMIT 1) as ultima_interaccion
+        (SELECT contenido FROM mensajes WHERE cliente_id = c.id AND eliminado = 0 ORDER BY fecha_envio DESC LIMIT 1) as ultimo_mensaje,
+        (SELECT remitente FROM mensajes WHERE cliente_id = c.id AND eliminado = 0 ORDER BY fecha_envio DESC LIMIT 1) as ultimo_remitente,
+        (SELECT fecha_envio FROM mensajes WHERE cliente_id = c.id AND eliminado = 0 ORDER BY fecha_envio DESC LIMIT 1) as ultima_interaccion
        FROM clientes c WHERE c.id = ?`,
       [req.params.id]
     ) as any[];
@@ -53,6 +55,97 @@ router.put('/:id', async (req: Request, res: Response) => {
     res.json(cliente);
   } catch (error) {
     res.status(500).json({ error: 'Error al actualizar cliente' });
+  }
+});
+
+router.post('/:id/transferir', async (req: Request, res: Response) => {
+  try {
+    const { resumen, motivo } = req.body;
+    await query(
+      `UPDATE clientes SET
+        modo_atencion = 'transfiriendo',
+        resumen_transferencia = ?
+       WHERE id = ?`,
+      [resumen || null, req.params.id]
+    );
+    const [cliente] = await query('SELECT * FROM clientes WHERE id = ?', [req.params.id]) as any[];
+    if (!cliente) { res.status(404).json({ error: 'Cliente no encontrado' }); return; }
+    getIO().emit('chat:transferido', cliente);
+    res.json({ success: true, cliente });
+  } catch (error) {
+    console.error('Error al transferir chat:', error);
+    res.status(500).json({ error: 'Error al transferir chat' });
+  }
+});
+
+router.post('/:id/takeover', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const agenteId = req.agente!.id;
+    await query(
+      `UPDATE clientes SET
+        modo_atencion = 'agente',
+        asignado_a = ?
+       WHERE id = ?`,
+      [agenteId, req.params.id]
+    );
+    const [cliente] = await query('SELECT * FROM clientes WHERE id = ?', [req.params.id]) as any[];
+    if (!cliente) { res.status(404).json({ error: 'Cliente no encontrado' }); return; }
+    getIO().emit('chat:asignado', { cliente, agente: req.agente });
+    res.json({ success: true, cliente });
+  } catch (error) {
+    console.error('Error al tomar chat:', error);
+    res.status(500).json({ error: 'Error al tomar chat' });
+  }
+});
+
+router.post('/:id/release', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    await query(
+      `UPDATE clientes SET
+        modo_atencion = 'bot',
+        asignado_a = NULL,
+        resumen_transferencia = NULL
+       WHERE id = ?`,
+      [req.params.id]
+    );
+    const [cliente] = await query('SELECT * FROM clientes WHERE id = ?', [req.params.id]) as any[];
+    if (!cliente) { res.status(404).json({ error: 'Cliente no encontrado' }); return; }
+    getIO().emit('chat:liberado', cliente);
+    res.json({ success: true, cliente });
+  } catch (error) {
+    console.error('Error al liberar chat:', error);
+    res.status(500).json({ error: 'Error al liberar chat' });
+  }
+});
+
+router.delete('/:id/chat', async (req: Request, res: Response) => {
+  try {
+    const clienteId = Number(req.params.id);
+    const existing = await query('SELECT id FROM clientes WHERE id = ?', [clienteId]) as any[];
+    if (existing.length === 0) { res.status(404).json({ error: 'Cliente no encontrado' }); return; }
+    await query('DELETE FROM mensajes WHERE cliente_id = ?', [clienteId]);
+    await query('UPDATE clientes SET ultimo_mensaje = NULL, ultima_interaccion = NULL WHERE id = ?', [clienteId]);
+    getIO().to(`chat:${clienteId}`).emit('chat:deleted', { cliente_id: clienteId });
+    getIO().emit('chat:updated', { cliente_id: clienteId });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error al eliminar chat:', error);
+    res.status(500).json({ error: 'Error al eliminar chat' });
+  }
+});
+
+router.put('/:id/pin', async (req: Request, res: Response) => {
+  try {
+    const clienteId = Number(req.params.id);
+    const rows = await query('SELECT pinned FROM clientes WHERE id = ?', [clienteId]) as any[];
+    if (rows.length === 0) { res.status(404).json({ error: 'Cliente no encontrado' }); return; }
+    const nuevoEstado = !rows[0].pinned;
+    await query('UPDATE clientes SET pinned = ? WHERE id = ?', [nuevoEstado ? 1 : 0, clienteId]);
+    getIO().emit('chat:pinned', { cliente_id: clienteId, pinned: nuevoEstado });
+    res.json({ success: true, pinned: nuevoEstado });
+  } catch (error) {
+    console.error('Error al fijar chat:', error);
+    res.status(500).json({ error: 'Error al fijar chat' });
   }
 });
 
