@@ -903,9 +903,6 @@ function Inbox() {
                           alignItems: 'flex-end',
                           gap: 8,
                           position: 'relative',
-                          background: msg.pinned ? 'rgba(217,119,6,0.08)' : 'transparent',
-                          borderRadius: 8,
-                          padding: msg.pinned ? '4px 0' : 0,
                         }}
                           onMouseEnter={() => setHoveredMsg(msg.id)}
                           onMouseLeave={() => { setHoveredMsg(null); }}
@@ -1091,6 +1088,9 @@ function Inbox() {
                               textAlign: 'right',
                               display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 3,
                             }}>
+                              {msg.pinned && (
+                                <span style={{ fontSize: 10 }} title="Mensaje fijado">📌</span>
+                              )}
                               {msg._uploading ? (
                                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
                                   <span className="msg-spinner" />
