@@ -663,7 +663,7 @@ function Inbox() {
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0, flex: 1 }}>
-                              {cliente.pinned && (
+                              {!!cliente.pinned && (
                                 <span title="Chat fijado" style={{ display: 'inline-flex', flexShrink: 0 }}>
                                   <Pin size={11} style={{ color: '#D97706' }} />
                                 </span>
@@ -898,57 +898,10 @@ function Inbox() {
                       const isBot = msg.remitente === 'bot';
                       const isClient = !isAgent && !isBot;
                       return (
-                        <div style={{ position: 'relative', marginBottom: 6, maxWidth: '85%' }}
+                        <div style={{ marginBottom: 6, maxWidth: '85%' }}
                           onMouseEnter={() => setHoveredMsg(msg.id)}
                           onMouseLeave={() => { setHoveredMsg(null); setActiveMsgMenu(null); }}
                         >
-                          {hoveredMsg === msg.id && activeMsgMenu !== msg.id && (
-                            <button onClick={(e) => { e.stopPropagation(); setActiveMsgMenu(msg.id); }} style={{
-                              position: 'absolute', top: 0, [isAgent ? 'left' : 'right']: 0,
-                              width: 22, height: 22, borderRadius: 4, border: 'none',
-                              background: '#fff', cursor: 'pointer', zIndex: 10,
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
-                            }}>
-                              <span style={{ fontSize: 14, color: '#5a6a7c', lineHeight: 1 }}>⋮</span>
-                            </button>
-                          )}
-                          {activeMsgMenu === msg.id && (
-                            <div style={{
-                              position: 'absolute', top: 24, [isAgent ? 'left' : 'right']: 0,
-                              background: '#fff', borderRadius: 8, boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                              zIndex: 20, minWidth: 140, padding: '4px 0',
-                            }} onClick={e => e.stopPropagation()}>
-                              <button onClick={() => handleCopyMessage(msg)} style={{
-                                display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
-                                border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
-                              }}
-                                onMouseEnter={e => e.currentTarget.style.background = '#f6f9fc'}
-                                onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                              >
-                                Copiar
-                              </button>
-                              <button onClick={() => handlePinMessage(msg)} style={{
-                                display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
-                                border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
-                              }}
-                                onMouseEnter={e => e.currentTarget.style.background = '#f6f9fc'}
-                                onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                              >
-                                {msg.pinned ? 'Desfijar' : 'Fijar'}
-                              </button>
-                              <button onClick={() => handleDeleteMessage(msg)} style={{
-                                display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
-                                border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
-                                color: '#DC2626',
-                              }}
-                                onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'}
-                                onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                              >
-                                Eliminar
-                              </button>
-                            </div>
-                          )}
                           <div key={msg.id} id={`msg-${msg.id}`} style={{
                             display: 'flex', flexDirection: isAgent ? 'row-reverse' : 'row', alignItems: 'flex-end', gap: 4,
                           }}>
@@ -976,6 +929,7 @@ function Inbox() {
                           <div style={{
                             maxWidth: '70%',
                             padding: '10px 14px',
+                            position: 'relative',
                             background: isBot ? 'var(--msg-bot)' : isAgent ? '#002045' : '#e5eeff',
                             border: isBot ? '1px dashed var(--outline)' : 'none',
                             borderRadius: isAgent
@@ -985,6 +939,56 @@ function Inbox() {
                             lineHeight: 1.5,
                             color: isBot ? 'var(--text-primary)' : isAgent ? '#fff' : '#002045',
                           }}>
+                            {hoveredMsg === msg.id && activeMsgMenu !== msg.id && (
+                              <button onClick={(e) => { e.stopPropagation(); setActiveMsgMenu(msg.id); }} style={{
+                                position: 'absolute', top: 4, [isAgent ? 'left' : 'right']: 4,
+                                width: 22, height: 22, borderRadius: 4, border: 'none',
+                                background: isAgent ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.06)',
+                                cursor: 'pointer', zIndex: 10,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                opacity: 0, transition: 'opacity 0.15s',
+                              }}
+                                onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                              >
+                                <span style={{ fontSize: 14, color: isAgent ? 'rgba(255,255,255,0.7)' : '#5a6a7c', lineHeight: 1 }}>⋮</span>
+                              </button>
+                            )}
+                            {activeMsgMenu === msg.id && (
+                              <div style={{
+                                position: 'absolute', top: 28, [isAgent ? 'left' : 'right']: 0,
+                                background: '#fff', borderRadius: 8, boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                                zIndex: 20, minWidth: 140, padding: '4px 0', color: '#002045',
+                              }} onClick={e => e.stopPropagation()}>
+                                <button onClick={() => handleCopyMessage(msg)} style={{
+                                  display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
+                                  border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
+                                }}
+                                  onMouseEnter={e => e.currentTarget.style.background = '#f6f9fc'}
+                                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                                >
+                                  Copiar
+                                </button>
+                                <button onClick={() => handlePinMessage(msg)} style={{
+                                  display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
+                                  border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
+                                }}
+                                  onMouseEnter={e => e.currentTarget.style.background = '#f6f9fc'}
+                                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                                >
+                                  {msg.pinned ? 'Desfijar' : 'Fijar'}
+                                </button>
+                                <button onClick={() => handleDeleteMessage(msg)} style={{
+                                  display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
+                                  border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
+                                  color: '#DC2626',
+                                }}
+                                  onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'}
+                                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                                >
+                                  Eliminar
+                                </button>
+                              </div>
+                            )}
                             {isBot && (
                               <div style={{
                                 fontSize: 10, fontWeight: 600, marginBottom: 4,
@@ -1086,7 +1090,7 @@ function Inbox() {
                               textAlign: 'right',
                               display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 3,
                             }}>
-                              {msg.pinned && (
+                              {!!msg.pinned && (
                                 <span style={{ fontSize: 10 }} title="Mensaje fijado">📌</span>
                               )}
                               {msg._uploading ? (

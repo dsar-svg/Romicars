@@ -22,7 +22,7 @@ Idioma: español. Todo el código y mensajes del sistema están en español.
 - **API routes** montadas bajo `/api`: `auth`, `clientes`, `mensajes`, `webhook`, `analytics`, `campanias`, `agentes`, `profit`
 - **Health** en `/health` (raíz, no bajo `/api`)
 - **Auth:** JWT en `localStorage`, header `Authorization: Bearer <token>`, expira 24h
-- **Socket.IO** en el mismo puerto Express; eventos: `join:chat`, `leave:chat`, `message:send`, `message:new`, `chat:updated`, `message:error`
+- **Socket.IO** en el mismo puerto Express; eventos core: `join:chat`, `leave:chat`, `message:send`, `message:new`, `chat:updated`, `message:error`; eventos adicionales: `chat:request-takeover`, `chat:being-taken`, `cliente:updated`, `chat:transferido`, `chat:asignado`, `chat:liberado`, `chat:deleted`, `chat:pinned`, `message:deleted`, `message:pinned`
 - **DB:** `database/schema.sql` se ejecuta automáticamente al primer inicio del contenedor MySQL; `database/seed-demo.sql` disponible
 - **Frontend routes:** `/login`, `/inbox/:clienteId?`, `/dashboard`, `/campanas`, `/admin/agentes` — todo tras `PrivateRoute` excepto `/login`; `/admin/agentes` también requiere `AdminRoute` (rol `superadmin`)
 
