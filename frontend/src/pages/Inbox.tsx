@@ -17,6 +17,7 @@ import type { Cliente, Mensaje } from '../types';
 import TypingIndicator from '../components/TypingIndicator';
 import InternalNotes from '../components/InternalNotes';
 import QuickReplies from '../components/QuickReplies';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const canalIcono: Record<string, string> = {
   whatsapp: '/icons.svg#whatsapp',
@@ -109,6 +110,7 @@ function Inbox() {
   const [showQuickReplies, setShowQuickReplies] = useState(false);
   const [slaData, setSlaData] = useState<{ minutos: number; estado: string } | null>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const [confirmData, setConfirmData] = useState<{ titulo: string; mensaje: string; onConfirmar: () => void; tipo?: 'peligro' | 'info' | 'advertencia' } | null>(null);
 
   useEffect(() => {
     if (!window.__unreadChats) window.__unreadChats = new Set<number>();
@@ -135,9 +137,18 @@ function Inbox() {
   }, []);
 
   const handleDeleteMessage = async (msg: Mensaje) => {
-    if (!confirm('Eliminar este mensaje?')) return;
-    try { await mensajesApi.delete(msg.id); } catch { toast('error', 'Error al eliminar mensaje'); }
+    setConfirmData({
+      titulo: 'Eliminar mensaje',
+      mensaje: 'Esta accion no se puede deshacer. El mensaje se eliminara permanentemente.',
+      tipo: 'peligro',
+      onConfirmar: async () => {
+        setConfirmData(null);
+        try { await mensajesApi.delete(msg.id); } catch { toast('error', 'Error al eliminar mensaje'); }
+        setActiveMsgMenu(null);
+      },
+    });
     setActiveMsgMenu(null);
+    return;
   };
 
   const handlePinMessage = async (msg: Mensaje) => {
@@ -155,8 +166,16 @@ function Inbox() {
   };
 
   const handleDeleteChat = async (cliente: Cliente) => {
-    if (!confirm(`Eliminar todos los mensajes de ${cliente.nombre || cliente.telefono}?`)) return;
-    try { await clientesApi.deleteChat(cliente.id); } catch { toast('error', 'Error al eliminar chat'); }
+    setConfirmData({
+      titulo: 'Eliminar conversacion',
+      mensaje: `Se eliminaran todos los mensajes de ${cliente.nombre || cliente.telefono}. Esta accion no se puede deshacer.`,
+      tipo: 'peligro',
+      onConfirmar: async () => {
+        setConfirmData(null);
+        try { await clientesApi.deleteChat(cliente.id); } catch { toast('error', 'Error al eliminar chat'); }
+        setChatContextMenu(null);
+      },
+    });
     setChatContextMenu(null);
   };
 
@@ -521,7 +540,12 @@ function Inbox() {
     .map(m => ({ url: m.url_multimedia!, nombre: m.contenido || undefined }));
 
   return (
-    <><div style={{ display: 'flex', height: '100%', overflow: 'hidden', background: '#f6f9fc' }}>
+    <><style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+      `}</style><div style={{ display: 'flex', height: '100%', overflow: 'hidden', background: '#f6f9fc' }}>
         {/* Left panel — lista conversaciones */}
         <div style={{
           width: 350, background: '#fff', borderRight: '1px solid #e0e8f0',
@@ -825,8 +849,14 @@ function Inbox() {
                         </span>
                         <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
                           {(['nuevo', 'en_progreso', 'resuelto', 'cerrado', 'en_pausa'] as const).map(estado => {
-                            const labels: Record<string, string> = { nuevo: 'Nuevo', en_progreso: 'En progreso', resuelto: 'Resuelto', cerrado: 'Cerrado', en_pausa: 'En pausa' };
-                            const colors: Record<string, string> = { nuevo: '#DC2626', en_progreso: '#2563EB', resuelto: '#059669', cerrado: '#6B7280', en_pausa: '#D97706' };
+                            const config: Record<string, { label: string; color: string; icon: string }> = {
+                              nuevo: { label: 'Nuevo', color: '#DC2626', icon: '🔴' },
+                              en_progreso: { label: 'En progreso', color: '#2563EB', icon: '🔵' },
+                              resuelto: { label: 'Resuelto', color: '#059669', icon: '✅' },
+                              cerrado: { label: 'Cerrado', color: '#6B7280', icon: '⭕' },
+                              en_pausa: { label: 'En pausa', color: '#D97706', icon: '⏸️' },
+                            };
+                            const cfg = config[estado];
                             const isActive = selectedCliente.estado_conversacion === estado;
                             return (
                               <button key={estado} onClick={() => {
@@ -834,30 +864,40 @@ function Inbox() {
                                 setSelectedCliente(prev => prev ? { ...prev, estado_conversacion: estado } : prev);
                                 refrescarClienteEnLista(selectedCliente.id);
                               }} style={{
-                                padding: '2px 8px', borderRadius: 4, fontSize: 10, fontWeight: 600,
-                                background: isActive ? colors[estado] : 'transparent',
-                                color: isActive ? '#fff' : colors[estado],
-                                border: `1px solid ${colors[estado]}`,
-                                cursor: 'pointer', opacity: isActive ? 1 : 0.6,
-                                transition: 'all 0.15s',
-                              }}>
-                                {labels[estado]}
+                                padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600,
+                                background: isActive ? cfg.color : 'transparent',
+                                color: isActive ? '#fff' : cfg.color,
+                                border: `1.5px solid ${cfg.color}`,
+                                cursor: 'pointer',
+                                opacity: isActive ? 1 : 0.65,
+                                transition: 'all 0.2s',
+                                display: 'flex', alignItems: 'center', gap: 4,
+                                boxShadow: isActive ? `0 2px 8px ${cfg.color}33` : 'none',
+                              }}
+                                onMouseEnter={e => { if (!isActive) { e.currentTarget.style.opacity = '1'; e.currentTarget.style.background = `${cfg.color}11`; } }}
+                                onMouseLeave={e => { if (!isActive) { e.currentTarget.style.opacity = '0.65'; e.currentTarget.style.background = 'transparent'; } }}
+                              >
+                                <span style={{ fontSize: 8 }}>{cfg.icon}</span>
+                                {cfg.label}
                               </button>
                             );
                           })}
                         </div>
                         {slaData && slaData.estado !== 'resuelto' && slaData.estado !== 'cerrado' && (
                           <div style={{
-                            display: 'flex', alignItems: 'center', gap: 6, marginTop: 4,
-                            fontSize: 11, fontWeight: 600,
+                            display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 6,
+                            padding: '3px 10px', borderRadius: 12,
+                            background: slaData.minutos > 15 ? '#FEF2F2' : slaData.minutos > 5 ? '#FFFBEB' : '#ECFDF5',
+                            border: `1px solid ${slaData.minutos > 15 ? '#FECACA' : slaData.minutos > 5 ? '#FDE68A' : '#A7F3D0'}`,
+                            fontSize: 11, fontWeight: 700,
                             color: slaData.minutos > 15 ? '#DC2626' : slaData.minutos > 5 ? '#D97706' : '#059669',
                           }}>
                             <div style={{
-                              width: 6, height: 6, borderRadius: '50%',
+                              width: 7, height: 7, borderRadius: '50%',
                               background: slaData.minutos > 15 ? '#DC2626' : slaData.minutos > 5 ? '#D97706' : '#059669',
                               animation: 'pulse 1.5s infinite',
                             }} />
-                            SLA: {slaData.minutos}min
+                            SLA: {slaData.minutos} min
                           </div>
                         )}
                       </div>
@@ -1024,14 +1064,23 @@ function Inbox() {
                             maxWidth: '70%',
                             padding: '10px 14px',
                             position: 'relative',
-                            background: isBot ? 'var(--msg-bot)' : isAgent ? '#002045' : '#e5eeff',
-                            border: isBot ? '1px dashed var(--outline)' : 'none',
+                            background: isBot
+                              ? 'linear-gradient(135deg, #f8f9fc 0%, #f0f2f8 100%)'
+                              : isAgent
+                                ? 'linear-gradient(135deg, #0a1e3d 0%, #1a365d 100%)'
+                                : 'linear-gradient(135deg, #e8f0fe 0%, #dbeafe 100%)',
+                            border: isBot ? '1px solid #e2e8f0' : isAgent ? 'none' : '1px solid #c7d2fe',
                             borderRadius: isAgent
                               ? '16px 16px 4px 16px'
                               : '16px 16px 16px 4px',
                             fontSize: 13,
                             lineHeight: 1.5,
-                            color: isBot ? 'var(--text-primary)' : isAgent ? '#fff' : '#002045',
+                            color: isBot ? 'var(--text-primary)' : isAgent ? '#fff' : '#1e293b',
+                            boxShadow: isBot
+                              ? '0 1px 3px rgba(0,0,0,0.06)'
+                              : isAgent
+                                ? '0 2px 8px rgba(0,32,69,0.2)'
+                                : '0 1px 3px rgba(0,0,0,0.08)',
                           }}>
                             {hoveredMsg === msg.id && activeMsgMenu !== msg.id && (
                               <button onClick={(e) => { e.stopPropagation(); setActiveMsgMenu(msg.id); }} style={{
@@ -1427,6 +1476,15 @@ function Inbox() {
             Eliminar chat
           </button>
         </div>
+      )}
+      {confirmData && (
+        <ConfirmDialog
+          titulo={confirmData.titulo}
+          mensaje={confirmData.mensaje}
+          tipo={confirmData.tipo || 'peligro'}
+          onConfirmar={confirmData.onConfirmar}
+          onCancelar={() => setConfirmData(null)}
+        />
       )}
     </>
   );

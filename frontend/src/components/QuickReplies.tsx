@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Search, Zap } from 'lucide-react';
+import { Zap, Command } from 'lucide-react';
 import { snippetsApi } from '../services/api';
 import type { Snippet } from '../types';
 
@@ -13,9 +13,11 @@ export default function QuickReplies({ onSelect, onClose }: Props) {
   const [search, setSearch] = useState('');
   const [selectedIdx, setSelectedIdx] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     snippetsApi.getAll().then(setSnippets).catch(() => {});
+    inputRef.current?.focus();
   }, []);
 
   const filtered = useMemo(() => {
@@ -51,45 +53,78 @@ export default function QuickReplies({ onSelect, onClose }: Props) {
     return () => document.removeEventListener('keydown', handleKey);
   }, [filtered, selectedIdx, onSelect, onClose]);
 
-  useEffect(() => {
-    const el = listRef.current?.children[selectedIdx] as HTMLElement;
-    el?.scrollIntoView({ block: 'nearest' });
-  }, [selectedIdx]);
-
   let flatIdx = -1;
+
+  const catColors: Record<string, string> = {
+    general: '#6B7280',
+    saludos: '#059669',
+    ventas: '#2563EB',
+    soporte: '#7C3AED',
+    precios: '#D97706',
+  };
 
   return (
     <div style={{
-      position: 'absolute', bottom: '100%', left: 0, right: 0, marginBottom: 4,
-      background: '#fff', borderRadius: 10, boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
-      border: '1px solid #e0e8f0', maxHeight: 300, display: 'flex', flexDirection: 'column',
-      zIndex: 50,
+      position: 'absolute', bottom: '100%', left: 0, right: 0, marginBottom: 6,
+      background: '#fff', borderRadius: 14, boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+      border: '1px solid #e5e7eb', maxHeight: 320, display: 'flex', flexDirection: 'column',
+      zIndex: 50, overflow: 'hidden',
     }}>
-      <div style={{ padding: '8px 10px', borderBottom: '1px solid #f0f2f5', display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Search size={14} style={{ color: '#8896ab', flexShrink: 0 }} />
+      <div style={{
+        padding: '10px 14px', borderBottom: '1px solid #f3f4f6',
+        display: 'flex', alignItems: 'center', gap: 10,
+        background: '#f9fafb',
+      }}>
+        <div style={{
+          width: 26, height: 26, borderRadius: 6, background: '#EEF2FF',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Command size={13} color="#4F46E5" />
+        </div>
         <input
-          autoFocus
+          ref={inputRef}
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Buscar respuesta rapida..."
           style={{
             flex: 1, border: 'none', outline: 'none', fontSize: 13, background: 'transparent',
+            fontFamily: "'Inter', sans-serif",
           }}
         />
+        <span style={{
+          fontSize: 10, color: '#9ca3af', padding: '2px 6px', borderRadius: 4,
+          background: '#f3f4f6', fontFamily: 'monospace',
+        }}>
+          ESC
+        </span>
       </div>
+
       <div ref={listRef} style={{ overflowY: 'auto', flex: 1 }}>
         {filtered.length === 0 ? (
-          <div style={{ padding: 20, textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>
-            <Zap size={20} style={{ opacity: 0.3, marginBottom: 6 }} />
-            <p>No hay respuestas rapidas</p>
+          <div style={{ padding: 30, textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>
+            <div style={{
+              width: 40, height: 40, borderRadius: 10, background: '#f3f4f6',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 10px',
+            }}>
+              <Zap size={18} color="#9ca3af" />
+            </div>
+            <p style={{ fontWeight: 600, color: '#6b7280', marginBottom: 2 }}>Sin resultados</p>
+            <p style={{ fontSize: 11 }}>Intenta con otro termino</p>
           </div>
         ) : (
           Array.from(grouped.entries()).map(([cat, items]) => (
             <div key={cat}>
               <div style={{
-                padding: '4px 12px', fontSize: 10, fontWeight: 700, color: '#8896ab',
-                textTransform: 'uppercase', letterSpacing: '0.05em', background: '#f9fafb',
+                padding: '6px 14px', fontSize: 10, fontWeight: 700, color: catColors[cat] || '#6B7280',
+                textTransform: 'uppercase', letterSpacing: '0.06em', background: '#f9fafb',
+                borderBottom: '1px solid #f3f4f6',
+                display: 'flex', alignItems: 'center', gap: 6,
               }}>
+                <div style={{
+                  width: 5, height: 5, borderRadius: '50%',
+                  background: catColors[cat] || '#6B7280',
+                }} />
                 {cat}
               </div>
               {items.map(sn => {
@@ -99,20 +134,28 @@ export default function QuickReplies({ onSelect, onClose }: Props) {
                 return (
                   <div
                     key={sn.id}
-                    ref={(el) => { if (idx === selectedIdx) (el as any)?.scrollIntoView?.({ block: 'nearest' }); }}
                     onClick={() => { onSelect(sn.contenido); onClose(); }}
                     style={{
-                      padding: '8px 12px', cursor: 'pointer',
-                      background: isSelected ? '#f0f7ff' : 'transparent',
-                      borderLeft: isSelected ? '3px solid #2563EB' : '3px solid transparent',
+                      padding: '10px 14px', cursor: 'pointer',
+                      background: isSelected ? '#EEF2FF' : 'transparent',
+                      borderLeft: isSelected ? '3px solid #4F46E5' : '3px solid transparent',
                       transition: 'all 0.1s',
                     }}
                     onMouseEnter={() => setSelectedIdx(idx)}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: '#2563EB' }}>/{sn.atajo}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                      <span style={{
+                        fontSize: 11, fontWeight: 700, color: '#4F46E5',
+                        background: '#EEF2FF', padding: '1px 6px', borderRadius: 4,
+                        fontFamily: 'monospace',
+                      }}>
+                        /{sn.atajo}
+                      </span>
                     </div>
-                    <div style={{ fontSize: 12, color: '#5a6a7c', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{
+                      fontSize: 12, color: '#4b5563', lineHeight: 1.35,
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
                       {sn.contenido}
                     </div>
                   </div>
