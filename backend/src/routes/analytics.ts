@@ -40,6 +40,44 @@ router.get('/', authMiddleware, async (_req: AuthRequest, res: Response) => {
       return acc;
     }, { whatsapp: 0, instagram: 0, facebook: 0 });
 
+    const [nuevosHoy] = await query(
+      `SELECT COUNT(*) as total FROM clientes
+       WHERE DATE(created_at) = CURDATE()`
+    ) as any[];
+
+    const [pendientes] = await query(
+      `SELECT COUNT(*) as total FROM clientes
+       WHERE sla_inicio IS NOT NULL
+       AND estado_conversacion NOT IN ('resuelto', 'cerrado')`
+    ) as any[];
+
+    const [porUrgencia] = await query(
+      `SELECT urgencia, COUNT(*) as total FROM clientes
+       WHERE eliminado = 0 GROUP BY urgencia`
+    ) as any[];
+
+    const urgenciaMap: Record<string, number> = { Alta: 0, Media: 0, Baja: 0 };
+    (porUrgencia as any[]).forEach((r: any) => {
+      if (urgenciaMap[r.urgencia] !== undefined) urgenciaMap[r.urgencia] = Number(r.total);
+    });
+
+    const [porAsignacion] = await query(
+      `SELECT
+        SUM(asignado_a IS NOT NULL) as asignados,
+        SUM(asignado_a IS NULL) as sin_asignar
+       FROM clientes WHERE eliminado = 0`
+    ) as any[];
+
+    const [porEstado] = await query(
+      `SELECT estado_conversacion, COUNT(*) as total FROM clientes
+       WHERE eliminado = 0 GROUP BY estado_conversacion`
+    ) as any[];
+
+    const estadoMap: Record<string, number> = { nuevo: 0, en_progreso: 0, resuelto: 0, cerrado: 0, en_pausa: 0 };
+    (porEstado as any[]).forEach((r: any) => {
+      if (estadoMap[r.estado_conversacion] !== undefined) estadoMap[r.estado_conversacion] = Number(r.total);
+    });
+
     res.json({
       total_leads: Number(total.total) || 0,
       chats_activos: Number(activos.activos) || 0,
@@ -52,6 +90,16 @@ router.get('/', authMiddleware, async (_req: AuthRequest, res: Response) => {
         { canal: 'Instagram', total: traffic.instagram, color: '#012980' },
         { canal: 'Facebook', total: traffic.facebook, color: '#1976D2' },
       ],
+      leads: {
+        nuevos_hoy: Number(nuevosHoy.total) || 0,
+        pendientes_respuesta: Number(pendientes.total) || 0,
+        por_urgencia: urgenciaMap,
+        por_asignacion: {
+          asignados: Number(porAsignacion.asignados) || 0,
+          sin_asignar: Number(porAsignacion.sin_asignar) || 0,
+        },
+        por_estado: estadoMap,
+      },
     });
   } catch (error) {
     console.error('Error en analytics:', error);

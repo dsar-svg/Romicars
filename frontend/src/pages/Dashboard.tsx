@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import {
   Users, TrendingUp, MessageCircle, DollarSign,
   BarChart3, PieChart, Activity, Package, MapPin,
-  ArrowUp, ArrowDown, ShoppingCart,
+  ArrowUp, ArrowDown, ShoppingCart, UserPlus, Clock,
+  AlertTriangle, CheckCircle, Headphones,
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import api from '../services/api';
@@ -14,6 +15,13 @@ interface AnalyticsData {
   tasa_conversion: number;
   funnel: { etapa: string; valor: number; color: string }[];
   traffic: { canal: string; total: number; color: string }[];
+  leads: {
+    nuevos_hoy: number;
+    pendientes_respuesta: number;
+    por_urgencia: { Alta: number; Media: number; Baja: number };
+    por_asignacion: { asignados: number; sin_asignar: number };
+    por_estado: { nuevo: number; en_progreso: number; resuelto: number; cerrado: number; en_pausa: number };
+  };
 }
 
 interface ProfitData {
@@ -66,30 +74,7 @@ function Dashboard() {
       .finally(() => setProfitLoading(false));
   }, []);
 
-  const kpis = [
-    {
-      label: 'Total Leads',
-      value: data?.total_leads ?? '—',
-      icon: Users, color: '#2563EB', bg: '#EFF6FF',
-    },
-    {
-      label: 'Tasa Conversión',
-      value: data?.tasa_conversion ?? '—',
-      suffix: '%', icon: TrendingUp, color: '#059669', bg: '#ECFDF5',
-    },
-    {
-      label: 'Chats Activos (24h)',
-      value: data?.chats_activos ?? '—',
-      icon: MessageCircle, color: '#D97706', bg: '#FFFBEB',
-    },
-    {
-      label: profitLoading ? 'Total Facturado' : 'Total Facturado',
-      value: profit ? formatCurrency(profit.total_facturado) : (profitError ? '—' : '—'),
-      icon: DollarSign, color: '#E53E3E', bg: '#FEF2F2',
-      sub: profit && !profitLoading ? `${formatNumber(profit.facturas_periodo)} facturas` : undefined,
-    },
-  ];
-
+  const leads = data?.leads;
   const maxFunnel = data ? Math.max(...data.funnel.map(f => f.valor), 1) : 1;
 
   const productosMostrados = activeTab === 'mas'
@@ -97,51 +82,88 @@ function Dashboard() {
     : (profit?.productos_menos_vendidos || []);
 
   return (
-    <div style={{ padding: 32, maxWidth: 1400, margin: '0 auto' }}>
+    <div style={{ padding: '24px 32px', maxWidth: 1440, margin: '0 auto' }}>
+      {/* Header */}
       <div className="fade-in-up" style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28,
       }}>
         <div>
-          <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+          <h1 style={{
+            fontSize: 28, fontWeight: 800, color: 'var(--text-primary)',
+            letterSpacing: '-0.03em', fontFamily: "'Hanken Grotesk', sans-serif",
+          }}>
             Dashboard
           </h1>
-          <p style={{ color: 'var(--text-secondary)', marginTop: 4, fontSize: 14 }}>
-            Métricas clave · Datos CRM + Profit ERP
+          <p style={{ color: 'var(--text-secondary)', marginTop: 4, fontSize: 13 }}>
+            Metricas clave del CRM y ventas
           </p>
         </div>
         <div style={{
-          padding: '8px 16px',           background: 'var(--surface-card)', borderRadius: 'var(--radius-sm)',
-          border: '1px solid var(--outline)', fontSize: 13, color: 'var(--text-secondary)',
+          padding: '8px 16px', background: 'var(--surface-card)', borderRadius: 20,
+          border: '1px solid var(--outline)', fontSize: 12, color: 'var(--text-secondary)',
           display: 'flex', alignItems: 'center', gap: 6,
         }}>
-          <Activity size={14} />
-          <span>Actualizado en tiempo real</span>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#10B981', animation: 'pulse 2s infinite' }} />
+          Tiempo real
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginTop: 28 }}>
-        {kpis.map((kpi, i) => {
+      {/* KPIs Row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+        {[
+          {
+            label: 'Total Leads',
+            value: data?.total_leads ?? 0,
+            icon: Users, color: '#3B82F6', bg: '#EFF6FF',
+            gradient: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)',
+          },
+          {
+            label: 'Tasa Conversion',
+            value: `${data?.tasa_conversion ?? 0}%`,
+            icon: TrendingUp, color: '#10B981', bg: '#ECFDF5',
+            gradient: 'linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)',
+          },
+          {
+            label: 'Chats Activos',
+            value: data?.chats_activos ?? 0,
+            icon: MessageCircle, color: '#F59E0B', bg: '#FFFBEB',
+            gradient: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)',
+          },
+          {
+            label: 'Facturado (30d)',
+            value: profit ? formatCurrency(profit.total_facturado) : '—',
+            icon: DollarSign, color: '#EF4444', bg: '#FEF2F2',
+            gradient: 'linear-gradient(135deg, #FEF2F2 0%, #FECACA 100%)',
+            sub: profit ? `${formatNumber(profit.facturas_periodo)} facturas` : undefined,
+          },
+        ].map((kpi, i) => {
           const Icon = kpi.icon;
           return (
             <div key={kpi.label} className="card fade-in-up" style={{
-              padding: 24, display: 'flex', alignItems: 'center', gap: 16,
-              animationDelay: `${i * 80}ms`,
-            }}>
+              padding: '20px 22px', display: 'flex', alignItems: 'center', gap: 16,
+              animationDelay: `${i * 60}ms`, cursor: 'default',
+              transition: 'transform 0.15s, box-shadow 0.15s',
+            }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--sombra-md)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--sombra-sm)'; }}
+            >
               <div style={{
-                width: 52, height: 52, borderRadius: 14,
-                background: kpi.bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 48, height: 48, borderRadius: 12,
+                background: kpi.gradient,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: `0 2px 8px ${kpi.color}22`,
               }}>
-                <Icon size={24} style={{ color: kpi.color }} />
+                <Icon size={22} style={{ color: kpi.color }} />
               </div>
               <div style={{ minWidth: 0 }}>
-                <div style={{ color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500 }}>
+                <div style={{ color: 'var(--text-secondary)', fontSize: 12, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   {kpi.label}
                 </div>
                 <div style={{
-                  fontSize: 24, fontWeight: 700, color: 'var(--text-primary)',
-                  marginTop: 2, letterSpacing: '-0.03em',
+                  fontSize: 26, fontWeight: 800, color: 'var(--text-primary)',
+                  marginTop: 2, letterSpacing: '-0.03em', fontFamily: "'Hanken Grotesk', sans-serif",
                 }}>
-                  {kpi.value}{kpi.suffix || ''}
+                  {kpi.value}
                 </div>
                 {kpi.sub && (
                   <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 1 }}>
@@ -154,176 +176,348 @@ function Dashboard() {
         })}
       </div>
 
+      {/* Lead Metrics Row */}
+      {leads && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14, marginBottom: 24 }}>
+          {[
+            { label: 'Nuevos Hoy', value: leads.nuevos_hoy, icon: UserPlus, color: '#3B82F6' },
+            { label: 'Pendientes', value: leads.pendientes_respuesta, icon: Clock, color: '#F59E0B' },
+            { label: 'Urgencia Alta', value: leads.por_urgencia.Alta, icon: AlertTriangle, color: '#EF4444' },
+            { label: 'Sin Asignar', value: leads.por_asignacion.sin_asignar, icon: Headphones, color: '#8B5CF6' },
+            { label: 'Resueltos', value: leads.por_estado.resuelto, icon: CheckCircle, color: '#10B981' },
+          ].map((item, i) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.label} className="fade-in-up" style={{
+                padding: '16px 18px', borderRadius: 12,
+                background: 'var(--surface-card)',
+                border: '1px solid var(--outline)',
+                display: 'flex', alignItems: 'center', gap: 12,
+                animationDelay: `${i * 40 + 200}ms`,
+                transition: 'transform 0.15s',
+              }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+              >
+                <div style={{
+                  width: 36, height: 36, borderRadius: 10,
+                  background: `${item.color}12`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Icon size={17} style={{ color: item.color }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                    {item.label}
+                  </div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+                    {formatNumber(item.value)}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Charts Row */}
       {loading ? (
-        <div style={{ marginTop: 28 }}>
-          <div className="skeleton" style={{ height: 120, borderRadius: 12 }} />
-          <div className="skeleton" style={{ height: 120, borderRadius: 12, marginTop: 20 }} />
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20 }}>
+          <div className="skeleton" style={{ height: 280, borderRadius: 12 }} />
+          <div className="skeleton" style={{ height: 280, borderRadius: 12 }} />
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 24, marginTop: 28 }}>
-          <div className="card fade-in-up" style={{ padding: 28, animationDelay: '200ms' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 24 }}>
+          {/* Embudo de Ventas */}
+          <div className="card fade-in-up" style={{ padding: 24, animationDelay: '300ms' }}>
             <h3 style={{
-              color: 'var(--text-primary)', marginBottom: 24, fontSize: 17, fontWeight: 700,
-              letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 10,
+              color: 'var(--text-primary)', marginBottom: 22, fontSize: 15, fontWeight: 700,
+              display: 'flex', alignItems: 'center', gap: 8,
             }}>
-              <BarChart3 size={20} style={{ color: 'var(--primary)' }} />
+              <div style={{
+                width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg, #3B82F6, #2563EB)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <BarChart3 size={15} color="#fff" />
+              </div>
               Embudo de Ventas
             </h3>
             {(!data || data.funnel.every(f => f.valor === 0)) ? (
               <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-secondary)' }}>
-                <BarChart3 size={40} style={{ opacity: 0.1, marginBottom: 12 }} />
-                <p style={{ fontSize: 14, fontWeight: 600 }}>Sin datos aún</p>
-                <p style={{ fontSize: 13, marginTop: 4 }}>Los leads entrantes aparecerán aquí</p>
+                <BarChart3 size={36} style={{ opacity: 0.1, marginBottom: 10 }} />
+                <p style={{ fontSize: 13, fontWeight: 600 }}>Sin datos aun</p>
+                <p style={{ fontSize: 12, marginTop: 4 }}>Los leads entrantes apareceran aqui</p>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                {data.funnel.map((item, i) => (
-                  <div key={item.etapa} className="fade-in-up" style={{ animationDelay: `${i * 100}ms` }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginBottom: 8 }}>
-                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{item.etapa}</span>
-                      <span style={{ fontWeight: 800, color: item.color }}>{item.valor}</span>
-                    </div>
-                    <div style={{
-                      height: 12, background: '#F3F4F6', borderRadius: 6,
-                      overflow: 'hidden', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.04)',
-                    }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {data.funnel.map((item, i) => {
+                  const pct = maxFunnel > 0 ? (item.valor / maxFunnel) * 100 : 0;
+                  return (
+                    <div key={item.etapa} className="fade-in-up" style={{ animationDelay: `${i * 80 + 300}ms` }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{item.etapa}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+                            {maxFunnel > 0 ? Math.round(pct) : 0}%
+                          </span>
+                          <span style={{ fontSize: 15, fontWeight: 800, color: item.color, fontFamily: "'Hanken Grotesk', sans-serif" }}>
+                            {formatNumber(item.valor)}
+                          </span>
+                        </div>
+                      </div>
                       <div style={{
-                        height: '100%', width: `${(item.valor / maxFunnel) * 100}%`,
-                        background: `linear-gradient(90deg, ${item.color}, ${item.color}dd)`,
-                        borderRadius: 6, transition: 'width 1.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                      }} />
+                        height: 10, background: 'var(--surface-dim)', borderRadius: 5,
+                        overflow: 'hidden',
+                      }}>
+                        <div style={{
+                          height: '100%', width: `${pct}%`,
+                          background: `linear-gradient(90deg, ${item.color}, ${item.color}cc)`,
+                          borderRadius: 5, transition: 'width 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                        }} />
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
 
-          <div className="card fade-in-up" style={{ padding: 28, animationDelay: '300ms' }}>
+          {/* Trafico por Canal */}
+          <div className="card fade-in-up" style={{ padding: 24, animationDelay: '400ms' }}>
             <h3 style={{
-              color: 'var(--text-primary)', marginBottom: 24, fontSize: 17, fontWeight: 700,
-              letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 10,
+              color: 'var(--text-primary)', marginBottom: 22, fontSize: 15, fontWeight: 700,
+              display: 'flex', alignItems: 'center', gap: 8,
             }}>
-              <PieChart size={20} style={{ color: 'var(--secondary)' }} />
-              Tráfico por Canal
+              <div style={{
+                width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg, #EF4444, #DC2626)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <PieChart size={15} color="#fff" />
+              </div>
+              Trafico por Canal
             </h3>
             {(!data || data.traffic.every(t => t.total === 0)) ? (
               <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-secondary)' }}>
-                <PieChart size={40} style={{ opacity: 0.1, marginBottom: 12 }} />
-                <p style={{ fontSize: 14, fontWeight: 600 }}>Sin tráfico aún</p>
-                <p style={{ fontSize: 13, marginTop: 4 }}>Los datos aparecerán al recibir mensajes</p>
+                <PieChart size={36} style={{ opacity: 0.1, marginBottom: 10 }} />
+                <p style={{ fontSize: 13, fontWeight: 600 }}>Sin trafico aun</p>
+                <p style={{ fontSize: 12, marginTop: 4 }}>Los datos apareceran al recibir mensajes</p>
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={data.traffic} layout="vertical">
-                  <XAxis type="number" hide />
-                  <YAxis type="category" dataKey="canal" tick={{ fontSize: 13, fill: 'var(--text-secondary)' }} width={90} />
-                  <Tooltip contentStyle={{
-                    borderRadius: 10, border: '1px solid #E5E7EB',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 13,
-                  }} />
-                  <Bar dataKey="total" radius={[0, 6, 6, 0]} barSize={28}>
-                    {data.traffic.map((entry, i) => (
-                      <Cell key={i} fill={entry.color} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <>
+                <ResponsiveContainer width="100%" height={180}>
+                  <BarChart data={data.traffic} layout="vertical">
+                    <XAxis type="number" hide />
+                    <YAxis type="category" dataKey="canal" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} width={80} />
+                    <Tooltip contentStyle={{
+                      borderRadius: 8, border: '1px solid var(--outline)',
+                      boxShadow: 'var(--sombra-md)', fontSize: 12,
+                    }} />
+                    <Bar dataKey="total" radius={[0, 6, 6, 0]} barSize={24}>
+                      {data.traffic.map((entry, i) => (
+                        <Cell key={i} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 14 }}>
+                  {data.traffic.map(t => (
+                    <div key={t.canal} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: t.color }} />
+                      <span style={{ color: 'var(--text-secondary)' }}>{t.canal}</span>
+                      <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{formatNumber(t.total)}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginTop: 24 }}>
-        <div className="card fade-in-up" style={{ padding: 28, animationDelay: '400ms' }}>
+      {/* Lead Status + Assignment Row */}
+      {leads && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
+          {/* Estado de Conversaciones */}
+          <div className="card fade-in-up" style={{ padding: 24, animationDelay: '450ms' }}>
+            <h3 style={{
+              color: 'var(--text-primary)', marginBottom: 20, fontSize: 15, fontWeight: 700,
+              display: 'flex', alignItems: 'center', gap: 8,
+            }}>
+              <div style={{
+                width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Activity size={15} color="#fff" />
+              </div>
+              Estado de Conversaciones
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {[
+                { key: 'nuevo', label: 'Nuevo', color: '#EF4444', icon: '🔴' },
+                { key: 'en_progreso', label: 'En progreso', color: '#3B82F6', icon: '🔵' },
+                { key: 'en_pausa', label: 'En pausa', color: '#F59E0B', icon: '⏸️' },
+                { key: 'resuelto', label: 'Resuelto', color: '#10B981', icon: '✅' },
+                { key: 'cerrado', label: 'Cerrado', color: '#6B7280', icon: '⭕' },
+              ].map(item => {
+                const val = leads.por_estado[item.key as keyof typeof leads.por_estado] || 0;
+                const total = leads.por_estado.nuevo + leads.por_estado.en_progreso + leads.por_estado.resuelto + leads.por_estado.cerrado + leads.por_estado.en_pausa;
+                const pct = total > 0 ? (val / total) * 100 : 0;
+                return (
+                  <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 11, width: 14 }}>{item.icon}</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', width: 80 }}>{item.label}</span>
+                    <div style={{ flex: 1, height: 8, background: 'var(--surface-dim)', borderRadius: 4, overflow: 'hidden' }}>
+                      <div style={{
+                        height: '100%', width: `${pct}%`,
+                        background: item.color, borderRadius: 4,
+                        transition: 'width 0.8s ease',
+                      }} />
+                    </div>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: item.color, width: 36, textAlign: 'right' }}>{val}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Asignacion de Agentes */}
+          <div className="card fade-in-up" style={{ padding: 24, animationDelay: '500ms' }}>
+            <h3 style={{
+              color: 'var(--text-primary)', marginBottom: 20, fontSize: 15, fontWeight: 700,
+              display: 'flex', alignItems: 'center', gap: 8,
+            }}>
+              <div style={{
+                width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Headphones size={15} color="#fff" />
+              </div>
+              Asignacion de Agentes
+            </h3>
+            <div style={{ display: 'flex', gap: 16 }}>
+              {[
+                { label: 'Asignados', value: leads.por_asignacion.asignados, color: '#10B981', icon: CheckCircle },
+                { label: 'Sin asignar', value: leads.por_asignacion.sin_asignar, color: '#F59E0B', icon: Clock },
+              ].map((item) => {
+                const Icon = item.icon;
+                const total = leads.por_asignacion.asignados + leads.por_asignacion.sin_asignar;
+                const pct = total > 0 ? (item.value / total) * 100 : 0;
+                return (
+                  <div key={item.label} style={{
+                    flex: 1, padding: 20, borderRadius: 12,
+                    background: `${item.color}08`, border: `1px solid ${item.color}22`,
+                    textAlign: 'center',
+                  }}>
+                    <Icon size={24} style={{ color: item.color, margin: '0 auto 10px' }} />
+                    <div style={{ fontSize: 28, fontWeight: 800, color: item.color, fontFamily: "'Hanken Grotesk', sans-serif" }}>
+                      {formatNumber(item.value)}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>{item.label}</div>
+                    <div style={{
+                      marginTop: 10, height: 6, background: 'var(--surface-dim)', borderRadius: 3, overflow: 'hidden',
+                    }}>
+                      <div style={{ height: '100%', width: `${pct}%`, background: item.color, borderRadius: 3 }} />
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4 }}>{Math.round(pct)}%</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom Row: Products + Map */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        <div className="card fade-in-up" style={{ padding: 24, animationDelay: '550ms' }}>
           <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            marginBottom: 20,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18,
           }}>
             <h3 style={{
-              color: 'var(--text-primary)', fontSize: 17, fontWeight: 700,
-              letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 10,
+              color: 'var(--text-primary)', fontSize: 15, fontWeight: 700,
+              display: 'flex', alignItems: 'center', gap: 8,
             }}>
-              <Package size={20} style={{ color: 'var(--primary)' }} />
+              <div style={{
+                width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg, #3B82F6, #2563EB)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Package size={15} color="#fff" />
+              </div>
               Productos
             </h3>
-            <div style={{ display: 'flex', gap: 4, background: '#F3F4F6', borderRadius: 8, padding: 3 }}>
-              <button
-                onClick={() => setActiveTab('mas')}
-                style={{
-                  padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 600,
-                  border: 'none', cursor: 'pointer',
-                  background: activeTab === 'mas' ? '#fff' : 'transparent',
-                  color: activeTab === 'mas' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                  boxShadow: activeTab === 'mas' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-                  display: 'flex', alignItems: 'center', gap: 4,
-                }}
-              >
-                <ArrowUp size={12} />
-                Más vendidos
-              </button>
-              <button
-                onClick={() => setActiveTab('menos')}
-                style={{
-                  padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 600,
-                  border: 'none', cursor: 'pointer',
-                  background: activeTab === 'menos' ? '#fff' : 'transparent',
-                  color: activeTab === 'menos' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                  boxShadow: activeTab === 'menos' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-                  display: 'flex', alignItems: 'center', gap: 4,
-                }}
-              >
-                <ArrowDown size={12} />
-                Menos vendidos
-              </button>
+            <div style={{ display: 'flex', gap: 3, background: 'var(--surface-dim)', borderRadius: 8, padding: 3 }}>
+              {[
+                { key: 'mas' as const, label: 'Mas vendidos', icon: ArrowUp, color: '#10B981' },
+                { key: 'menos' as const, label: 'Menos vendidos', icon: ArrowDown, color: '#EF4444' },
+              ].map(tab => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    style={{
+                      padding: '5px 12px', borderRadius: 6, fontSize: 11, fontWeight: 600,
+                      border: 'none', cursor: 'pointer',
+                      background: activeTab === tab.key ? 'var(--surface-card)' : 'transparent',
+                      color: activeTab === tab.key ? 'var(--text-primary)' : 'var(--text-secondary)',
+                      boxShadow: activeTab === tab.key ? 'var(--sombra-sm)' : 'none',
+                      display: 'flex', alignItems: 'center', gap: 4,
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    <Icon size={11} style={{ color: tab.color }} />
+                    {tab.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {profitLoading ? (
-            <div>
-              <div className="skeleton" style={{ height: 32, marginBottom: 12 }} />
-              <div className="skeleton" style={{ height: 32, marginBottom: 12 }} />
-              <div className="skeleton" style={{ height: 32, marginBottom: 12 }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {[1,2,3,4,5].map(i => <div key={i} className="skeleton" style={{ height: 40, borderRadius: 8 }} />)}
             </div>
           ) : profitError ? (
             <div style={{ textAlign: 'center', padding: '30px 0', color: 'var(--text-secondary)' }}>
-              <ShoppingCart size={40} style={{ opacity: 0.1, marginBottom: 12 }} />
-              <p style={{ fontSize: 14, fontWeight: 600 }}>Profit no conectado</p>
-              <p style={{ fontSize: 13, marginTop: 4 }}>
-                Configura PROFIT_API_URL en el .env del backend
-              </p>
+              <ShoppingCart size={36} style={{ opacity: 0.1, marginBottom: 10 }} />
+              <p style={{ fontSize: 13, fontWeight: 600 }}>Profit no conectado</p>
+              <p style={{ fontSize: 12, marginTop: 4 }}>Configura PROFIT_API_URL en el .env del backend</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {productosMostrados.slice(0, 7).map((p, i) => (
                 <div key={p.co_art} className="fade-in-up" style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  animationDelay: `${i * 50}ms`,
-                }}>
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 12px', borderRadius: 10,
+                  background: i % 2 === 0 ? 'var(--surface-dim)' : 'transparent',
+                  animationDelay: `${i * 40 + 550}ms`,
+                  transition: 'background 0.15s',
+                }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-container)'}
+                  onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? 'var(--surface-dim)' : 'transparent'}
+                >
                   <div style={{
-                    width: 28, height: 28, borderRadius: 8,
-                    background: activeTab === 'mas'
-                      ? `rgba(1,41,128,${0.1 + (1 - i / 7) * 0.15})`
-                      : `rgba(189,6,10,${0.1 + i / 7 * 0.15})`,
+                    width: 26, height: 26, borderRadius: 7,
+                    background: activeTab === 'mas' ? '#3B82F618' : '#EF444418',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 11, fontWeight: 800, color: activeTab === 'mas' ? '#012980' : '#BD060A',
+                    fontSize: 10, fontWeight: 800, color: activeTab === 'mas' ? '#3B82F6' : '#EF4444',
                     flexShrink: 0,
                   }}>
                     {i + 1}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
-                      fontSize: 13, fontWeight: 600, color: 'var(--text-primary)',
+                      fontSize: 12, fontWeight: 600, color: 'var(--text-primary)',
                       whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                     }}>
                       {p.art_des}
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 1 }}>
-                      {p.co_art} · {formatNumber(p.cantidad_vendida)} uds · Stock: {formatNumber(p.existencias)}
+                    <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 1 }}>
+                      {formatNumber(p.cantidad_vendida)} uds · Stock: {formatNumber(p.existencias)}
                     </div>
                   </div>
                   <div style={{
-                    fontSize: 14, fontWeight: 800, color: 'var(--text-primary)',
+                    fontSize: 13, fontWeight: 700, color: 'var(--text-primary)',
                     textAlign: 'right', flexShrink: 0,
                   }}>
                     {formatCurrency(p.total_vendido)}
@@ -332,21 +526,26 @@ function Dashboard() {
               ))}
               {productosMostrados.length === 0 && (
                 <div style={{ textAlign: 'center', padding: '30px 0', color: 'var(--text-secondary)' }}>
-                  <Package size={40} style={{ opacity: 0.1, marginBottom: 12 }} />
-                  <p style={{ fontSize: 14, fontWeight: 600 }}>Sin datos de productos</p>
+                  <Package size={36} style={{ opacity: 0.1, marginBottom: 10 }} />
+                  <p style={{ fontSize: 13, fontWeight: 600 }}>Sin datos de productos</p>
                 </div>
               )}
             </div>
           )}
         </div>
 
-        <div className="card fade-in-up" style={{ padding: 28, animationDelay: '500ms' }}>
+        <div className="card fade-in-up" style={{ padding: 24, animationDelay: '600ms' }}>
           <h3 style={{
-            color: 'var(--text-primary)', marginBottom: 20, fontSize: 17, fontWeight: 700,
-            letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 10,
+            color: 'var(--text-primary)', marginBottom: 18, fontSize: 15, fontWeight: 700,
+            display: 'flex', alignItems: 'center', gap: 8,
           }}>
-            <MapPin size={20} style={{ color: 'var(--secondary)' }} />
-            Ubicación de Clientes
+            <div style={{
+              width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg, #EF4444, #DC2626)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <MapPin size={15} color="#fff" />
+            </div>
+            Ubicacion de Clientes
           </h3>
 
           {profitLoading ? (
