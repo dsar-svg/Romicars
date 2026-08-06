@@ -91,7 +91,7 @@ router.post('/facebook', async (req: Request, res: Response) => {
         const msg = mensajes[0];
 
         await query(
-          'UPDATE clientes SET ultimo_mensaje = ?, ultima_interaccion = NOW() WHERE id = ?',
+          'UPDATE clientes SET ultimo_mensaje = ?, ultima_interaccion = NOW(), sla_inicio = NOW() WHERE id = ?',
           [message || (urlMultimedia || msgTipo), clienteId]
         );
 
@@ -157,6 +157,12 @@ router.post('/n8n', async (req: Request, res: Response) => {
         'UPDATE clientes SET ultimo_mensaje = ?, ultima_interaccion = NOW() WHERE id = ?',
         [contenido || (urlMultimedia || msgTipo), clienteId]
       );
+
+      if (remitente === 'cliente') {
+        await query('UPDATE clientes SET sla_inicio = NOW() WHERE id = ?', [clienteId]);
+      } else if (remitente === 'agente' || remitente === 'bot') {
+        await query('UPDATE clientes SET sla_inicio = NULL WHERE id = ?', [clienteId]);
+      }
 
       getIO().emit('message:new', msg);
       getIO().emit('chat:updated', { cliente_id: clienteId });

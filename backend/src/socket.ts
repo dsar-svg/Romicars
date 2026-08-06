@@ -50,6 +50,10 @@ export function setupSocket(httpServer: HttpServer): Server {
 
         const msg = (mensaje as any[])[0];
 
+        if (data.remitente === 'agente' || data.remitente === 'bot') {
+          await query('UPDATE clientes SET sla_inicio = NULL WHERE id = ?', [data.cliente_id]);
+        }
+
         await query(
           `UPDATE clientes SET ultimo_mensaje = ?, ultima_interaccion = NOW()
            WHERE id = ?`,

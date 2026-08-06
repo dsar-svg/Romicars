@@ -158,23 +158,18 @@ router.put('/:id/status', authMiddleware, async (req: AuthRequest, res: Response
     const { estado_conversacion } = req.body;
     const clienteId = req.params.id;
 
+    const validStates = ['nuevo', 'en_progreso', 'resuelto', 'cerrado', 'en_pausa'];
+    if (!validStates.includes(estado_conversacion)) {
+      return res.status(400).json({ error: 'Estado de conversacion invalido' });
+    }
+
     const [current] = await query('SELECT estado_conversacion FROM clientes WHERE id = ?', [clienteId]) as any[];
     if (!current) return res.status(404).json({ error: 'Cliente no encontrado' });
 
-    const statusChanged = current.estado_conversacion !== estado_conversacion;
-    const shouldSetSla = statusChanged && (estado_conversacion === 'nuevo' || estado_conversacion === 'en_progreso');
-
-    if (shouldSetSla) {
-      await query(
-        `UPDATE clientes SET estado_conversacion = ?, sla_inicio = NOW() WHERE id = ?`,
-        [estado_conversacion, clienteId]
-      );
-    } else {
-      await query(
-        `UPDATE clientes SET estado_conversacion = ? WHERE id = ?`,
-        [estado_conversacion, clienteId]
-      );
-    }
+    await query(
+      `UPDATE clientes SET estado_conversacion = ? WHERE id = ?`,
+      [estado_conversacion, clienteId]
+    );
 
     const [cliente] = await query('SELECT * FROM clientes WHERE id = ?', [clienteId]) as any[];
     getIO().emit('cliente:updated', cliente);

@@ -199,6 +199,13 @@ function Inbox() {
           newMsgCountRef.current += 1;
           setNewMsgCount(newMsgCountRef.current);
         }
+        if (mensaje.remitente === 'cliente') {
+          clientesApi.getSla(mensaje.cliente_id).then(data => {
+            setSlaData({ minutos: data.minutos_transcurridos || 0, estado: data.estado_conversacion });
+          }).catch(() => {});
+        } else if (mensaje.remitente === 'agente' || mensaje.remitente === 'bot') {
+          setSlaData(null);
+        }
       } else {
         window.__unreadChats?.add(mensaje.cliente_id);
         setUnreadChats(new Set(window.__unreadChats));
@@ -881,14 +888,6 @@ function Inbox() {
                                   const updated = await clientesApi.updateStatus(selectedCliente.id, estado);
                                   setSelectedCliente(updated);
                                   refrescarClienteEnLista(selectedCliente.id);
-                                  if (estado === 'resuelto' || estado === 'cerrado') {
-                                    setSlaData(null);
-                                  } else if (updated.sla_inicio) {
-                                    const diff = Math.floor((Date.now() - new Date(updated.sla_inicio).getTime()) / 60000);
-                                    setSlaData({ minutos: diff, estado: updated.estado_conversacion });
-                                  } else {
-                                    setSlaData({ minutos: 0, estado: updated.estado_conversacion });
-                                  }
                                 } catch {
                                   toast('error', 'Error al cambiar estado');
                                 }
