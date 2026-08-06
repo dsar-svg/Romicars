@@ -22,6 +22,9 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { atajo, contenido, categoria } = req.body;
+    if (!atajo?.trim() || !contenido?.trim()) {
+      return res.status(400).json({ error: 'atajo y contenido son requeridos' });
+    }
     const agente_id = req.agente!.id;
     const result = await query(
       `INSERT INTO respuestas_rapidas (agente_id, atajo, contenido, categoria) VALUES (?, ?, ?, ?)`,
@@ -45,7 +48,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 
     await query(
       `UPDATE respuestas_rapidas SET atajo = ?, contenido = ?, categoria = ? WHERE id = ?`,
-      [atajo, contenido, categoria, req.params.id]
+      [atajo ?? existing.atajo, contenido ?? existing.contenido, categoria ?? existing.categoria, req.params.id]
     );
     const [snippet] = await query('SELECT * FROM respuestas_rapidas WHERE id = ?', [req.params.id]) as any[];
     res.json(snippet);

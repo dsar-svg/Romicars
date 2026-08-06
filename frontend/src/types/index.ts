@@ -58,7 +58,7 @@ export interface NotaInterna {
   id: number;
   cliente_id: number;
   agente_id: number;
-  agente_nombre?: string;
+  agente_nombre: string;
   contenido: string;
   created_at: string;
 }
@@ -76,21 +76,4 @@ export interface Rol {
   id: number;
   nombre: string;
   permisos: string[] | null;
-}
-
-export interface Nota {
-  id: number;
-  cliente_id: number;
-  agente_id: number;
-  contenido: string;
-  agente_nombre: string;
-  created_at: string;
-}
-
-export interface Snippet {
-  id: number;
-  agente_id: number | null;
-  atajo: string;
-  contenido: string;
-  categoria: string;
 }

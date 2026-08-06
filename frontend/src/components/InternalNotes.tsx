@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Send, Trash2, StickyNote } from 'lucide-react';
 import { notasApi } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,26 +16,29 @@ export default function InternalNotes({ clienteId, onClose }: Props) {
   const [notas, setNotas] = useState<NotaInterna[]>([]);
   const [nuevaNota, setNuevaNota] = useState('');
   const [loading, setLoading] = useState(true);
-  const bottomRef = useRef<HTMLDivElement>(null);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
 
   useEffect(() => {
+    let stale = false;
     setLoading(true);
     notasApi.getByCliente(clienteId)
-      .then(setNotas)
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .then(data => { if (!stale) setNotas(data); })
+      .catch(() => { if (!stale) toast('error', 'Error al cargar notas'); })
+      .finally(() => { if (!stale) setLoading(false); });
+    return () => { stale = true; };
   }, [clienteId]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [notas.length]);
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', h);
+    return () => document.removeEventListener('keydown', h);
+  }, [onClose]);
 
   const handleSend = async () => {
     if (!nuevaNota.trim()) return;
     try {
       const nota = await notasApi.crear({ cliente_id: clienteId, contenido: nuevaNota.trim() });
-      setNotas(prev => [{ ...nota, agente_nombre: agente?.nombre || 'Agente' }, ...prev]);
+      setNotas(prev => [{ ...nota, agente_nombre: nota.agente_nombre || agente?.nombre || 'Agente' }, ...prev]);
       setNuevaNota('');
     } catch {
       toast('error', 'Error al guardar nota');
@@ -139,7 +142,6 @@ export default function InternalNotes({ clienteId, onClose }: Props) {
             </div>
           ))
         )}
-        <div ref={bottomRef} />
       </div>
 
       <div style={{ padding: '12px 14px', borderTop: '1px solid #e5e7eb', background: '#fff' }}>
@@ -150,6 +152,7 @@ export default function InternalNotes({ clienteId, onClose }: Props) {
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
             placeholder="Escribir nota interna..."
             rows={2}
+            maxLength={500}
             style={{
               flex: 1, padding: '8px 10px', borderRadius: 8, fontSize: 13,
               border: '1px solid #e5e7eb', background: '#f9fafb', outline: 'none',
@@ -170,6 +173,11 @@ export default function InternalNotes({ clienteId, onClose }: Props) {
             <Send size={14} style={{ color: '#fff' }} />
           </button>
         </div>
+        {nuevaNota.length > 0 && (
+          <div style={{ fontSize: 10, color: '#9ca3af', textAlign: 'right', marginTop: 4 }}>
+            {nuevaNota.length}/500
+          </div>
+        )}
       </div>
 
       {confirmDelete !== null && (

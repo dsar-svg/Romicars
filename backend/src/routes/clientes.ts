@@ -39,18 +39,22 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { nombre, telefono, marca_carro, modelo_carro, anio_carro, motor_carro, estado_venta, urgencia, acepta_promos, resumen_busqueda, pidio_fotos, estado_conversacion } = req.body;
-    await query(
-      `UPDATE clientes SET
-        nombre = ?, telefono = ?, marca_carro = ?, modelo_carro = ?, anio_carro = ?,
-        motor_carro = ?, estado_venta = ?, urgencia = ?, acepta_promos = ?,
-        resumen_busqueda = ?, pidio_fotos = ?, estado_conversacion = ?
-       WHERE id = ?`,
-      [nombre, telefono, marca_carro, modelo_carro, anio_carro, motor_carro, estado_venta, urgencia, acepta_promos, resumen_busqueda, pidio_fotos, estado_conversacion, req.params.id]
-    );
+    const allowedFields = ['nombre', 'telefono', 'marca_carro', 'modelo_carro', 'anio_carro', 'motor_carro', 'estado_venta', 'urgencia', 'acepta_promos', 'resumen_busqueda', 'pidio_fotos', 'estado_conversacion'] as const;
+    const sets: string[] = [];
+    const vals: any[] = [];
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        sets.push(`${field} = ?`);
+        vals.push(req.body[field]);
+      }
+    }
+    if (sets.length === 0) return res.status(400).json({ error: 'Sin cambios' });
+    vals.push(req.params.id);
+    await query(`UPDATE clientes SET ${sets.join(', ')} WHERE id = ?`, vals);
     const [cliente] = await query('SELECT * FROM clientes WHERE id = ?', [req.params.id]) as any[];
+    if (!cliente) return res.status(404).json({ error: 'Cliente no encontrado' });
     getIO().emit('cliente:updated', cliente);
     res.json(cliente);
   } catch (error) {
@@ -58,7 +62,7 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 });
 
-router.post('/:id/transferir', async (req: Request, res: Response) => {
+router.post('/:id/transferir', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { resumen, motivo } = req.body;
     await query(
@@ -118,7 +122,7 @@ router.post('/:id/release', authMiddleware, async (req: AuthRequest, res: Respon
   }
 });
 
-router.delete('/:id/chat', async (req: Request, res: Response) => {
+router.delete('/:id/chat', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const clienteId = Number(req.params.id);
     const existing = await query('SELECT id FROM clientes WHERE id = ?', [clienteId]) as any[];
@@ -134,7 +138,7 @@ router.delete('/:id/chat', async (req: Request, res: Response) => {
   }
 });
 
-router.put('/:id/pin', async (req: Request, res: Response) => {
+router.put('/:id/pin', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const clienteId = Number(req.params.id);
     const rows = await query('SELECT pinned FROM clientes WHERE id = ?', [clienteId]) as any[];

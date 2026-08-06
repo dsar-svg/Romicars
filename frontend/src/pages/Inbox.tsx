@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Search, Send, MessageSquare, Bot, CheckCheck, Paperclip, Phone, PanelRightOpen, PanelRightClose, FileText, X, UserCheck, UserPlus, Trash2, Pin } from 'lucide-react';
 import { clientesApi, mensajesApi } from '../services/api';
@@ -39,6 +39,7 @@ const canalColor: Record<string, string> = {
 
 const avatarColors = ['#1A365D', '#B51822', '#0F5C3A', '#6B2FA0', '#C97D0E', '#1B7A7A', '#A04040', '#2D6B4F'];
 const getAvatarColor = (name: string) => avatarColors[(name.charCodeAt(0) || 0) % avatarColors.length];
+const esUrlImagen = (url: string) => /\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(url.split('?')[0]);
 
 function SkeletonChats() {
   return (
@@ -67,7 +68,7 @@ function Inbox() {
   const idsRef = useRef<Set<number>>(new Set());
   const agregarMensaje = (msg: Mensaje) => {
     if (idsRef.current.has(msg.id)) return;
-    idsRef.current = new Set(idsRef.current).add(msg.id);
+    idsRef.current.add(msg.id);
     setMensajes(prev => [...prev, msg]);
   };
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
@@ -95,7 +96,6 @@ function Inbox() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sendingAgentMsgRef = useRef(false);
   const scrollToBottomRef = useRef(false);
-  const esUrlImagen = (url: string) => /\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(url.split('?')[0]);
   const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
   const [pendingAttach, setPendingAttach] = useState<{ url?: string; tipo: Mensaje['tipo']; name: string; _loading?: boolean } | null>(null);
   const uploadIdRef = useRef(0);
@@ -110,6 +110,7 @@ function Inbox() {
   const [showQuickReplies, setShowQuickReplies] = useState(false);
   const [slaData, setSlaData] = useState<{ minutos: number; estado: string } | null>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const showScrollBtnRef = useRef(false);
   const [confirmData, setConfirmData] = useState<{ titulo: string; mensaje: string; onConfirmar: () => void; tipo?: 'peligro' | 'info' | 'advertencia' } | null>(null);
 
   useEffect(() => {
@@ -147,8 +148,6 @@ function Inbox() {
         setActiveMsgMenu(null);
       },
     });
-    setActiveMsgMenu(null);
-    return;
   };
 
   const handlePinMessage = async (msg: Mensaje) => {
@@ -196,7 +195,7 @@ function Inbox() {
       const isCurrent = currentClienteId.current === mensaje.cliente_id;
       if (isCurrent) {
         agregarMensaje(mensaje);
-        if (showScrollBtn) {
+        if (showScrollBtnRef.current) {
           newMsgCountRef.current += 1;
           setNewMsgCount(newMsgCountRef.current);
         }
@@ -293,7 +292,7 @@ function Inbox() {
       socket.off('typing:started');
       socket.off('typing:stopped');
     };
-  }, [refrescarClienteEnLista, agente, selectedCliente, navigate]);
+  }, [refrescarClienteEnLista, agente, navigate]);
 
   useEffect(() => {
     const socket = getSocket();
@@ -338,6 +337,17 @@ function Inbox() {
     };
     load(id);
   }, [clienteId]);
+
+  useEffect(() => {
+    showScrollBtnRef.current = showScrollBtn;
+  }, [showScrollBtn]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const filteredMsgs = useMemo(() => {
+    const id = Number(clienteId);
+    const s = searchMsg.toLowerCase();
+    return mensajes.filter(msg => msg.cliente_id === id && (!s || msg.contenido.toLowerCase().includes(s)));
+  }, [mensajes, clienteId, searchMsg]);
 
   useEffect(() => {
     clearNotifications();
@@ -433,7 +443,7 @@ function Inbox() {
     };
     el.addEventListener('scroll', onScroll);
     return () => el.removeEventListener('scroll', onScroll);
-  }, [clienteId, mensajes]);
+  }, [clienteId]);
 
   useEffect(() => {
     if (clienteId && clientes.length > 0) {
@@ -526,6 +536,10 @@ function Inbox() {
     return true;
   });
 
+  useEffect(() => {
+    return () => { if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current); };
+  }, []);
+
   const getUrgenciaColor = (urgencia: string) => {
     switch (urgencia) {
       case 'Alta': return '#DC2626';
@@ -535,9 +549,12 @@ function Inbox() {
     }
   };
 
-  const galleryMedia = mensajes
+  const galleryMedia = useMemo(() => mensajes
     .filter(m => m.url_multimedia && (m.tipo === 'imagen' || m.tipo === 'video' || (m.tipo === 'archivo' && esUrlImagen(m.url_multimedia))))
-    .map(m => ({ url: m.url_multimedia!, nombre: m.contenido || undefined }));
+    .map(m => ({ url: m.url_multimedia!, nombre: m.contenido || undefined })),
+  [mensajes]);
+
+  const pinnedMsgs = useMemo(() => mensajes.filter(m => !!m.pinned), [mensajes]);
 
   return (
     <><style>{`
@@ -993,7 +1010,7 @@ function Inbox() {
                     </div>
                   ) : (
                     <>
-                      {mensajes.some(m => m.pinned) && (
+                      {pinnedMsgs.length > 0 && (
                         <div style={{
                           marginBottom: 12, padding: '8px 12px', background: '#FEF3C7',
                           borderRadius: 8, border: '1px solid #FDE68A',
@@ -1001,12 +1018,12 @@ function Inbox() {
                         }}>
                           <Pin size={14} style={{ color: '#D97706', flexShrink: 0 }} />
                           <span style={{ fontSize: 12, color: '#92400E', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {mensajes.filter(m => m.pinned).length === 1
-                              ? `Mensaje fijado: "${mensajes.find(m => m.pinned)?.contenido}"`
-                              : `${mensajes.filter(m => m.pinned).length} mensajes fijados`}
+                            {pinnedMsgs.length === 1
+                              ? `Mensaje fijado: "${pinnedMsgs[0].contenido}"`
+                              : `${pinnedMsgs.length} mensajes fijados`}
                           </span>
                           <button onClick={() => {
-                            const firstPinned = mensajes.find(m => m.pinned);
+                            const firstPinned = pinnedMsgs[0];
                             if (firstPinned) {
                               const el = document.getElementById(`msg-${firstPinned.id}`);
                               el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1026,17 +1043,16 @@ function Inbox() {
                           ))}
                         </div>
                       )}
-                      {mensajes.filter(msg => msg.cliente_id === Number(clienteId) &&
-                      (!searchMsg || msg.contenido.toLowerCase().includes(searchMsg.toLowerCase()))).map((msg) => {
+                      {filteredMsgs.map((msg) => {
                       const isAgent = msg.remitente === 'agente';
                       const isBot = msg.remitente === 'bot';
                       const isClient = !isAgent && !isBot;
                       return (
-                        <div style={{ marginBottom: 6, maxWidth: '85%' }}
+                        <div key={msg.id} style={{ marginBottom: 6, maxWidth: '85%' }}
                           onMouseEnter={() => setHoveredMsg(msg.id)}
                           onMouseLeave={() => { setHoveredMsg(null); setActiveMsgMenu(null); }}
                         >
-                          <div key={msg.id} id={`msg-${msg.id}`} style={{
+                          <div id={`msg-${msg.id}`} style={{
                             display: 'flex', flexDirection: isAgent ? 'row-reverse' : 'row', alignItems: 'flex-end', gap: 4,
                           }}>
                           {isBot && (
@@ -1424,7 +1440,7 @@ function Inbox() {
 
       {msgContextMenu && (
         <div style={{
-          position: 'fixed', left: msgContextMenu.x, top: msgContextMenu.y,
+          position: 'fixed', left: Math.min(msgContextMenu.x, window.innerWidth - 200), top: Math.min(msgContextMenu.y, window.innerHeight - 120),
           background: '#fff', borderRadius: 8, boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
           zIndex: 9999, minWidth: 160, padding: '4px 0',
         }} onClick={e => e.stopPropagation()}>
@@ -1452,7 +1468,7 @@ function Inbox() {
 
       {chatContextMenu && (
         <div style={{
-          position: 'fixed', left: chatContextMenu.x, top: chatContextMenu.y,
+          position: 'fixed', left: Math.min(chatContextMenu.x, window.innerWidth - 220), top: Math.min(chatContextMenu.y, window.innerHeight - 120),
           background: '#fff', borderRadius: 8, boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
           zIndex: 9999, minWidth: 180, padding: '4px 0',
         }} onClick={e => e.stopPropagation()}>

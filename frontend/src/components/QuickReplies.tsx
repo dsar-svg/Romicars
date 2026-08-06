@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Zap, Command } from 'lucide-react';
 import { snippetsApi } from '../services/api';
+import { toast } from './Toast';
 import type { Snippet } from '../types';
 
 interface Props {
@@ -14,19 +15,28 @@ export default function QuickReplies({ onSelect, onClose }: Props) {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    snippetsApi.getAll().then(setSnippets).catch(() => {});
+    snippetsApi.getAll().then(setSnippets).catch(() => toast('error', 'Error al cargar respuestas'));
     inputRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    const h = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) onClose();
+    };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [onClose]);
 
   const filtered = useMemo(() => {
     if (!search) return snippets;
     const s = search.toLowerCase();
     return snippets.filter(sn =>
-      sn.atajo.toLowerCase().includes(s) ||
-      sn.contenido.toLowerCase().includes(s) ||
-      sn.categoria.toLowerCase().includes(s)
+      (sn.atajo || '').toLowerCase().includes(s) ||
+      (sn.contenido || '').toLowerCase().includes(s) ||
+      (sn.categoria || '').toLowerCase().includes(s)
     );
   }, [snippets, search]);
 
@@ -53,7 +63,16 @@ export default function QuickReplies({ onSelect, onClose }: Props) {
     return () => document.removeEventListener('keydown', handleKey);
   }, [filtered, selectedIdx, onSelect, onClose]);
 
-  let flatIdx = -1;
+  const flatIndexMap = useMemo(() => {
+    const map = new Map<number, number>();
+    let idx = 0;
+    for (const items of grouped.values()) {
+      for (const sn of items) {
+        map.set(sn.id, idx++);
+      }
+    }
+    return map;
+  }, [grouped]);
 
   const catColors: Record<string, string> = {
     general: '#6B7280',
@@ -64,7 +83,7 @@ export default function QuickReplies({ onSelect, onClose }: Props) {
   };
 
   return (
-    <div style={{
+    <div ref={panelRef} style={{
       position: 'absolute', bottom: '100%', left: 0, right: 0, marginBottom: 6,
       background: '#fff', borderRadius: 14, boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
       border: '1px solid #e5e7eb', maxHeight: 320, display: 'flex', flexDirection: 'column',
@@ -128,8 +147,7 @@ export default function QuickReplies({ onSelect, onClose }: Props) {
                 {cat}
               </div>
               {items.map(sn => {
-                flatIdx++;
-                const idx = flatIdx;
+                const idx = flatIndexMap.get(sn.id) ?? 0;
                 const isSelected = idx === selectedIdx;
                 return (
                   <div

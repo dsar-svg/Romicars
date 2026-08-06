@@ -23,6 +23,9 @@ router.get('/:clienteId', authMiddleware, async (req: AuthRequest, res: Response
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { cliente_id, contenido } = req.body;
+    if (!cliente_id || !contenido?.trim()) {
+      return res.status(400).json({ error: 'cliente_id y contenido son requeridos' });
+    }
     const agente_id = req.agente!.id;
     const result = await query(
       `INSERT INTO notas_internas (cliente_id, agente_id, contenido) VALUES (?, ?, ?)`,

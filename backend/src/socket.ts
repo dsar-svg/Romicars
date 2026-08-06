@@ -16,15 +16,27 @@ export function setupSocket(httpServer: HttpServer): Server {
     console.log(`Cliente conectado: ${socket.id}`);
 
     socket.on('join:chat', (clienteId: number) => {
-      socket.join(`chat:${clienteId}`);
+      if (typeof clienteId === 'number' && clienteId > 0) {
+        socket.join(`chat:${clienteId}`);
+      }
     });
 
     socket.on('leave:chat', (clienteId: number) => {
-      socket.leave(`chat:${clienteId}`);
+      if (typeof clienteId === 'number' && clienteId > 0) {
+        socket.leave(`chat:${clienteId}`);
+      }
     });
 
     socket.on('message:send', async (data: { cliente_id: number; contenido: string; remitente: string }) => {
       try {
+        if (!data.cliente_id || !data.contenido?.trim() || !data.remitente) {
+          socket.emit('message:error', { error: 'Datos incompletos' });
+          return;
+        }
+        if (data.contenido.length > 5000) {
+          socket.emit('message:error', { error: 'Mensaje demasiado largo' });
+          return;
+        }
         const result = await query(
           `INSERT INTO mensajes (cliente_id, remitente, contenido, tipo)
            VALUES (?, ?, ?, 'texto')`,
@@ -60,18 +72,22 @@ export function setupSocket(httpServer: HttpServer): Server {
     });
 
     socket.on('typing:start', (data: { cliente_id: number; nombre: string }) => {
-      socket.to(`chat:${data.cliente_id}`).emit('typing:started', {
-        cliente_id: data.cliente_id,
-        agente_id: socket.id,
-        nombre: data.nombre,
-      });
+      if (typeof data.cliente_id === 'number' && data.cliente_id > 0) {
+        socket.to(`chat:${data.cliente_id}`).emit('typing:started', {
+          cliente_id: data.cliente_id,
+          agente_id: socket.id,
+          nombre: data.nombre || 'Alguien',
+        });
+      }
     });
 
     socket.on('typing:stop', (data: { cliente_id: number }) => {
-      socket.to(`chat:${data.cliente_id}`).emit('typing:stopped', {
-        cliente_id: data.cliente_id,
-        agente_id: socket.id,
-      });
+      if (typeof data.cliente_id === 'number' && data.cliente_id > 0) {
+        socket.to(`chat:${data.cliente_id}`).emit('typing:stopped', {
+          cliente_id: data.cliente_id,
+          agente_id: socket.id,
+        });
+      }
     });
 
     socket.on('disconnect', () => {
