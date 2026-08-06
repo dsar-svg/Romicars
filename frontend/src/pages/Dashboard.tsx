@@ -265,77 +265,127 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* AI Insights */}
+      {/* AI Insights — Estratégicos */}
       {(aiLoading || aiInsights.length > 0) && (
-        <div style={{ marginBottom: 32 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+        <div style={{
+          marginBottom: 32, padding: 28, borderRadius: 20,
+          background: T.dark
+            ? 'linear-gradient(135deg, rgba(10,18,32,0.95) 0%, rgba(15,28,48,0.95) 100%)'
+            : 'linear-gradient(135deg, #1A365D 0%, #0f1f3a 100%)',
+          border: T.dark ? '1px solid rgba(59,130,246,0.2)' : '1px solid rgba(255,255,255,0.15)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+          position: 'relative', overflow: 'hidden',
+        }}>
+          {/* Subtle glow */}
+          <div style={{
+            position: 'absolute', top: -40, right: -40, width: 200, height: 200,
+            background: 'radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%)',
+            borderRadius: '50%', pointerEvents: 'none',
+          }} />
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
             <div style={{
               width: 36, height: 36, borderRadius: 10,
-              background: 'linear-gradient(135deg, #8b5cf6, #a78bfa)',
+              background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(139,92,246,0.3)',
+              boxShadow: '0 4px 16px rgba(59,130,246,0.3)',
             }}>
               <Brain size={18} color="#fff" />
             </div>
             <div>
-              <h2 style={{ fontSize: 18, fontWeight: 700, color: T.textPrimary, margin: 0 }}>Insights IA</h2>
-              {aiLoading && <span style={{ fontSize: 12, color: T.textSecondary }}>Analizando datos con GPT-4o-mini...</span>}
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: '#eaf1ff', margin: 0, fontFamily: "'Hanken Grotesk', sans-serif" }}>
+                Insights Estratégicos
+              </h2>
+              {aiLoading && (
+                <span style={{ fontSize: 12, color: 'rgba(148,163,184,0.8)' }}>Analizando datos con IA...</span>
+              )}
             </div>
           </div>
+
           {aiLoading ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+            <div style={{ display: 'flex', gap: 16 }}>
               {[1,2,3].map(i => (
                 <div key={i} style={{
-                  ...styles.glassCard,
-                  height: 160,
-                  background: 'rgba(26, 54, 93, 0.35)',
+                  flex: 1, height: 140, borderRadius: 14,
+                  background: 'rgba(59,130,246,0.08)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  <div className="msg-spinner" style={{ width: 24, height: 24, borderColor: '#8b5cf6', borderTopColor: 'transparent' }} />
+                  <div className="msg-spinner" style={{ width: 22, height: 22, borderColor: '#3b82f6', borderTopColor: 'transparent' }} />
                 </div>
               ))}
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(aiInsights.length, 3)}, 1fr)`, gap: 16 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
               {aiInsights.slice(0, 3).map((insight, i) => {
-                const s = insightStyles[insight.tipo] || insightStyles.sugerencia;
-                const Icon = insightIcons[insight.tipo] || Zap;
+                const prioColor = insight.prioridad === 'alta' ? '#ef4444' : insight.prioridad === 'media' ? '#f59e0b' : '#34d399';
                 return (
-                  <div key={i}
-                    style={styles.insightCard(s.gradient, s.border)}
-                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.3)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                      <Icon size={16} style={{ color: s.iconColor }} />
-                      <span style={{
-                        fontSize: 10, fontWeight: 700, color: s.iconColor,
-                        textTransform: 'uppercase', letterSpacing: '0.08em',
-                        padding: '3px 8px', borderRadius: 6,
-                        background: `${s.iconColor}18`,
-                      }}>
-                        {insight.prioridad}
-                      </span>
-                      <span style={{
-                        marginLeft: 'auto', fontSize: 9, fontWeight: 700,
-                        color: '#a78bfa', padding: '2px 6px', borderRadius: 4,
-                        background: 'rgba(139,92,246,0.15)',
-                      }}>IA</span>
-                    </div>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: T.textPrimary, marginBottom: 8, lineHeight: 1.3 }}>{insight.titulo}</p>
-                    <p style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.5, marginBottom: 14 }}>{insight.descripcion}</p>
+                  <div key={i} style={{
+                    display: 'flex', gap: 16, padding: '18px 0',
+                    borderBottom: i < Math.min(aiInsights.length, 3) - 1 ? '1px solid rgba(255,255,255,0.08)' : 'none',
+                  }}>
+                    {/* Number */}
                     <div style={{
-                      fontSize: 12, fontWeight: 600, color: s.iconColor,
-                      display: 'flex', alignItems: 'flex-start', gap: 6,
-                      padding: '8px 10px', borderRadius: 8,
-                      background: `${s.iconColor}10`,
+                      width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                      background: 'rgba(59,130,246,0.15)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 14, fontWeight: 800, color: '#60a5fa',
+                      fontFamily: "'Hanken Grotesk', sans-serif",
                     }}>
-                      <Zap size={12} style={{ marginTop: 1, flexShrink: 0 }} />
-                      <span>{insight.accion}</span>
+                      {String(i + 1).padStart(2, '0')}
+                    </div>
+
+                    {/* Content */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: '#eaf1ff' }}>
+                          {insight.titulo}
+                        </span>
+                        <span style={{
+                          fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 6,
+                          background: `${prioColor}20`, color: prioColor,
+                          textTransform: 'uppercase', letterSpacing: '0.06em',
+                        }}>
+                          {insight.prioridad}
+                        </span>
+                      </div>
+                      <p style={{ fontSize: 12.5, color: 'rgba(148,163,184,0.9)', lineHeight: 1.6, margin: 0, marginBottom: 8 }}>
+                        {insight.descripcion}
+                      </p>
+                      {insight.accion && (
+                        <div style={{
+                          display: 'flex', alignItems: 'flex-start', gap: 6,
+                          fontSize: 12, fontWeight: 600, color: '#60a5fa',
+                          padding: '6px 10px', borderRadius: 8,
+                          background: 'rgba(59,130,246,0.1)',
+                          border: '1px solid rgba(59,130,246,0.15)',
+                        }}>
+                          <Zap size={12} style={{ marginTop: 1, flexShrink: 0 }} />
+                          <span>{insight.accion}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* CTA */}
+          {!aiLoading && aiInsights.length > 0 && (
+            <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center' }}>
+              <button
+                style={{
+                  padding: '10px 28px', borderRadius: 10,
+                  background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                  color: '#fff', border: 'none', fontSize: 13, fontWeight: 700,
+                  cursor: 'pointer', boxShadow: '0 4px 16px rgba(59,130,246,0.3)',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(59,130,246,0.4)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(59,130,246,0.3)'; }}
+              >
+                Generar Plan de Acción
+              </button>
             </div>
           )}
         </div>

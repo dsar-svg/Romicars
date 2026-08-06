@@ -504,6 +504,47 @@ router.get('/ai-insights', authMiddleware, async (_req: AuthRequest, res: Respon
        WHERE eliminado = 0 GROUP BY canal_origen ORDER BY total DESC LIMIT 1`
     ) as any[];
 
+    // Leads por canal con ventas
+    const leadsPorCanal = await query(
+      `SELECT canal_origen as canal,
+        COUNT(*) as total,
+        SUM(estado_venta = 'Compro') as compraron
+       FROM clientes WHERE eliminado = 0
+       GROUP BY canal_origen`
+    ) as any[];
+
+    // Leads por urgencia
+    const leadsPorUrgencia = await query(
+      `SELECT urgencia, COUNT(*) as total
+       FROM clientes WHERE eliminado = 0
+       GROUP BY urgencia`
+    ) as any[];
+
+    // Búsquedas sin venta
+    const [busquedasSinVenta] = await query(
+      `SELECT COUNT(*) as total FROM clientes
+       WHERE resumen_busqueda IS NOT NULL AND resumen_busqueda != ''
+       AND estado_venta = 'No Compro' AND eliminado = 0`
+    ) as any[];
+    const [totalConBusqueda] = await query(
+      `SELECT COUNT(*) as total FROM clientes
+       WHERE resumen_busqueda IS NOT NULL AND resumen_busqueda != ''
+       AND eliminado = 0`
+    ) as any[];
+
+    // Top búsquedas recientes
+    const topBusquedasRecientes = await query(
+      `SELECT resumen_busqueda FROM clientes
+       WHERE resumen_busqueda IS NOT NULL AND resumen_busqueda != ''
+       AND eliminado = 0
+       ORDER BY created_at DESC LIMIT 10`
+    ) as any[];
+
+    // Días activos
+    const [diasActivo] = await query(
+      `SELECT DATEDIFF(NOW(), MIN(created_at)) as dias FROM clientes WHERE eliminado = 0`
+    ) as any[];
+
     const totalNum = Number(total.total) || 1;
     const insights = await generarInsights({
       totalLeads: Number(total.total) || 0,
@@ -521,6 +562,12 @@ router.get('/ai-insights', authMiddleware, async (_req: AuthRequest, res: Respon
       busquedasPopulares: busquedas.map((b: any) => b.resumen_busqueda),
       marcasPopulares: marcas.map((m: any) => m.marca_carro),
       canalPrincipal: canalPrincipal?.canal_origen || 'desconocido',
+      leadsPorCanal: leadsPorCanal.map((c: any) => ({ canal: c.canal, total: Number(c.total), compraron: Number(c.compraron) })),
+      leadsPorUrgencia: leadsPorUrgencia.map((u: any) => ({ urgencia: u.urgencia, total: Number(u.total) })),
+      busquedasSinVenta: Number(busquedasSinVenta?.total) || 0,
+      totalConBusqueda: Number(totalConBusqueda?.total) || 0,
+      topBusquedasRecientes: topBusquedasRecientes.map((b: any) => b.resumen_busqueda),
+      diasActivo: Number(diasActivo?.dias) || 30,
     });
 
     res.json({ insights });
