@@ -349,77 +349,58 @@ function Dashboard() {
               ))}
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(aiInsights.length, 3)}, 1fr)`, gap: 16 }}>
               {aiInsights.slice(0, 3).map((insight, i) => {
                 const prioColor = insight.prioridad === 'alta' ? '#ef4444' : insight.prioridad === 'media' ? '#f59e0b' : '#34d399';
                 return (
                   <div key={i} style={{
-                    display: 'flex', gap: 16, padding: '18px 0',
-                    borderBottom: i < Math.min(aiInsights.length, 3) - 1 ? '1px solid rgba(255,255,255,0.08)' : 'none',
-                  }}>
-                    {/* Number */}
-                    <div style={{
-                      width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                      background: 'rgba(59,130,246,0.15)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 14, fontWeight: 800, color: '#60a5fa',
-                      fontFamily: "'Hanken Grotesk', sans-serif",
-                    }}>
-                      {String(i + 1).padStart(2, '0')}
-                    </div>
-
-                    {/* Content */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                        <span style={{ fontSize: 13, fontWeight: 800, color: '#eaf1ff' }}>
-                          {insight.titulo}
-                        </span>
-                        <span style={{
-                          fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 6,
-                          background: `${prioColor}20`, color: prioColor,
-                          textTransform: 'uppercase', letterSpacing: '0.06em',
-                        }}>
-                          {insight.prioridad}
-                        </span>
+                    padding: '18px 16px', borderRadius: 14,
+                    background: 'rgba(15,23,42,0.6)',
+                    border: '1px solid rgba(59,130,246,0.12)',
+                    transition: 'all 0.2s',
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.3)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                      <div style={{
+                        width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                        background: 'rgba(59,130,246,0.15)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 13, fontWeight: 800, color: '#60a5fa',
+                        fontFamily: "'Hanken Grotesk', sans-serif",
+                      }}>
+                        {String(i + 1).padStart(2, '0')}
                       </div>
-                      <p style={{ fontSize: 12.5, color: 'rgba(148,163,184,0.9)', lineHeight: 1.6, margin: 0, marginBottom: 8 }}>
-                        {insight.descripcion}
-                      </p>
-                      {insight.accion && (
-                        <div style={{
-                          display: 'flex', alignItems: 'flex-start', gap: 6,
-                          fontSize: 12, fontWeight: 600, color: '#60a5fa',
-                          padding: '6px 10px', borderRadius: 8,
-                          background: 'rgba(59,130,246,0.1)',
-                          border: '1px solid rgba(59,130,246,0.15)',
-                        }}>
-                          <Zap size={12} style={{ marginTop: 1, flexShrink: 0 }} />
-                          <span>{insight.accion}</span>
-                        </div>
-                      )}
+                      <span style={{
+                        fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 6,
+                        background: `${prioColor}20`, color: prioColor,
+                        textTransform: 'uppercase', letterSpacing: '0.06em',
+                      }}>
+                        {insight.prioridad}
+                      </span>
                     </div>
+                    <p style={{ fontSize: 13, fontWeight: 800, color: '#eaf1ff', margin: '0 0 6px', lineHeight: 1.3 }}>
+                      {insight.titulo}
+                    </p>
+                    <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.9)', lineHeight: 1.5, margin: '0 0 10px' }}>
+                      {insight.descripcion}
+                    </p>
+                    {insight.accion && (
+                      <div style={{
+                        display: 'flex', alignItems: 'flex-start', gap: 6,
+                        fontSize: 11.5, fontWeight: 600, color: '#60a5fa',
+                        padding: '6px 10px', borderRadius: 8,
+                        background: 'rgba(59,130,246,0.1)',
+                        border: '1px solid rgba(59,130,246,0.15)',
+                      }}>
+                        <Zap size={12} style={{ marginTop: 1, flexShrink: 0 }} />
+                        <span>{insight.accion}</span>
+                      </div>
+                    )}
                   </div>
                 );
               })}
-            </div>
-          )}
-
-          {/* CTA */}
-          {!aiLoading && aiInsights.length > 0 && (
-            <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center' }}>
-              <button
-                style={{
-                  padding: '10px 28px', borderRadius: 10,
-                  background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
-                  color: '#fff', border: 'none', fontSize: 13, fontWeight: 700,
-                  cursor: 'pointer', boxShadow: '0 4px 16px rgba(59,130,246,0.3)',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(59,130,246,0.4)'; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(59,130,246,0.3)'; }}
-              >
-                Generar Plan de Acción
-              </button>
             </div>
           )}
         </div>
