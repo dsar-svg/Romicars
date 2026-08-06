@@ -844,12 +844,6 @@ function Dashboard() {
           </div>
           {profitLoading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[1,2,3,4,5].map(i => <div key={i} style={{ height: 40, borderRadius: 8, background: 'rgba(59,130,246,0.05)' }} />)}</div>
-          ) : profitError ? (
-            <div style={{ textAlign: 'center', padding: '30px 0', color: T.textMuted }}>
-              <ShoppingCart size={36} style={{ opacity: 0.2, marginBottom: 8 }} />
-              <p style={{ fontSize: 12, fontWeight: 600 }}>Profit no conectado</p>
-              <p style={{ fontSize: 11, marginTop: 4, color: T.textMuted }}>Configura PROFIT_API_URL</p>
-            </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {productosMostrados.slice(0, 6).map((p, i) => (
