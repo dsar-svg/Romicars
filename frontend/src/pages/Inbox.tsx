@@ -867,10 +867,10 @@ function Inbox() {
                         </div>
                       </div>
                       <div>
-                        <h3 style={{ fontSize: 15, fontWeight: 600, color: '#b51822', fontFamily: "'Inter', sans-serif" }}>
+                        <h3 style={{ fontSize: 15, fontWeight: 600, color: t.textPrimary, fontFamily: "'Inter', sans-serif" }}>
                           {selectedCliente.nombre || selectedCliente.telefono || 'Sin nombre'}
                         </h3>
-                        <span style={{ fontSize: 12, color: '#b51822', fontWeight: 500 }}>
+                        <span style={{ fontSize: 12, color: t.textSecondary, fontWeight: 500 }}>
                           {canalLabel[selectedCliente.canal_origen] || selectedCliente.canal_origen}
                         </span>
                         <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
@@ -917,17 +917,17 @@ function Inbox() {
                           <div style={{
                             display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 6,
                             padding: '3px 10px', borderRadius: 12,
-                            background: slaData.minutos > 15 ? '#FEF2F2' : slaData.minutos > 5 ? '#FFFBEB' : '#ECFDF5',
-                            border: `1px solid ${slaData.minutos > 15 ? '#FECACA' : slaData.minutos > 5 ? '#FDE68A' : '#A7F3D0'}`,
+                            background: slaData.minutos > 15 ? t.redBg : slaData.minutos > 5 ? t.amberBg : t.greenBg,
+                            border: `1px solid ${slaData.minutos > 15 ? t.redText : slaData.minutos > 5 ? t.amberText : t.greenText}33`,
                             fontSize: 11, fontWeight: 700,
-                            color: slaData.minutos > 15 ? '#DC2626' : slaData.minutos > 5 ? '#D97706' : '#059669',
+                            color: slaData.minutos > 15 ? t.redText : slaData.minutos > 5 ? t.amberText : t.greenText,
                           }}>
                             <div style={{
                               width: 7, height: 7, borderRadius: '50%',
-                              background: slaData.minutos > 15 ? '#DC2626' : slaData.minutos > 5 ? '#D97706' : '#059669',
+                              background: slaData.minutos > 15 ? t.redText : slaData.minutos > 5 ? t.amberText : t.greenText,
                               animation: 'pulse 1.5s infinite',
                             }} />
-                            SLA: {slaData.minutos} min
+                            SLA: {slaData.minutos >= 60 ? `${Math.floor(slaData.minutos / 60)}h ${slaData.minutos % 60}min` : `${slaData.minutos} min`}
                           </div>
                         )}
                       </div>
