@@ -94,7 +94,7 @@ export default function Login() {
           <img
             src="/logotipo.png"
             alt="Romicars"
-            style={{ height: 180, marginBottom: 24, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))' }}
+            style={{ height: 240, marginBottom: 24, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))' }}
           />
           <h1 style={{
             fontSize: 22, color: 'var(--text-primary)', letterSpacing: '-0.02em', margin: 0,
