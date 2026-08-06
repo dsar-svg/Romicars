@@ -214,27 +214,6 @@ export default function VenezuelaMap({ clientes }: Props) {
           />
         ))}
 
-        {/* Labels de estados */}
-        {ESTADOS_CENTROS.map((estado) => {
-          const x = toSvgX(estado.lng, width);
-          const y = toSvgY(estado.lat, height);
-          return (
-            <text
-              key={estado.nombre}
-              x={x}
-              y={y}
-              fontSize={7}
-              fill="#1E40AF"
-              textAnchor="middle"
-              fontWeight={600}
-              opacity={0.7}
-              style={{ fontFamily: "'Inter', sans-serif", pointerEvents: 'none' }}
-            >
-              {estado.nombre}
-            </text>
-          );
-        })}
-
         {/* Puntos de clientes */}
         {clientes.map((c) => {
           const cx = toSvgX(c.lng, width);
