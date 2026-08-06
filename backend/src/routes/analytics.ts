@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { query } from '../database';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { getProductosMasVendidos, getProductosMenosVendidos, getTotalFacturado, getClientesConCoordenadas } from '../services/profit';
+import { generarInsights } from '../services/ai';
 
 const router = Router();
 
@@ -442,6 +443,90 @@ router.get('/profit', authMiddleware, async (_req: AuthRequest, res: Response) =
   } catch (error) {
     console.error('Error en analytics profit:', error);
     res.status(500).json({ error: 'Error al obtener datos de Profit' });
+  }
+});
+
+router.get('/ai-insights', authMiddleware, async (_req: AuthRequest, res: Response) => {
+  try {
+    const [total] = await query('SELECT COUNT(*) as total FROM clientes WHERE eliminado = 0') as any[];
+    const [conversion] = await query(
+      `SELECT
+        SUM(estado_venta = 'Compro') as compraron,
+        SUM(estado_venta = 'Lead') as leads,
+        SUM(estado_venta = 'Interesado') as interesados,
+        SUM(estado_venta = 'No Compro') as no_compraron
+       FROM clientes WHERE eliminado = 0`
+    ) as any[];
+
+    const [pendientes] = await query(
+      `SELECT COUNT(*) as total FROM clientes
+       WHERE sla_inicio IS NOT NULL
+       AND estado_conversacion NOT IN ('resuelto', 'cerrado')`
+    ) as any[];
+
+    const tiempos = await query(
+      `SELECT c.canal_origen,
+        AVG(TIMESTAMPDIFF(SECOND, m_c.fecha_envio, m_a.fecha_envio)) as promedio
+       FROM clientes c
+       JOIN mensajes m_c ON m_c.cliente_id = c.id AND m_c.remitente = 'cliente'
+       JOIN mensajes m_a ON m_a.cliente_id = c.id AND m_a.remitente = 'agente'
+         AND m_a.fecha_envio > m_c.fecha_envio
+       WHERE c.eliminado = 0
+       GROUP BY c.canal_origen`
+    ) as any[];
+
+    const agentes = await query(
+      `SELECT a.nombre,
+        COUNT(DISTINCT c.id) as chats,
+        SUM(CASE WHEN c.estado_venta = 'Compro' THEN 1 ELSE 0 END) as ventas,
+        AVG(TIMESTAMPDIFF(HOUR, c.created_at, c.ultima_interaccion)) as tiempo_resp
+       FROM agentes a
+       LEFT JOIN clientes c ON c.asignado_a = a.id AND c.eliminado = 0
+       WHERE a.activo = 1
+       GROUP BY a.id, a.nombre`
+    ) as any[];
+
+    const busquedas = await query(
+      `SELECT resumen_busqueda FROM clientes
+       WHERE resumen_busqueda IS NOT NULL AND resumen_busqueda != ''
+       AND eliminado = 0
+       ORDER BY created_at DESC LIMIT 20`
+    ) as any[];
+
+    const marcas = await query(
+      `SELECT marca_carro, COUNT(*) as total FROM clientes
+       WHERE marca_carro IS NOT NULL AND eliminado = 0
+       GROUP BY marca_carro ORDER BY total DESC LIMIT 5`
+    ) as any[];
+
+    const [canalPrincipal] = await query(
+      `SELECT canal_origen, COUNT(*) as total FROM clientes
+       WHERE eliminado = 0 GROUP BY canal_origen ORDER BY total DESC LIMIT 1`
+    ) as any[];
+
+    const totalNum = Number(total.total) || 1;
+    const insights = await generarInsights({
+      totalLeads: Number(total.total) || 0,
+      conversion: Math.round(((Number(conversion.compraron) || 0) / totalNum) * 100),
+      sinComprar: Number(conversion.no_compraron) || 0,
+      interesados: Number(conversion.interesados) || 0,
+      pendientes: Number(pendientes.total) || 0,
+      tiemposRespuesta: tiempos.map((t: any) => ({ canal: t.canal_origen, promedio: Math.round(Number(t.promedio) || 0) })),
+      agentes: agentes.map((a: any) => ({
+        nombre: a.nombre,
+        ventas: Number(a.ventas) || 0,
+        conversion: Number(a.chats) > 0 ? Math.round((Number(a.ventas) / Number(a.chats)) * 100) : 0,
+        tiempoResp: Math.round(Number(a.tiempo_resp) || 0),
+      })),
+      busquedasPopulares: busquedas.map((b: any) => b.resumen_busqueda),
+      marcasPopulares: marcas.map((m: any) => m.marca_carro),
+      canalPrincipal: canalPrincipal?.canal_origen || 'desconocido',
+    });
+
+    res.json({ insights });
+  } catch (error) {
+    console.error('Error en AI insights:', error);
+    res.status(500).json({ error: 'Error al generar insights IA' });
   }
 });
 

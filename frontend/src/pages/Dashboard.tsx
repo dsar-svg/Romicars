@@ -92,6 +92,8 @@ function Dashboard() {
   const [agentes, setAgentes] = useState<AgenteData[]>([]);
   const [demanda, setDemanda] = useState<DemandaData | null>(null);
   const [insights, setInsights] = useState<InsightData[]>([]);
+  const [aiInsights, setAiInsights] = useState<InsightData[]>([]);
+  const [aiLoading, setAiLoading] = useState(true);
   const [profit, setProfit] = useState<ProfitData | null>(null);
   const [loading, setLoading] = useState(true);
   const [profitLoading, setProfitLoading] = useState(true);
@@ -107,6 +109,11 @@ function Dashboard() {
       api.get('/analytics/demanda').then(r => setDemanda(r.data)),
       api.get('/analytics/insights').then(r => setInsights(r.data.insights)),
     ]).catch(() => {}).finally(() => setLoading(false));
+
+    api.get('/analytics/ai-insights')
+      .then(r => setAiInsights(r.data.insights))
+      .catch(() => {})
+      .finally(() => setAiLoading(false));
 
     api.get('/analytics/profit')
       .then(r => setProfit(r.data))
@@ -141,8 +148,61 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Insights Section */}
-      {!loading && insights.length > 0 && (
+      {/* AI Insights Section */}
+      {(aiLoading || aiInsights.length > 0) && (
+        <div className="fade-in-up" style={{ marginBottom: 24, animationDelay: '100ms' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <Brain size={18} style={{ color: '#8B5CF6' }} />
+            <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Insights IA</h2>
+            {aiLoading && (
+              <span style={{ fontSize: 11, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span className="msg-spinner" style={{ width: 12, height: 12 }} /> Analizando datos...
+              </span>
+            )}
+          </div>
+          {aiLoading ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+              {[1,2,3].map(i => (
+                <div key={i} className="skeleton" style={{ height: 140, borderRadius: 14 }} />
+              ))}
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(aiInsights.length, 3)}, 1fr)`, gap: 14 }}>
+              {aiInsights.slice(0, 3).map((insight, i) => {
+                const cfg = insightConfig[insight.tipo] || insightConfig.sugerencia;
+                const Icon = cfg.icon;
+                return (
+                  <div key={i} className="fade-in-up" style={{
+                    padding: 18, borderRadius: 14, background: cfg.bg,
+                    border: `1px solid ${cfg.color}22`, animationDelay: `${i * 60 + 100}ms`,
+                    transition: 'transform 0.15s',
+                  }}
+                    onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                    onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                      <Icon size={16} style={{ color: cfg.color }} />
+                      <span style={{ fontSize: 10, fontWeight: 700, color: cfg.color, textTransform: 'uppercase', letterSpacing: '0.05em', padding: '2px 6px', borderRadius: 4, background: `${cfg.color}15` }}>
+                        {insight.prioridad}
+                      </span>
+                      <span style={{ fontSize: 9, color: 'var(--text-secondary)', marginLeft: 'auto' }}>IA</span>
+                    </div>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>{insight.titulo}</p>
+                    <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.45, marginBottom: 10 }}>{insight.descripcion}</p>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: cfg.color, display: 'flex', alignItems: 'flex-start', gap: 4 }}>
+                      <Zap size={11} style={{ marginTop: 1, flexShrink: 0 }} />
+                      <span>{insight.accion}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Rule-based Insights (fallback) */}
+      {!aiLoading && aiInsights.length === 0 && insights.length > 0 && (
         <div className="fade-in-up" style={{ marginBottom: 24, animationDelay: '100ms' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
             <Brain size={18} style={{ color: '#8B5CF6' }} />
