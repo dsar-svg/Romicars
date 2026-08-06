@@ -13,7 +13,7 @@ interface Props {
   clientes: ClienteUbicacion[];
 }
 
-// Coordenadas reales de Venezuela (GeoJSON simplificado)
+// Coordenadas reales del contorno de Venezuela
 const VENEZUELA_COORDS: [number, number][] = [
   [-71.331584, 11.776284], [-71.360006, 11.539994], [-71.94705, 11.423282],
   [-71.620868, 10.96946], [-71.633064, 10.446494], [-72.074174, 9.865651],
@@ -48,6 +48,56 @@ const VENEZUELA_COORDS: [number, number][] = [
   [-71.973922, 11.608672], [-71.331584, 11.776284],
 ];
 
+// Líneas de frontera internas (estados) — coordenadas simplificadas
+const FRONTERAS_ESTADOS: [number, number][][] = [
+  // Zulia - Falcón - Lara
+  [-72.4, 11.0], [-72.0, 10.8], [-71.6, 10.5], [-71.0, 10.2],
+  // Falcón - Yaracuy - Carabobo
+  [-70.6, 10.4], [-70.0, 10.2], [-69.5, 10.0],
+  // Lara - Portuguesa - Barinas
+  [-70.0, 9.8], [-69.5, 9.5], [-69.0, 9.2],
+  // Trujillo - Mérida - Táchira
+  [-71.2, 9.5], [-71.0, 9.0], [-70.8, 8.5],
+  // Aragua - Miranda - Guárico
+  [-67.5, 10.0], [-67.0, 9.8], [-66.5, 9.5],
+  // Anzoátegui - Sucre - Monagas
+  [-64.0, 10.5], [-63.5, 10.2], [-63.0, 10.0],
+  // Bolívar - Delta Amacuro
+  [-62.0, 9.5], [-61.5, 9.0], [-61.0, 8.5],
+  // Amazonas - Bolívar
+  [-65.0, 6.0], [-64.5, 5.5], [-64.0, 5.0],
+  // Cojedes - Portuguesa - Yaracuy
+  [-68.5, 9.5], [-68.0, 9.2], [-67.5, 9.0],
+];
+
+// Centros de los estados (para labels)
+const ESTADOS_CENTROS: { nombre: string; lat: number; lng: number }[] = [
+  { nombre: 'Zulia', lat: 10.0, lng: -71.5 },
+  { nombre: 'Falcón', lat: 10.8, lng: -69.5 },
+  { nombre: 'Lara', lat: 9.8, lng: -69.5 },
+  { nombre: 'Trujillo', lat: 9.2, lng: -70.5 },
+  { nombre: 'Mérida', lat: 8.5, lng: -71.0 },
+  { nombre: 'Táchira', lat: 8.0, lng: -72.0 },
+  { nombre: 'Barinas', lat: 8.5, lng: -68.0 },
+  { nombre: 'Portuguesa', lat: 9.2, lng: -69.5 },
+  { nombre: 'Cojedes', lat: 9.5, lng: -68.5 },
+  { nombre: 'Yaracuy', lat: 10.0, lng: -68.5 },
+  { nombre: 'Carabobo', lat: 10.0, lng: -68.0 },
+  { nombre: 'Aragua', lat: 10.0, lng: -67.5 },
+  { nombre: 'Guárico', lat: 9.0, lng: -66.5 },
+  { nombre: 'Miranda', lat: 10.2, lng: -66.5 },
+  { nombre: 'Distrito Capital', lat: 10.5, lng: -67.0 },
+  { nombre: 'Vargas', lat: 10.6, lng: -67.2 },
+  { nombre: 'Anzoátegui', lat: 9.5, lng: -64.5 },
+  { nombre: 'Sucre', lat: 10.5, lng: -63.0 },
+  { nombre: 'Monagas', lat: 9.5, lng: -63.0 },
+  { nombre: 'Delta Amacuro', lat: 8.8, lng: -61.5 },
+  { nombre: 'Bolívar', lat: 7.5, lng: -65.0 },
+  { nombre: 'Amazonas', lat: 3.5, lng: -65.0 },
+  { nombre: 'Apure', lat: 6.5, lng: -69.0 },
+  { nombre: 'Nueva Esparta', lat: 11.0, lng: -64.0 },
+];
+
 const VENEZUELA_BOUNDS = {
   minLng: -73.5,
   maxLng: -59.5,
@@ -63,30 +113,26 @@ function toSvgY(lat: number, height: number) {
   return (1 - (lat - VENEZUELA_BOUNDS.minLat) / (VENEZUELA_BOUNDS.maxLat - VENEZUELA_BOUNDS.minLat)) * height;
 }
 
-function buildVenezuelaPath(width: number, height: number): string {
-  return VENEZUELA_COORDS.map((coord, i) => {
-    const x = toSvgX(coord[0], width);
-    const y = toSvgY(coord[1], height);
-    return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)},${y.toFixed(1)}`;
-  }).join(' ') + ' Z';
-}
-
-// Islas (simplificadas) — Margarita, Coche, Cubagua
-const ISLAS: [number, number][][] = [
-  // Isla de Margarita
-  [
-    [-63.05, 11.05], [-62.85, 11.08], [-62.75, 11.03], [-62.78, 10.95],
-    [-62.90, 10.90], [-63.05, 10.95], [-63.05, 11.05],
-  ],
-];
-
-function buildIslaPath(coords: [number, number][], width: number, height: number): string {
+function buildPath(coords: [number, number][], width: number, height: number): string {
   return coords.map((coord, i) => {
     const x = toSvgX(coord[0], width);
     const y = toSvgY(coord[1], height);
     return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)},${y.toFixed(1)}`;
   }).join(' ') + ' Z';
 }
+
+function buildLine(coords: [number, number][], width: number, height: number): string {
+  return coords.map((coord, i) => {
+    const x = toSvgX(coord[0], width);
+    const y = toSvgY(coord[1], height);
+    return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+}
+
+// Islas
+const ISLAS: [number, number][][] = [
+  [[-63.05, 11.05], [-62.85, 11.08], [-62.75, 11.03], [-62.78, 10.95], [-62.90, 10.90], [-63.05, 10.95], [-63.05, 11.05]],
+];
 
 export default function VenezuelaMap({ clientes }: Props) {
   if (clientes.length === 0) {
@@ -106,56 +152,101 @@ export default function VenezuelaMap({ clientes }: Props) {
 
   const width = 450;
   const height = 380;
-  const venezuelaPath = buildVenezuelaPath(width, height);
+  const venezuelaPath = buildPath(VENEZUELA_COORDS, width, height);
 
   return (
     <div style={{
       position: 'relative', width: '100%', maxWidth: 500, margin: '0 auto',
-      background: 'linear-gradient(135deg, #F0F4F8 0%, #D9E2EC 100%)',
-      borderRadius: 12, overflow: 'hidden', padding: 8,
+      background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)',
+      borderRadius: 16, overflow: 'hidden',
+      border: '1px solid rgba(59,130,246,0.15)',
+      boxShadow: '0 4px 20px rgba(59,130,246,0.08)',
     }}>
       <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
-        {/* Sombra del mapa */}
-        <path d={venezuelaPath} fill="rgba(0,0,0,0.04)" stroke="none" transform="translate(2,2)" />
+        <defs>
+          <linearGradient id="mapGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#EFF6FF" />
+            <stop offset="100%" stopColor="#DBEAFE" />
+          </linearGradient>
+          <filter id="mapShadow" x="-5%" y="-5%" width="110%" height="110%">
+            <feDropShadow dx="1" dy="2" stdDeviation="2" floodOpacity="0.15" />
+          </filter>
+        </defs>
+
+        {/* Fondo */}
+        <rect x="0" y="0" width={width} height={height} fill="transparent" />
+
+        {/* Sombra del contorno */}
+        <path d={venezuelaPath} fill="rgba(0,0,0,0.06)" stroke="none" transform="translate(3,3)" />
 
         {/* Contorno de Venezuela */}
         <path
           d={venezuelaPath}
-          fill="#E8F4FD"
-          stroke="#3B82F6"
-          strokeWidth={2}
+          fill="url(#mapGradient)"
+          stroke="#2563EB"
+          strokeWidth={2.5}
           strokeLinejoin="round"
+          filter="url(#mapShadow)"
         />
 
         {/* Islas */}
         {ISLAS.map((isla, i) => (
           <path
             key={i}
-            d={buildIslaPath(isla, width, height)}
-            fill="#E8F4FD"
-            stroke="#3B82F6"
+            d={buildPath(isla, width, height)}
+            fill="url(#mapGradient)"
+            stroke="#2563EB"
             strokeWidth={1.5}
             strokeLinejoin="round"
           />
         ))}
 
+        {/* Fronteras internas (estados) */}
+        {FRONTERAS_ESTADOS.map((frontera, i) => (
+          <path
+            key={i}
+            d={buildLine(frontera, width, height)}
+            fill="none"
+            stroke="#93C5FD"
+            strokeWidth={0.8}
+            strokeDasharray="4,3"
+            opacity={0.6}
+          />
+        ))}
+
+        {/* Labels de estados */}
+        {ESTADOS_CENTROS.map((estado) => {
+          const x = toSvgX(estado.lng, width);
+          const y = toSvgY(estado.lat, height);
+          return (
+            <text
+              key={estado.nombre}
+              x={x}
+              y={y}
+              fontSize={7}
+              fill="#1E40AF"
+              textAnchor="middle"
+              fontWeight={600}
+              opacity={0.7}
+              style={{ fontFamily: "'Inter', sans-serif", pointerEvents: 'none' }}
+            >
+              {estado.nombre}
+            </text>
+          );
+        })}
+
         {/* Puntos de clientes */}
         {clientes.map((c) => {
           const cx = toSvgX(c.lng, width);
           const cy = toSvgY(c.lat, height);
-          const dentro = VENEZUELA_COORDS.some((coord, i) => {
-            const next = VENEZUELA_COORDS[(i + 1) % VENEZUELA_COORDS.length];
-            const x1 = toSvgX(coord[0], width), y1 = toSvgY(coord[1], height);
-            const x2 = toSvgX(next[0], width), y2 = toSvgY(next[1], height);
-            return false; // Simplified — just show dots
-          });
           return (
             <g key={c.co_cli}>
-              <circle cx={cx} cy={cy} r={8} fill="#E53E3E" opacity={0.15} />
-              <circle cx={cx} cy={cy} r={5} fill="#E53E3E" stroke="#FFF" strokeWidth={2}>
+              <circle cx={cx} cy={cy} r={10} fill="#DC2626" opacity={0.1} />
+              <circle cx={cx} cy={cy} r={6} fill="#DC2626" opacity={0.2} />
+              <circle cx={cx} cy={cy} r={4} fill="#DC2626" stroke="#FFF" strokeWidth={2}>
                 <title>{`${c.cli_des} — ${c.ciudad}, ${c.estado}`}</title>
               </circle>
-              <circle cx={cx} cy={cy} r={2} fill="#FFF" opacity={0.6} />
+              <circle cx={cx} cy={cy} r={1.5} fill="#FFF" opacity={0.7} />
             </g>
           );
         })}
@@ -164,10 +255,11 @@ export default function VenezuelaMap({ clientes }: Props) {
       {/* Contador */}
       <div style={{
         position: 'absolute', bottom: 10, right: 12,
-        fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)',
-        background: 'rgba(255,255,255,0.9)',
-        padding: '4px 10px', borderRadius: 6,
-        boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+        fontSize: 11, fontWeight: 600, color: '#1E40AF',
+        background: 'rgba(255,255,255,0.92)',
+        padding: '5px 12px', borderRadius: 8,
+        boxShadow: '0 2px 8px rgba(59,130,246,0.12)',
+        border: '1px solid rgba(59,130,246,0.15)',
       }}>
         {clientes.length} cliente{clientes.length !== 1 ? 's' : ''}
       </div>
