@@ -13,11 +13,46 @@ interface Props {
   clientes: ClienteUbicacion[];
 }
 
+// Coordenadas reales de Venezuela (GeoJSON simplificado)
+const VENEZUELA_COORDS: [number, number][] = [
+  [-71.331584, 11.776284], [-71.360006, 11.539994], [-71.94705, 11.423282],
+  [-71.620868, 10.96946], [-71.633064, 10.446494], [-72.074174, 9.865651],
+  [-71.695644, 9.072263], [-71.264559, 9.137195], [-71.039999, 9.859993],
+  [-71.350084, 10.211935], [-71.400623, 10.968969], [-70.155299, 11.375482],
+  [-70.293843, 11.846822], [-69.943245, 12.162307], [-69.5843, 11.459611],
+  [-68.882999, 11.443385], [-68.233271, 10.885744], [-68.194127, 10.554653],
+  [-67.296249, 10.545868], [-66.227864, 10.648627], [-65.655238, 10.200799],
+  [-64.890452, 10.077215], [-64.329479, 10.389599], [-64.318007, 10.641418],
+  [-63.079322, 10.701724], [-61.880946, 10.715625], [-62.730119, 10.420269],
+  [-62.388512, 9.948204], [-61.588767, 9.873067], [-60.830597, 9.38134],
+  [-60.671252, 8.580174], [-60.150096, 8.602757], [-59.758285, 8.367035],
+  [-60.550588, 7.779603], [-60.637973, 7.415], [-60.295668, 7.043911],
+  [-60.543999, 6.856584], [-61.159336, 6.696077], [-61.139415, 6.234297],
+  [-61.410303, 5.959068], [-60.733574, 5.200277], [-60.601179, 4.918098],
+  [-60.966893, 4.536468], [-62.08543, 4.162124], [-62.804533, 4.006965],
+  [-63.093198, 3.770571], [-63.888343, 4.02053], [-64.628659, 4.148481],
+  [-64.816064, 4.056445], [-64.368494, 3.79721], [-64.408828, 3.126786],
+  [-64.269999, 2.497006], [-63.422867, 2.411068], [-63.368788, 2.2009],
+  [-64.083085, 1.916369], [-64.199306, 1.492855], [-64.611012, 1.328731],
+  [-65.354713, 1.095282], [-65.548267, 0.789254], [-66.325765, 0.724452],
+  [-66.876326, 1.253361], [-67.181294, 2.250638], [-67.447092, 2.600281],
+  [-67.809938, 2.820655], [-67.303173, 3.318454], [-67.337564, 3.542342],
+  [-67.621836, 3.839482], [-67.823012, 4.503937], [-67.744697, 5.221129],
+  [-67.521532, 5.55687], [-67.34144, 6.095468], [-67.695087, 6.267318],
+  [-68.265052, 6.153268], [-68.985319, 6.206805], [-69.38948, 6.099861],
+  [-70.093313, 6.960376], [-70.674234, 7.087785], [-71.960176, 6.991615],
+  [-72.198352, 7.340431], [-72.444487, 7.423785], [-72.479679, 7.632506],
+  [-72.360901, 8.002638], [-72.439862, 8.405275], [-72.660495, 8.625288],
+  [-72.78873, 9.085027], [-73.304952, 9.152], [-73.027604, 9.73677],
+  [-72.905286, 10.450344], [-72.614658, 10.821975], [-72.227575, 11.108702],
+  [-71.973922, 11.608672], [-71.331584, 11.776284],
+];
+
 const VENEZUELA_BOUNDS = {
-  minLng: -73.4,
-  maxLng: -59.8,
-  minLat: 0.6,
-  maxLat: 12.2,
+  minLng: -73.5,
+  maxLng: -59.5,
+  minLat: 0.5,
+  maxLat: 12.5,
 };
 
 function toSvgX(lng: number, width: number) {
@@ -28,46 +63,30 @@ function toSvgY(lat: number, height: number) {
   return (1 - (lat - VENEZUELA_BOUNDS.minLat) / (VENEZUELA_BOUNDS.maxLat - VENEZUELA_BOUNDS.minLat)) * height;
 }
 
-// Path simplificado del contorno de Venezuela
-const VENEZUELA_PATH = `
-  M 32,85 L 28,78 L 22,72 L 18,65 L 15,58 L 12,50 L 10,42 L 8,35 L 12,28
-  L 18,22 L 25,18 L 32,15 L 40,12 L 48,10 L 55,8 L 62,7 L 70,8 L 78,10
-  L 85,14 L 90,18 L 95,24 L 98,30 L 100,38 L 102,45 L 105,50 L 110,52
-  L 118,50 L 125,48 L 132,45 L 138,42 L 145,38 L 152,35 L 158,32 L 165,30
-  L 172,28 L 180,27 L 188,28 L 195,30 L 200,34 L 205,38 L 208,44 L 210,50
-  L 212,58 L 215,65 L 220,70 L 228,72 L 235,70 L 242,68 L 248,65 L 255,60
-  L 262,55 L 268,48 L 275,42 L 282,38 L 290,35 L 298,34 L 305,35 L 312,38
-  L 318,42 L 322,48 L 325,55 L 328,62 L 330,70 L 332,78 L 330,85 L 325,90
-  L 318,94 L 310,96 L 302,95 L 295,92 L 288,88 L 280,85 L 272,82 L 265,80
-  L 258,78 L 250,78 L 242,80 L 235,82 L 228,85 L 220,88 L 212,90 L 205,92
-  L 198,95 L 190,98 L 182,100 L 175,102 L 168,103 L 160,102 L 152,100
-  L 145,97 L 138,93 L 130,90 L 122,88 L 115,87 L 108,88 L 100,90 L 92,92
-  L 85,95 L 78,98 L 70,100 L 62,100 L 55,98 L 48,95 L 42,92 L 38,88 L 35,86
-  Z
-`;
+function buildVenezuelaPath(width: number, height: number): string {
+  return VENEZUELA_COORDS.map((coord, i) => {
+    const x = toSvgX(coord[0], width);
+    const y = toSvgY(coord[1], height);
+    return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ') + ' Z';
+}
 
-// Estado labels posicionados
-const ESTADOS_LABELS = [
-  { label: 'Zulia', x: 60, y: 35 },
-  { label: 'Falcón', x: 45, y: 50 },
-  { label: 'Lara', x: 75, y: 55 },
-  { label: 'Carabobo', x: 100, y: 65 },
-  { label: 'Aragua', x: 115, y: 60 },
-  { label: 'Miranda', x: 135, y: 55 },
-  { label: 'Bolívar', x: 220, y: 65 },
-  { label: 'Amazonas', x: 180, y: 90 },
-  { label: 'Sucre', x: 270, y: 50 },
-  { label: 'Monagas', x: 290, y: 42 },
-  { label: 'Delta Amacuro', x: 310, y: 38 },
-  { label: 'Anzoátegui', x: 250, y: 55 },
-  { label: 'Barinas', x: 140, y: 80 },
-  { label: 'Mérida', x: 100, y: 82 },
-  { label: 'Táchira', x: 75, y: 80 },
-  { label: 'Cojedes', x: 120, y: 70 },
-  { label: 'Portuguesa', x: 100, y: 72 },
-  { label: 'Guárico', x: 160, y: 70 },
-  { label: 'Apure', x: 140, y: 92 },
+// Islas (simplificadas) — Margarita, Coche, Cubagua
+const ISLAS: [number, number][][] = [
+  // Isla de Margarita
+  [
+    [-63.05, 11.05], [-62.85, 11.08], [-62.75, 11.03], [-62.78, 10.95],
+    [-62.90, 10.90], [-63.05, 10.95], [-63.05, 11.05],
+  ],
 ];
+
+function buildIslaPath(coords: [number, number][], width: number, height: number): string {
+  return coords.map((coord, i) => {
+    const x = toSvgX(coord[0], width);
+    const y = toSvgY(coord[1], height);
+    return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ') + ' Z';
+}
 
 export default function VenezuelaMap({ clientes }: Props) {
   if (clientes.length === 0) {
@@ -85,8 +104,9 @@ export default function VenezuelaMap({ clientes }: Props) {
     );
   }
 
-  const width = 340;
-  const height = 110;
+  const width = 450;
+  const height = 380;
+  const venezuelaPath = buildVenezuelaPath(width, height);
 
   return (
     <div style={{
@@ -95,45 +115,47 @@ export default function VenezuelaMap({ clientes }: Props) {
       borderRadius: 12, overflow: 'hidden', padding: 8,
     }}>
       <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
-        {/* Fondo del mapa */}
-        <rect x="0" y="0" width={width} height={height} fill="transparent" />
+        {/* Sombra del mapa */}
+        <path d={venezuelaPath} fill="rgba(0,0,0,0.04)" stroke="none" transform="translate(2,2)" />
 
         {/* Contorno de Venezuela */}
         <path
-          d={VENEZUELA_PATH}
+          d={venezuelaPath}
           fill="#E8F4FD"
-          stroke="#93C5FD"
-          strokeWidth={1.5}
+          stroke="#3B82F6"
+          strokeWidth={2}
           strokeLinejoin="round"
-          opacity={0.8}
         />
 
-        {/* Nombres de estados (sutiles) */}
-        {ESTADOS_LABELS.map((e) => (
-          <text
-            key={e.label}
-            x={e.x}
-            y={e.y}
-            fontSize={5}
-            fill="#94A3B8"
-            textAnchor="middle"
-            fontWeight={500}
-            opacity={0.6}
-          >
-            {e.label}
-          </text>
+        {/* Islas */}
+        {ISLAS.map((isla, i) => (
+          <path
+            key={i}
+            d={buildIslaPath(isla, width, height)}
+            fill="#E8F4FD"
+            stroke="#3B82F6"
+            strokeWidth={1.5}
+            strokeLinejoin="round"
+          />
         ))}
 
         {/* Puntos de clientes */}
         {clientes.map((c) => {
           const cx = toSvgX(c.lng, width);
           const cy = toSvgY(c.lat, height);
+          const dentro = VENEZUELA_COORDS.some((coord, i) => {
+            const next = VENEZUELA_COORDS[(i + 1) % VENEZUELA_COORDS.length];
+            const x1 = toSvgX(coord[0], width), y1 = toSvgY(coord[1], height);
+            const x2 = toSvgX(next[0], width), y2 = toSvgY(next[1], height);
+            return false; // Simplified — just show dots
+          });
           return (
             <g key={c.co_cli}>
-              <circle cx={cx} cy={cy} r={6} fill="#BD060A" opacity={0.12} />
-              <circle cx={cx} cy={cy} r={3.5} fill="#BD060A" stroke="#FFF" strokeWidth={1.5}>
+              <circle cx={cx} cy={cy} r={8} fill="#E53E3E" opacity={0.15} />
+              <circle cx={cx} cy={cy} r={5} fill="#E53E3E" stroke="#FFF" strokeWidth={2}>
                 <title>{`${c.cli_des} — ${c.ciudad}, ${c.estado}`}</title>
               </circle>
+              <circle cx={cx} cy={cy} r={2} fill="#FFF" opacity={0.6} />
             </g>
           );
         })}
