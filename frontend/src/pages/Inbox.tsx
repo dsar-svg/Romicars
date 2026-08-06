@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Search, Send, MessageSquare, Bot, CheckCheck, Paperclip, Phone, PanelRightOpen, PanelRightClose, FileText, X, UserCheck, UserPlus, Trash2, Pin } from 'lucide-react';
+import { Search, Send, MessageSquare, Bot, CheckCheck, Paperclip, Phone, PanelRightOpen, PanelRightClose, FileText, X, UserCheck, UserPlus, Trash2, Pin, CircleDot, AlertTriangle, Star, Inbox as InboxIcon } from 'lucide-react';
 import { clientesApi, mensajesApi } from '../services/api';
 import { connectSocket, getSocket } from '../services/socket';
 import { toast } from '../components/Toast';
@@ -578,104 +578,137 @@ function Inbox() {
           display: 'flex', flexDirection: 'column', flexShrink: 0,
         }}>
           {/* Búsqueda + filtros rápidos */}
-          <div style={{ padding: '16px 16px 12px', borderBottom: `1px solid ${t.borderCard}` }}>
-            <div style={{ position: 'relative', marginBottom: 10 }}>
-              <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#8896ab', pointerEvents: 'none' }} />
+          <div style={{ padding: '16px 16px 14px', borderBottom: `1px solid ${t.borderCard}` }}>
+            <div style={{ position: 'relative', marginBottom: 12 }}>
+              <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: t.textMuted, pointerEvents: 'none' }} />
               <input
-                placeholder="Search conversations..."
+                placeholder="Buscar conversaciones..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
                 style={{
-                  width: '100%', padding: '9px 12px 9px 36px', borderRadius: 8, fontSize: 13,
-                    border: '1px solid' + t.borderCard, background: t.bgInput, outline: 'none',
-                    fontFamily: "'Inter', sans-serif",
-                  }}
-                />
+                  width: '100%', padding: '10px 12px 10px 38px', borderRadius: 10, fontSize: 13,
+                  border: `1px solid ${t.borderCard}`, background: t.bgInput, outline: 'none',
+                  fontFamily: "'Inter', sans-serif", color: t.textPrimary,
+                  transition: 'border-color 0.2s',
+                }}
+                onFocus={e => e.currentTarget.style.borderColor = 'var(--primary)'}
+                onBlur={e => e.currentTarget.style.borderColor = t.borderCard}
+              />
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <div style={{ display: 'flex', gap: 4 }}>
-                {[
-                  { key: 'todos', label: 'All' },
-                  { key: 'whatsapp', label: 'WA', color: '#25D366', icon: 'whatsapp' },
-                  { key: 'instagram', label: 'IG', color: '#E4405F', icon: 'instagram' },
-                  { key: 'facebook', label: 'FB', color: '#1877F2', icon: 'facebook' },
-                ].map(f => (
+
+            {/* Canales */}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
+              {[
+                { key: 'todos', label: 'Todos', icon: InboxIcon, gradient: 'linear-gradient(135deg, #1A365D, #2B6CB0)', activeBg: '#1A365D' },
+                { key: 'whatsapp', label: 'WA', icon: null, gradient: 'linear-gradient(135deg, #25D366, #128C7E)', activeBg: '#25D366', svg: '/icons.svg#whatsapp' },
+                { key: 'instagram', label: 'IG', icon: null, gradient: 'linear-gradient(135deg, #E4405F, #C13584)', activeBg: '#E4405F', svg: '/icons.svg#instagram' },
+                { key: 'facebook', label: 'FB', icon: null, gradient: 'linear-gradient(135deg, #1877F2, #0D47A1)', activeBg: '#1877F2', svg: '/icons.svg#facebook' },
+              ].map(f => {
+                const active = canalFiltro === f.key;
+                return (
                   <button key={f.key} onClick={() => setCanalFiltro(f.key)}
                     style={{
-                      padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-                      background: canalFiltro === f.key ? (f.key === 'todos' ? '#002045' : '#b51822') : 'transparent',
-                      color: canalFiltro === f.key ? '#fff' : '#8896ab',
-                      border: canalFiltro === f.key ? 'none' : '1px solid' + t.borderCard,
+                      padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                      background: active ? f.activeBg : t.subtleBg,
+                      color: active ? '#fff' : t.textSecondary,
+                      border: active ? 'none' : `1px solid ${t.borderCard}`,
                       cursor: 'pointer', fontFamily: "'Inter', sans-serif",
-                      display: 'flex', alignItems: 'center', gap: 4,
-                    }}>
-                    {f.icon && (
-                      <svg width={12} height={12} style={{ flexShrink: 0 }}>
-                        <use href={`${canalIcono[f.icon]}`} />
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      transition: 'all 0.2s ease',
+                      boxShadow: active ? `0 2px 8px ${f.activeBg}44` : 'none',
+                    }}
+                    onMouseEnter={e => { if (!active) { e.currentTarget.style.background = t.hoverBg; e.currentTarget.style.borderColor = `${f.activeBg}44`; } }}
+                    onMouseLeave={e => { if (!active) { e.currentTarget.style.background = t.subtleBg; e.currentTarget.style.borderColor = t.borderCard; } }}
+                  >
+                    {f.svg ? (
+                      <svg width={14} height={14} style={{ flexShrink: 0 }}>
+                        <use href={f.svg} />
                       </svg>
-                    )}
+                    ) : f.icon ? (
+                      <f.icon size={13} style={{ flexShrink: 0 }} />
+                    ) : null}
                     {f.label}
                   </button>
-                ))}
-                <button onClick={() => setFiltroIA(!filtroIA)}
-                  style={{
-                    padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-                    background: filtroIA ? '#b51822' : 'transparent',
-                    color: filtroIA ? '#fff' : '#8896ab',
-                    border: filtroIA ? 'none' : '1px solid' + t.borderCard,
-                    cursor: 'pointer', fontFamily: "'Inter', sans-serif",
-                    display: 'flex', alignItems: 'center', gap: 4,
-                  }}>
-                  <Bot size={11} />
-                  IA
-                </button>
-              </div>
-              <div style={{ display: 'flex', gap: 4 }}>
-                {[
-                  { key: 'todos', label: 'All' },
-                  { key: 'urgentes', label: 'Urgent', dot: '#DC2626' },
-                  { key: 'interesado', label: 'Interested', dot: '#D97706' },
-                  { key: 'neutro', label: 'Neutral', dot: '#9CA3AF' },
-                ].map(f => (
+                );
+              })}
+
+              <div style={{ width: 1, height: 24, background: t.borderCard, margin: '0 4px', alignSelf: 'center' }} />
+
+              <button onClick={() => setFiltroIA(!filtroIA)}
+                style={{
+                  padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                  background: filtroIA ? 'linear-gradient(135deg, #8b5cf6, #7c3aed)' : t.subtleBg,
+                  color: filtroIA ? '#fff' : t.textSecondary,
+                  border: filtroIA ? 'none' : `1px solid ${t.borderCard}`,
+                  cursor: 'pointer', fontFamily: "'Inter', sans-serif",
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  transition: 'all 0.2s ease',
+                  boxShadow: filtroIA ? '0 2px 8px rgba(139,92,246,0.4)' : 'none',
+                }}
+                onMouseEnter={e => { if (!filtroIA) { e.currentTarget.style.background = t.hoverBg; e.currentTarget.style.borderColor = 'rgba(139,92,246,0.3)'; } }}
+                onMouseLeave={e => { if (!filtroIA) { e.currentTarget.style.background = t.subtleBg; e.currentTarget.style.borderColor = t.borderCard; } }}
+              >
+                <Bot size={13} />
+                IA
+              </button>
+            </div>
+
+            {/* Urgencia + Asignación */}
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {[
+                { key: 'todos', label: 'Todos', icon: CircleDot, color: '#64748b' },
+                { key: 'urgentes', label: 'Urgente', icon: AlertTriangle, color: '#EF4444' },
+                { key: 'interesado', label: 'Interesado', icon: Star, color: '#F59E0B' },
+                { key: 'neutro', label: 'Neutral', icon: CircleDot, color: '#9CA3AF' },
+              ].map(f => {
+                const active = urgenciaFiltro === f.key;
+                return (
                   <button key={f.key} onClick={() => setUrgenciaFiltro(f.key)}
                     style={{
-                      padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-                      background: urgenciaFiltro === f.key ? (f.key === 'urgentes' ? '#b51822' : '#002045') : 'transparent',
-                      color: urgenciaFiltro === f.key ? '#fff' : '#8896ab',
-                      border: urgenciaFiltro === f.key ? 'none' : '1px solid' + t.borderCard,
+                      padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                      background: active ? `${f.color}18` : 'transparent',
+                      color: active ? f.color : t.textMuted,
+                      border: active ? `1px solid ${f.color}44` : `1px solid ${t.borderCard}`,
                       cursor: 'pointer', fontFamily: "'Inter', sans-serif",
-                      display: 'flex', alignItems: 'center', gap: 4,
-                    }}>
-                    {f.dot && (
-                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: f.dot }} />
-                    )}
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      transition: 'all 0.2s ease',
+                    }}
+                    onMouseEnter={e => { if (!active) { e.currentTarget.style.background = `${f.color}08`; e.currentTarget.style.borderColor = `${f.color}22`; } }}
+                    onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = t.borderCard; } }}
+                  >
+                    <f.icon size={12} />
                     {f.label}
                   </button>
-                ))}
-              </div>
-              <div style={{ display: 'flex', gap: 4 }}>
-                {[
-                  { key: 'todos', label: 'All' },
-                  { key: 'sin_asignar', label: 'Sin Asignar', icon: UserPlus },
-                  { key: 'mis_chats', label: 'Mis Chats', icon: UserCheck },
-                  { key: 'bot', label: 'Bot', icon: Bot },
-                ].map(f => (
+                );
+              })}
+
+              <div style={{ width: 1, height: 24, background: t.borderCard, margin: '0 4px', alignSelf: 'center' }} />
+
+              {[
+                { key: 'sin_asignar', label: 'Sin Asignar', icon: UserPlus, color: '#F59E0B' },
+                { key: 'mis_chats', label: 'Mis Chats', icon: UserCheck, color: '#3B82F6' },
+                { key: 'bot', label: 'Bot', icon: Bot, color: '#8b5cf6' },
+              ].map(f => {
+                const active = filtroAtencion === f.key;
+                return (
                   <button key={f.key} onClick={() => setFiltroAtencion(f.key)}
                     style={{
-                      padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-                      background: filtroAtencion === f.key
-                        ? (f.key === 'sin_asignar' ? '#D97706' : f.key === 'mis_chats' ? '#002045' : '#b51822')
-                        : 'transparent',
-                      color: filtroAtencion === f.key ? '#fff' : '#8896ab',
-                      border: filtroAtencion === f.key ? 'none' : '1px solid' + t.borderCard,
+                      padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                      background: active ? `${f.color}18` : 'transparent',
+                      color: active ? f.color : t.textMuted,
+                      border: active ? `1px solid ${f.color}44` : `1px solid ${t.borderCard}`,
                       cursor: 'pointer', fontFamily: "'Inter', sans-serif",
-                      display: 'flex', alignItems: 'center', gap: 4,
-                    }}>
-                    {f.icon && <f.icon size={11} />}
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      transition: 'all 0.2s ease',
+                    }}
+                    onMouseEnter={e => { if (!active) { e.currentTarget.style.background = `${f.color}08`; e.currentTarget.style.borderColor = `${f.color}22`; } }}
+                    onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = t.borderCard; } }}
+                  >
+                    <f.icon size={12} />
                     {f.label}
                   </button>
-                ))}
-              </div>
+                );
+              })}
             </div>
           </div>
 
