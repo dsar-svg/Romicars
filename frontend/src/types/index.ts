@@ -22,6 +22,8 @@ export interface Cliente {
   resumen_transferencia: string | null;
   pinned: boolean;
   eliminado: boolean;
+  estado_conversacion: 'nuevo' | 'en_progreso' | 'resuelto' | 'cerrado' | 'en_pausa';
+  sla_inicio: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -52,8 +54,43 @@ export interface Agente {
   ultimo_acceso: string | null;
 }
 
+export interface NotaInterna {
+  id: number;
+  cliente_id: number;
+  agente_id: number;
+  agente_nombre?: string;
+  contenido: string;
+  created_at: string;
+}
+
+export interface Snippet {
+  id: number;
+  agente_id: number | null;
+  atajo: string;
+  contenido: string;
+  categoria: string;
+  created_at: string;
+}
+
 export interface Rol {
   id: number;
   nombre: string;
   permisos: string[] | null;
+}
+
+export interface Nota {
+  id: number;
+  cliente_id: number;
+  agente_id: number;
+  contenido: string;
+  agente_nombre: string;
+  created_at: string;
+}
+
+export interface Snippet {
+  id: number;
+  agente_id: number | null;
+  atajo: string;
+  contenido: string;
+  categoria: string;
 }

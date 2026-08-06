@@ -7,6 +7,8 @@ import analyticsRouter from './analytics';
 import campaniasRouter from './campanias';
 import agentesRouter from './agentes';
 import profitRouter from './profit';
+import notasRouter from './notas';
+import snippetsRouter from './snippets';
 
 const router = Router();
 
@@ -18,5 +20,7 @@ router.use('/analytics', analyticsRouter);
 router.use('/campanias', campaniasRouter);
 router.use('/agentes', agentesRouter);
 router.use('/profit', profitRouter);
+router.use('/notas', notasRouter);
+router.use('/snippets', snippetsRouter);
 
 export default router;

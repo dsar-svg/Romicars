@@ -59,6 +59,21 @@ export function setupSocket(httpServer: HttpServer): Server {
       });
     });
 
+    socket.on('typing:start', (data: { cliente_id: number; nombre: string }) => {
+      socket.to(`chat:${data.cliente_id}`).emit('typing:started', {
+        cliente_id: data.cliente_id,
+        agente_id: socket.id,
+        nombre: data.nombre,
+      });
+    });
+
+    socket.on('typing:stop', (data: { cliente_id: number }) => {
+      socket.to(`chat:${data.cliente_id}`).emit('typing:stopped', {
+        cliente_id: data.cliente_id,
+        agente_id: socket.id,
+      });
+    });
+
     socket.on('disconnect', () => {
       console.log(`Cliente desconectado: ${socket.id}`);
     });

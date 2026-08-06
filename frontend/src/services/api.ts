@@ -37,6 +37,19 @@ export const clientesApi = {
     api.delete(`/clientes/${id}/chat`).then(r => r.data),
   togglePin: (id: number) =>
     api.put(`/clientes/${id}/pin`).then(r => r.data),
+  updateStatus: (id: number, estado_conversacion: string) =>
+    api.put(`/clientes/${id}/status`, { estado_conversacion }).then(r => r.data),
+  getSla: (id: number) =>
+    api.get(`/clientes/${id}/sla`).then(r => r.data),
+};
+
+export const notasApi = {
+  getByCliente: (clienteId: number) =>
+    api.get(`/notas/${clienteId}`).then(r => r.data),
+  crear: (data: { cliente_id: number; contenido: string }) =>
+    api.post('/notas', data).then(r => r.data),
+  eliminar: (id: number) =>
+    api.delete(`/notas/${id}`).then(r => r.data),
 };
 
 export const mensajesApi = {
@@ -54,6 +67,16 @@ export const mensajesApi = {
     api.delete(`/mensajes/${id}`).then(r => r.data),
   togglePin: (id: number) =>
     api.put(`/mensajes/${id}/pin`).then(r => r.data),
+};
+
+export const snippetsApi = {
+  getAll: () => api.get('/snippets').then(r => r.data),
+  crear: (data: { atajo: string; contenido: string; categoria?: string }) =>
+    api.post('/snippets', data).then(r => r.data),
+  actualizar: (id: number, data: { atajo?: string; contenido?: string; categoria?: string }) =>
+    api.put(`/snippets/${id}`, data).then(r => r.data),
+  eliminar: (id: number) =>
+    api.delete(`/snippets/${id}`).then(r => r.data),
 };
 
 export const profitApi = {

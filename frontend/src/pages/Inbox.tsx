@@ -14,6 +14,9 @@ import EmojiPicker from '../components/EmojiPicker';
 import { useNotifications } from '../hooks/useNotifications';
 import { useAuth } from '../contexts/AuthContext';
 import type { Cliente, Mensaje } from '../types';
+import TypingIndicator from '../components/TypingIndicator';
+import InternalNotes from '../components/InternalNotes';
+import QuickReplies from '../components/QuickReplies';
 
 const canalIcono: Record<string, string> = {
   whatsapp: '/icons.svg#whatsapp',
@@ -101,6 +104,11 @@ function Inbox() {
   const [hoveredMsg, setHoveredMsg] = useState<number | null>(null);
   const [hoveredChat, setHoveredChat] = useState<number | null>(null);
   const [activeMsgMenu, setActiveMsgMenu] = useState<number | null>(null);
+  const [typingAgents, setTypingAgents] = useState<Map<string, string>>(new Map());
+  const [showNotes, setShowNotes] = useState(false);
+  const [showQuickReplies, setShowQuickReplies] = useState(false);
+  const [slaData, setSlaData] = useState<{ minutos: number; estado: string } | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     if (!window.__unreadChats) window.__unreadChats = new Set<number>();
@@ -238,6 +246,20 @@ function Inbox() {
       setMensajes(prev => prev.map(m => m.id === data.mensaje_id ? { ...m, pinned: data.pinned } : m));
     });
 
+    socket.on('typing:started', (data: { cliente_id: number; agente_id: string; nombre: string }) => {
+      if (currentClienteId.current === data.cliente_id) {
+        setTypingAgents(prev => new Map(prev).set(data.agente_id, data.nombre));
+      }
+    });
+
+    socket.on('typing:stopped', (data: { cliente_id: number; agente_id: string }) => {
+      setTypingAgents(prev => {
+        const next = new Map(prev);
+        next.delete(data.agente_id);
+        return next;
+      });
+    });
+
     return () => {
       socket.off('message:new');
       socket.off('chat:updated');
@@ -249,6 +271,8 @@ function Inbox() {
       socket.off('message:deleted');
       socket.off('chat:pinned');
       socket.off('message:pinned');
+      socket.off('typing:started');
+      socket.off('typing:stopped');
     };
   }, [refrescarClienteEnLista, agente, selectedCliente, navigate]);
 
@@ -272,6 +296,9 @@ function Inbox() {
     setMessagesLoading(true);
     const cached = clientes.find(c => c.id === id);
     if (cached) setSelectedCliente(cached);
+    clientesApi.getSla(id).then(data => {
+      setSlaData({ minutos: data.minutos_transcurridos, estado: data.estado_conversacion });
+    }).catch(() => {});
 
     const load = async (chatId: number) => {
       const msgs = await mensajesApi.getByCliente(chatId, 20) as Mensaje[];
@@ -313,6 +340,16 @@ function Inbox() {
     }, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (!clienteId) return;
+    const interval = setInterval(() => {
+      clientesApi.getSla(Number(clienteId)).then(data => {
+        setSlaData({ minutos: data.minutos_transcurridos, estado: data.estado_conversacion });
+      }).catch(() => {});
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [clienteId]);
 
   useEffect(() => {
     if (!clienteId) return;
@@ -786,6 +823,43 @@ function Inbox() {
                         <span style={{ fontSize: 12, color: '#b51822', fontWeight: 500 }}>
                           {canalLabel[selectedCliente.canal_origen] || selectedCliente.canal_origen}
                         </span>
+                        <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                          {(['nuevo', 'en_progreso', 'resuelto', 'cerrado', 'en_pausa'] as const).map(estado => {
+                            const labels: Record<string, string> = { nuevo: 'Nuevo', en_progreso: 'En progreso', resuelto: 'Resuelto', cerrado: 'Cerrado', en_pausa: 'En pausa' };
+                            const colors: Record<string, string> = { nuevo: '#DC2626', en_progreso: '#2563EB', resuelto: '#059669', cerrado: '#6B7280', en_pausa: '#D97706' };
+                            const isActive = selectedCliente.estado_conversacion === estado;
+                            return (
+                              <button key={estado} onClick={() => {
+                                clientesApi.updateStatus(selectedCliente.id, estado);
+                                setSelectedCliente(prev => prev ? { ...prev, estado_conversacion: estado } : prev);
+                                refrescarClienteEnLista(selectedCliente.id);
+                              }} style={{
+                                padding: '2px 8px', borderRadius: 4, fontSize: 10, fontWeight: 600,
+                                background: isActive ? colors[estado] : 'transparent',
+                                color: isActive ? '#fff' : colors[estado],
+                                border: `1px solid ${colors[estado]}`,
+                                cursor: 'pointer', opacity: isActive ? 1 : 0.6,
+                                transition: 'all 0.15s',
+                              }}>
+                                {labels[estado]}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {slaData && slaData.estado !== 'resuelto' && slaData.estado !== 'cerrado' && (
+                          <div style={{
+                            display: 'flex', alignItems: 'center', gap: 6, marginTop: 4,
+                            fontSize: 11, fontWeight: 600,
+                            color: slaData.minutos > 15 ? '#DC2626' : slaData.minutos > 5 ? '#D97706' : '#059669',
+                          }}>
+                            <div style={{
+                              width: 6, height: 6, borderRadius: '50%',
+                              background: slaData.minutos > 15 ? '#DC2626' : slaData.minutos > 5 ? '#D97706' : '#059669',
+                              animation: 'pulse 1.5s infinite',
+                            }} />
+                            SLA: {slaData.minutos}min
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 6 }}>
@@ -826,6 +900,19 @@ function Inbox() {
                           ? <PanelRightClose size={14} style={{ color: '#b51822' }} />
                           : <PanelRightOpen size={14} style={{ color: '#b51822' }} />
                         }
+                      </button>
+                      <button
+                        onClick={() => setShowNotes(!showNotes)}
+                        style={{
+                          width: 34, height: 34, borderRadius: '50%',
+                          border: showNotes ? '2px solid #D97706' : '1px solid #e0e8f0',
+                          background: showNotes ? '#FEF3C7' : '#fff',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          cursor: 'pointer',
+                        }}
+                        title={showNotes ? 'Ocultar notas' : 'Notas internas'}
+                      >
+                        <span style={{ fontSize: 14 }}>📝</span>
                       </button>
                     </div>
                   </div>
@@ -890,6 +977,13 @@ function Inbox() {
                           }}>
                             Ver
                           </button>
+                        </div>
+                      )}
+                      {typingAgents.size > 0 && (
+                        <div style={{ marginBottom: 8 }}>
+                          {Array.from(typingAgents.entries()).map(([id, nombre]) => (
+                            <TypingIndicator key={id} nombre={nombre} />
+                          ))}
                         </div>
                       )}
                       {mensajes.filter(msg => msg.cliente_id === Number(clienteId) &&
@@ -1198,11 +1292,29 @@ function Inbox() {
                     <Paperclip size={14} style={{ color: '#8896ab' }} />
                   </button>
                   {selectedCliente && <AudioRecorder clienteId={selectedCliente.id} />}
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, position: 'relative' }}>
+                    {showQuickReplies && (
+                      <QuickReplies
+                        onSelect={(texto) => { setNuevoMensaje(texto); setShowQuickReplies(false); }}
+                        onClose={() => setShowQuickReplies(false)}
+                      />
+                    )}
                     <input
                       value={nuevoMensaje}
-                      onChange={e => setNuevoMensaje(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && !e.shiftKey && !pendingAttach?._loading && (e.preventDefault(), enviarMensaje())}
+                      onChange={e => {
+                        setNuevoMensaje(e.target.value);
+                        const socket = getSocket();
+                        socket.emit('typing:start', { cliente_id: selectedCliente?.id, nombre: agente?.nombre || 'Agente' });
+                        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+                        typingTimeoutRef.current = setTimeout(() => {
+                          socket.emit('typing:stop', { cliente_id: selectedCliente?.id });
+                        }, 2000);
+                      }}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && !e.shiftKey && !pendingAttach?._loading) { e.preventDefault(); enviarMensaje(); }
+                        if (e.key === '/' && !nuevoMensaje) { e.preventDefault(); setShowQuickReplies(true); }
+                        if (e.key === 'Escape') setShowQuickReplies(false);
+                      }}
                       placeholder="Type a message..."
                     style={{
                       width: '100%', padding: '10px 14px', borderRadius: 8, fontSize: 13,
@@ -1247,6 +1359,9 @@ function Inbox() {
           {/* Right Panel — toggleable */}
           {selectedCliente && showPanel && (
             <ClientPanel cliente={selectedCliente} onClose={() => setShowPanel(false)} />
+          )}
+          {selectedCliente && showNotes && (
+            <InternalNotes clienteId={selectedCliente.id} onClose={() => setShowNotes(false)} />
           )}
         </div>
       </div>

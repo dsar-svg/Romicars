@@ -41,14 +41,14 @@ router.get('/:id', async (req: Request, res: Response) => {
 
 router.put('/:id', async (req: Request, res: Response) => {
   try {
-    const { nombre, telefono, marca_carro, modelo_carro, anio_carro, motor_carro, estado_venta, urgencia, acepta_promos, resumen_busqueda, pidio_fotos } = req.body;
+    const { nombre, telefono, marca_carro, modelo_carro, anio_carro, motor_carro, estado_venta, urgencia, acepta_promos, resumen_busqueda, pidio_fotos, estado_conversacion } = req.body;
     await query(
       `UPDATE clientes SET
         nombre = ?, telefono = ?, marca_carro = ?, modelo_carro = ?, anio_carro = ?,
         motor_carro = ?, estado_venta = ?, urgencia = ?, acepta_promos = ?,
-        resumen_busqueda = ?, pidio_fotos = ?
+        resumen_busqueda = ?, pidio_fotos = ?, estado_conversacion = ?
        WHERE id = ?`,
-      [nombre, telefono, marca_carro, modelo_carro, anio_carro, motor_carro, estado_venta, urgencia, acepta_promos, resumen_busqueda, pidio_fotos, req.params.id]
+      [nombre, telefono, marca_carro, modelo_carro, anio_carro, motor_carro, estado_venta, urgencia, acepta_promos, resumen_busqueda, pidio_fotos, estado_conversacion, req.params.id]
     );
     const [cliente] = await query('SELECT * FROM clientes WHERE id = ?', [req.params.id]) as any[];
     getIO().emit('cliente:updated', cliente);
@@ -146,6 +146,56 @@ router.put('/:id/pin', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error al fijar chat:', error);
     res.status(500).json({ error: 'Error al fijar chat' });
+  }
+});
+
+router.put('/:id/status', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { estado_conversacion } = req.body;
+    const clienteId = req.params.id;
+
+    const [current] = await query('SELECT estado_conversacion FROM clientes WHERE id = ?', [clienteId]) as any[];
+    if (!current) return res.status(404).json({ error: 'Cliente no encontrado' });
+
+    const statusChanged = current.estado_conversacion !== estado_conversacion;
+    const shouldSetSla = statusChanged && (estado_conversacion === 'nuevo' || estado_conversacion === 'en_progreso');
+
+    if (shouldSetSla) {
+      await query(
+        `UPDATE clientes SET estado_conversacion = ?, sla_inicio = NOW() WHERE id = ?`,
+        [estado_conversacion, clienteId]
+      );
+    } else {
+      await query(
+        `UPDATE clientes SET estado_conversacion = ? WHERE id = ?`,
+        [estado_conversacion, clienteId]
+      );
+    }
+
+    const [cliente] = await query('SELECT * FROM clientes WHERE id = ?', [clienteId]) as any[];
+    getIO().emit('cliente:updated', cliente);
+    res.json(cliente);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar estado de conversación' });
+  }
+});
+
+router.get('/:id/sla', async (req: Request, res: Response) => {
+  try {
+    const [cliente] = await query(
+      `SELECT sla_inicio, estado_conversacion,
+        TIMESTAMPDIFF(MINUTE, sla_inicio, NOW()) as minutos_transcurridos
+       FROM clientes WHERE id = ?`,
+      [req.params.id]
+    ) as any[];
+    if (!cliente) return res.status(404).json({ error: 'Cliente no encontrado' });
+    res.json({
+      sla_inicio: cliente.sla_inicio,
+      estado_conversacion: cliente.estado_conversacion,
+      minutos_transcurridos: cliente.minutos_transcurridos,
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener información de SLA' });
   }
 });
 
