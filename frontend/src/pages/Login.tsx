@@ -90,18 +90,18 @@ export default function Login() {
         position: 'relative',
         zIndex: 1,
       }}>
-        <div style={{ textAlign: 'center', marginBottom: 36 }}>
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <img
             src="/logotipo.png"
             alt="Romicars"
-            style={{ height: 240, marginBottom: 24, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))' }}
+            style={{ height: 240, marginBottom: 8, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))' }}
           />
           <h1 style={{
             fontSize: 22, color: 'var(--text-primary)', letterSpacing: '-0.02em', margin: 0,
           }}>
             Romicars Flow
           </h1>
-          <p style={{ margin: '6px 0 0', color: 'var(--text-secondary)', fontSize: 14, fontWeight: 400 }}>
+          <p style={{ margin: '4px 0 0', color: 'var(--text-secondary)', fontSize: 14, fontWeight: 400 }}>
             Accede al panel de gestión
           </p>
         </div>
