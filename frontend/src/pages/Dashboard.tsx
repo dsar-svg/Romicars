@@ -60,12 +60,33 @@ function formatTime(seconds: number): string {
   return `${Math.round(seconds / 3600)}h`;
 }
 
+const BRAND = {
+  primaryDark: '#1A365D',
+  primaryMed: '#2B6CB0',
+  primary: '#3B82F6',
+  primaryLight: '#60A5FA',
+  secondary: '#EF4444',
+  secondaryDark: '#B51822',
+  bgDark: '#0d1a2e',
+  bgMid: '#142440',
+  surfaceGlass: 'rgba(26, 54, 93, 0.45)',
+  borderGlass: 'rgba(59, 130, 246, 0.12)',
+  shadowGlass: '0 4px 24px rgba(13, 26, 46, 0.6)',
+  textPrimary: '#eaf1ff',
+  textSecondary: '#94a3b8',
+  textMuted: '#64748b',
+  green: '#10b981',
+  greenLight: '#34d399',
+  amber: '#f59e0b',
+  amberLight: '#fbbf24',
+};
+
 const styles = {
   page: {
     minHeight: '100vh',
-    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
+    background: `linear-gradient(135deg, ${BRAND.bgDark} 0%, ${BRAND.bgMid} 50%, ${BRAND.bgDark} 100%)`,
     padding: '32px',
-    color: '#e2e8f0',
+    color: BRAND.textPrimary,
   } as React.CSSProperties,
   header: {
     marginBottom: 32,
@@ -73,30 +94,30 @@ const styles = {
   title: {
     fontSize: 32,
     fontWeight: 800,
-    color: '#f8fafc',
+    color: BRAND.textPrimary,
     letterSpacing: '-0.03em',
     fontFamily: "'Hanken Grotesk', sans-serif",
     margin: 0,
   } as React.CSSProperties,
   subtitle: {
-    color: '#94a3b8',
+    color: BRAND.textSecondary,
     marginTop: 6,
     fontSize: 14,
     fontWeight: 500,
   } as React.CSSProperties,
   glassCard: {
-    background: 'rgba(30, 41, 59, 0.7)',
+    background: BRAND.surfaceGlass,
     backdropFilter: 'blur(16px)',
-    border: '1px solid rgba(148, 163, 184, 0.1)',
+    border: `1px solid ${BRAND.borderGlass}`,
     borderRadius: 16,
     padding: 24,
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    boxShadow: '0 4px 24px rgba(0, 0, 0, 0.2)',
+    boxShadow: BRAND.shadowGlass,
   } as React.CSSProperties,
   sectionTitle: {
     fontSize: 15,
     fontWeight: 700,
-    color: '#f1f5f9',
+    color: BRAND.textPrimary,
     display: 'flex',
     alignItems: 'center',
     gap: 10,
@@ -163,9 +184,9 @@ function Dashboard() {
   const productosMostrados = activeTab === 'mas' ? (profit?.productos_mas_vendidos || []) : (profit?.productos_menos_vendidos || []);
 
   const insightStyles: Record<string, { gradient: string; border: string; iconColor: string }> = {
-    alerta: { gradient: 'linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(220,38,38,0.05) 100%)', border: 'rgba(239,68,68,0.3)', iconColor: '#f87171' },
+    alerta: { gradient: 'linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(181,24,34,0.05) 100%)', border: 'rgba(239,68,68,0.3)', iconColor: '#f87171' },
     oportunidad: { gradient: 'linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(217,119,6,0.05) 100%)', border: 'rgba(245,158,11,0.3)', iconColor: '#fbbf24' },
-    tendencia: { gradient: 'linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(37,99,235,0.05) 100%)', border: 'rgba(59,130,246,0.3)', iconColor: '#60a5fa' },
+    tendencia: { gradient: 'linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(26,54,93,0.05) 100%)', border: 'rgba(59,130,246,0.3)', iconColor: '#60a5fa' },
     sugerencia: { gradient: 'linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(5,150,105,0.05) 100%)', border: 'rgba(16,185,129,0.3)', iconColor: '#34d399' },
   };
 
@@ -187,12 +208,12 @@ function Dashboard() {
           </div>
           <div style={{
             padding: '10px 20px', borderRadius: 12,
-            background: 'rgba(16, 185, 129, 0.1)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
-            fontSize: 13, fontWeight: 600, color: '#34d399',
+            background: 'rgba(16,185,129,0.1)',
+            border: '1px solid rgba(16,185,129,0.3)',
+            fontSize: 13, fontWeight: 600, color: BRAND.greenLight,
             display: 'flex', alignItems: 'center', gap: 8,
           }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 8px #34d399', animation: 'pulse 2s infinite' }} />
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: BRAND.greenLight, boxShadow: `0 0 8px ${BRAND.greenLight}`, animation: 'pulse 2s infinite' }} />
             Tiempo real
           </div>
         </div>
@@ -211,8 +232,8 @@ function Dashboard() {
               <Brain size={18} color="#fff" />
             </div>
             <div>
-              <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f8fafc', margin: 0 }}>Insights IA</h2>
-              {aiLoading && <span style={{ fontSize: 12, color: '#94a3b8' }}>Analizando datos con GPT-4o-mini...</span>}
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: BRAND.textPrimary, margin: 0 }}>Insights IA</h2>
+              {aiLoading && <span style={{ fontSize: 12, color: BRAND.textSecondary }}>Analizando datos con GPT-4o-mini...</span>}
             </div>
           </div>
           {aiLoading ? (
@@ -221,7 +242,7 @@ function Dashboard() {
                 <div key={i} style={{
                   ...styles.glassCard,
                   height: 160,
-                  background: 'rgba(30, 41, 59, 0.4)',
+                  background: 'rgba(26, 54, 93, 0.35)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   <div className="msg-spinner" style={{ width: 24, height: 24, borderColor: '#8b5cf6', borderTopColor: 'transparent' }} />
@@ -255,8 +276,8 @@ function Dashboard() {
                         background: 'rgba(139,92,246,0.15)',
                       }}>IA</span>
                     </div>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 8, lineHeight: 1.3 }}>{insight.titulo}</p>
-                    <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.5, marginBottom: 14 }}>{insight.descripcion}</p>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: BRAND.textPrimary, marginBottom: 8, lineHeight: 1.3 }}>{insight.titulo}</p>
+                    <p style={{ fontSize: 12, color: BRAND.textSecondary, lineHeight: 1.5, marginBottom: 14 }}>{insight.descripcion}</p>
                     <div style={{
                       fontSize: 12, fontWeight: 600, color: s.iconColor,
                       display: 'flex', alignItems: 'flex-start', gap: 6,
@@ -280,12 +301,12 @@ function Dashboard() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
             <div style={{
               width: 36, height: 36, borderRadius: 10,
-              background: 'linear-gradient(135deg, #64748b, #94a3b8)',
+              background: 'linear-gradient(135deg, #1A365D, #2B6CB0)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               <Brain size={18} color="#fff" />
             </div>
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f8fafc', margin: 0 }}>Insights</h2>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: BRAND.textPrimary, margin: 0 }}>Insights</h2>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(insights.length, 3)}, 1fr)`, gap: 16 }}>
             {insights.slice(0, 3).map((insight, i) => {
@@ -302,8 +323,8 @@ function Dashboard() {
                       {insight.prioridad}
                     </span>
                   </div>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 8 }}>{insight.titulo}</p>
-                  <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.5, marginBottom: 14 }}>{insight.descripcion}</p>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: BRAND.textPrimary, marginBottom: 8 }}>{insight.titulo}</p>
+                  <p style={{ fontSize: 12, color: BRAND.textSecondary, lineHeight: 1.5, marginBottom: 14 }}>{insight.descripcion}</p>
                   <div style={{ fontSize: 12, fontWeight: 600, color: s.iconColor, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px', borderRadius: 8, background: `${s.iconColor}10` }}>
                     <Zap size={12} /> {insight.accion}
                   </div>
@@ -330,7 +351,7 @@ function Dashboard() {
               animationDelay: `${i * 60}ms`,
             }}
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = `0 12px 40px ${kpi.shadow}22`; e.currentTarget.style.borderColor = `${kpi.shadow}44`; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.2)'; e.currentTarget.style.borderColor = 'rgba(148,163,184,0.1)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.2)'; e.currentTarget.style.borderColor = 'rgba(59,130,246,0.1)'; }}
             >
               <div style={{
                 width: 52, height: 52, borderRadius: 14,
@@ -341,9 +362,9 @@ function Dashboard() {
                 <Icon size={24} color="#fff" />
               </div>
               <div>
-                <div style={{ color: '#94a3b8', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{kpi.label}</div>
-                <div style={{ fontSize: 28, fontWeight: 800, color: '#f8fafc', marginTop: 2, fontFamily: "'Hanken Grotesk', sans-serif", letterSpacing: '-0.03em' }}>{kpi.value}</div>
-                {kpi.sub && <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{kpi.sub}</div>}
+                <div style={{ color: BRAND.textSecondary, fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{kpi.label}</div>
+                <div style={{ fontSize: 28, fontWeight: 800, color: BRAND.textPrimary, marginTop: 2, fontFamily: "'Hanken Grotesk', sans-serif", letterSpacing: '-0.03em' }}>{kpi.value}</div>
+                {kpi.sub && <div style={{ fontSize: 11, color: BRAND.textMuted, marginTop: 2 }}>{kpi.sub}</div>}
               </div>
             </div>
           );
@@ -367,7 +388,7 @@ function Dashboard() {
                 padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 12,
               }}
                 onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = `${item.color}44`; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'rgba(148,163,184,0.1)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'rgba(59,130,246,0.1)'; }}
               >
                 <div style={{
                   width: 38, height: 38, borderRadius: 10,
@@ -377,8 +398,8 @@ function Dashboard() {
                   <Icon size={17} style={{ color: item.color }} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 10, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.label}</div>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: '#f1f5f9', fontFamily: "'Hanken Grotesk', sans-serif" }}>{formatNumber(item.value)}</div>
+                  <div style={{ fontSize: 10, color: BRAND.textMuted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.label}</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: BRAND.textPrimary, fontFamily: "'Hanken Grotesk', sans-serif" }}>{formatNumber(item.value)}</div>
                 </div>
               </div>
             );
@@ -404,17 +425,17 @@ function Dashboard() {
             {tendencias && tendencias.tendencias.length > 0 ? (
               <ResponsiveContainer width="100%" height={240}>
                 <LineChart data={tendencias.tendencias}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.1)" />
-                  <XAxis dataKey="fecha" tick={{ fontSize: 10, fill: '#64748b' }} tickFormatter={v => v.slice(5)} interval={6} />
-                  <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
-                  <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid rgba(148,163,184,0.2)', background: '#1e293b', color: '#e2e8f0', fontSize: 12 }} />
-                  <Legend wrapperStyle={{ fontSize: 11, color: '#94a3b8' }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(59,130,246,0.1)" />
+                  <XAxis dataKey="fecha" tick={{ fontSize: 10, fill: BRAND.textMuted }} tickFormatter={v => v.slice(5)} interval={6} />
+                  <YAxis tick={{ fontSize: 10, fill: BRAND.textMuted }} />
+                  <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid rgba(59,130,246,0.2)', background: BRAND.bgMid, color: BRAND.textPrimary, fontSize: 12 }} />
+                  <Legend wrapperStyle={{ fontSize: 11, color: BRAND.textSecondary }} />
                   <Line type="monotone" dataKey="leads" stroke="#60a5fa" strokeWidth={2.5} dot={{ fill: '#60a5fa', r: 3 }} activeDot={{ r: 5 }} name="Leads" />
                   <Line type="monotone" dataKey="ventas" stroke="#34d399" strokeWidth={2.5} dot={{ fill: '#34d399', r: 3 }} activeDot={{ r: 5 }} name="Ventas" />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div style={{ textAlign: 'center', padding: '50px 0', color: '#475569' }}>
+              <div style={{ textAlign: 'center', padding: '50px 0', color: BRAND.textMuted }}>
                 <TrendingUp size={40} style={{ opacity: 0.2, marginBottom: 10 }} />
                 <p style={{ fontSize: 13, fontWeight: 600 }}>Sin datos de tendencias</p>
               </div>
@@ -440,7 +461,7 @@ function Dashboard() {
                   }}>
                     {formatTime(respuesta.promedio_general_segundos)}
                   </div>
-                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>Promedio general</div>
+                  <div style={{ fontSize: 12, color: BRAND.textMuted, marginTop: 4 }}>Promedio general</div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 18 }}>
                   <div style={{ padding: 14, borderRadius: 12, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', textAlign: 'center' }}>
@@ -458,17 +479,17 @@ function Dashboard() {
                       <div key={c.canal} style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                         padding: '8px 12px', borderRadius: 8,
-                        background: 'rgba(148,163,184,0.05)',
+                        background: 'rgba(59,130,246,0.05)',
                       }}>
-                        <span style={{ fontSize: 12, color: '#94a3b8', textTransform: 'capitalize' }}>{c.canal}</span>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>{formatTime(c.promedio_segundos)}</span>
+                        <span style={{ fontSize: 12, color: BRAND.textSecondary, textTransform: 'capitalize' }}>{c.canal}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: BRAND.textPrimary }}>{formatTime(c.promedio_segundos)}</span>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: '#475569' }}>
+              <div style={{ textAlign: 'center', padding: '40px 0', color: BRAND.textMuted }}>
                 <Timer size={36} style={{ opacity: 0.2, marginBottom: 8 }} />
                 <p style={{ fontSize: 12, fontWeight: 600 }}>Sin datos</p>
               </div>
@@ -490,9 +511,9 @@ function Dashboard() {
             </div>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={data.traffic}>
-                <XAxis dataKey="canal" tick={{ fontSize: 12, fill: '#94a3b8' }} />
-                <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
-                <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid rgba(148,163,184,0.2)', background: '#1e293b', color: '#e2e8f0', fontSize: 12 }} />
+                <XAxis dataKey="canal" tick={{ fontSize: 12, fill: BRAND.textSecondary }} />
+                <YAxis tick={{ fontSize: 10, fill: BRAND.textMuted }} />
+                <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid rgba(59,130,246,0.2)', background: BRAND.bgMid, color: BRAND.textPrimary, fontSize: 12 }} />
                 <Bar dataKey="total" radius={[8, 8, 0, 0]} barSize={44}>
                   {data.traffic.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                 </Bar>
@@ -514,10 +535,10 @@ function Dashboard() {
                 return (
                   <div key={item.etapa}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>{item.etapa}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: BRAND.textPrimary }}>{item.etapa}</span>
                       <span style={{ fontSize: 16, fontWeight: 800, color: item.color, fontFamily: "'Hanken Grotesk', sans-serif" }}>{formatNumber(item.valor)}</span>
                     </div>
-                    <div style={{ height: 10, background: 'rgba(148,163,184,0.1)', borderRadius: 5, overflow: 'hidden' }}>
+                    <div style={{ height: 10, background: 'rgba(59,130,246,0.1)', borderRadius: 5, overflow: 'hidden' }}>
                       <div style={{
                         height: '100%', width: `${pct}%`,
                         background: `linear-gradient(90deg, ${item.color}, ${item.color}aa)`,
@@ -550,12 +571,12 @@ function Dashboard() {
                   <div key={a.id} style={{
                     display: 'flex', alignItems: 'center', gap: 12,
                     padding: '12px 14px', borderRadius: 12,
-                    background: 'rgba(148,163,184,0.05)',
-                    border: '1px solid rgba(148,163,184,0.08)',
+                    background: 'rgba(59,130,246,0.05)',
+                    border: '1px solid rgba(59,130,246,0.08)',
                     transition: 'all 0.2s',
                   }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(148,163,184,0.1)'; e.currentTarget.style.borderColor = 'rgba(148,163,184,0.15)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(148,163,184,0.05)'; e.currentTarget.style.borderColor = 'rgba(148,163,184,0.08)'; }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(59,130,246,0.1)'; e.currentTarget.style.borderColor = 'rgba(59,130,246,0.15)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(59,130,246,0.05)'; e.currentTarget.style.borderColor = 'rgba(59,130,246,0.08)'; }}
                   >
                     <div style={{
                       width: 36, height: 36, borderRadius: 10,
@@ -566,8 +587,8 @@ function Dashboard() {
                       {a.nombre.charAt(0).toUpperCase()}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: '#f1f5f9' }}>{a.nombre}</div>
-                      <div style={{ fontSize: 11, color: '#64748b' }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: BRAND.textPrimary }}>{a.nombre}</div>
+                      <div style={{ fontSize: 11, color: BRAND.textMuted }}>
                         {a.chats_asignados} chats · {a.ventas_cerradas} ventas · {formatTime(a.tiempo_respuesta_promedio)}
                       </div>
                     </div>
@@ -583,13 +604,13 @@ function Dashboard() {
                       }}>
                         {a.tasa_conversion}%
                       </div>
-                      <div style={{ fontSize: 9, color: '#64748b' }}>conversion</div>
+                      <div style={{ fontSize: 9, color: BRAND.textMuted }}>conversion</div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: '#475569' }}>
+              <div style={{ textAlign: 'center', padding: '40px 0', color: BRAND.textMuted }}>
                 <Users size={36} style={{ opacity: 0.2, marginBottom: 8 }} />
                 <p style={{ fontSize: 12, fontWeight: 600 }}>Sin datos de agentes</p>
               </div>
@@ -608,13 +629,13 @@ function Dashboard() {
               <div>
                 {demanda.busquedas_populares.length > 0 && (
                   <div style={{ marginBottom: 16 }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: '#64748b', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Lo que buscan</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: BRAND.textMuted, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Lo que buscan</div>
                     {demanda.busquedas_populares.slice(0, 4).map((b, i) => (
                       <div key={i} style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        padding: '8px 0', borderBottom: '1px solid rgba(148,163,184,0.08)',
+                        padding: '8px 0', borderBottom: '1px solid rgba(59,130,246,0.08)',
                       }}>
-                        <span style={{ fontSize: 12, color: '#e2e8f0', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.termino}</span>
+                        <span style={{ fontSize: 12, color: BRAND.textPrimary, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.termino}</span>
                         <span style={{ fontSize: 13, fontWeight: 700, color: '#60a5fa', marginLeft: 8 }}>{b.total}</span>
                       </div>
                     ))}
@@ -622,7 +643,7 @@ function Dashboard() {
                 )}
                 {demanda.marcas_populares.length > 0 && (
                   <div>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: '#64748b', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Marcas</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: BRAND.textMuted, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Marcas</div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                       {demanda.marcas_populares.slice(0, 5).map((m, i) => (
                         <span key={i} style={{
@@ -646,12 +667,12 @@ function Dashboard() {
                     <div style={{ fontSize: 12, fontWeight: 700, color: '#f87171' }}>
                       {demanda.busquedas_sin_venta} busquedas sin venta
                     </div>
-                    <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>Clientes buscaron pero no compraron</div>
+                    <div style={{ fontSize: 11, color: BRAND.textSecondary, marginTop: 4 }}>Clientes buscaron pero no compraron</div>
                   </div>
                 )}
               </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: '#475569' }}>
+              <div style={{ textAlign: 'center', padding: '40px 0', color: BRAND.textMuted }}>
                 <Package size={36} style={{ opacity: 0.2, marginBottom: 8 }} />
                 <p style={{ fontSize: 12, fontWeight: 600 }}>Sin datos de demanda</p>
               </div>
@@ -670,7 +691,7 @@ function Dashboard() {
               </div>
               Productos Profit
             </div>
-            <div style={{ display: 'flex', gap: 4, background: 'rgba(148,163,184,0.08)', borderRadius: 8, padding: 4 }}>
+            <div style={{ display: 'flex', gap: 4, background: 'rgba(59,130,246,0.08)', borderRadius: 8, padding: 4 }}>
               {[
                 { key: 'mas' as const, label: 'Top', icon: ArrowUp, color: '#34d399' },
                 { key: 'menos' as const, label: 'Bajo', icon: ArrowDown, color: '#f87171' },
@@ -680,8 +701,8 @@ function Dashboard() {
                   <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
                     padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 600,
                     border: 'none', cursor: 'pointer',
-                    background: activeTab === tab.key ? 'rgba(148,163,184,0.15)' : 'transparent',
-                    color: activeTab === tab.key ? '#f1f5f9' : '#64748b',
+                    background: activeTab === tab.key ? 'rgba(59,130,246,0.15)' : 'transparent',
+                    color: activeTab === tab.key ? BRAND.textPrimary : BRAND.textMuted,
                     display: 'flex', alignItems: 'center', gap: 5,
                     transition: 'all 0.2s',
                   }}>
@@ -692,12 +713,12 @@ function Dashboard() {
             </div>
           </div>
           {profitLoading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[1,2,3,4,5].map(i => <div key={i} style={{ height: 40, borderRadius: 8, background: 'rgba(148,163,184,0.05)' }} />)}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[1,2,3,4,5].map(i => <div key={i} style={{ height: 40, borderRadius: 8, background: 'rgba(59,130,246,0.05)' }} />)}</div>
           ) : profitError ? (
-            <div style={{ textAlign: 'center', padding: '30px 0', color: '#475569' }}>
+            <div style={{ textAlign: 'center', padding: '30px 0', color: BRAND.textMuted }}>
               <ShoppingCart size={36} style={{ opacity: 0.2, marginBottom: 8 }} />
               <p style={{ fontSize: 12, fontWeight: 600 }}>Profit no conectado</p>
-              <p style={{ fontSize: 11, marginTop: 4, color: '#64748b' }}>Configura PROFIT_API_URL</p>
+              <p style={{ fontSize: 11, marginTop: 4, color: BRAND.textMuted }}>Configura PROFIT_API_URL</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -705,11 +726,11 @@ function Dashboard() {
                 <div key={p.co_art} style={{
                   display: 'flex', alignItems: 'center', gap: 12,
                   padding: '10px 12px', borderRadius: 10,
-                  background: 'rgba(148,163,184,0.03)',
+                  background: 'rgba(59,130,246,0.03)',
                   transition: 'background 0.15s',
                 }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(148,163,184,0.08)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(148,163,184,0.03)'}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.08)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(59,130,246,0.03)'}
                 >
                   <div style={{
                     width: 28, height: 28, borderRadius: 7,
@@ -719,10 +740,10 @@ function Dashboard() {
                     color: activeTab === 'mas' ? '#34d399' : '#f87171',
                   }}>{i + 1}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: '#e2e8f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.art_des}</div>
-                    <div style={{ fontSize: 10, color: '#64748b' }}>{formatNumber(p.cantidad_vendida)} uds</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: BRAND.textPrimary, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.art_des}</div>
+                    <div style={{ fontSize: 10, color: BRAND.textMuted }}>{formatNumber(p.cantidad_vendida)} uds</div>
                   </div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>{formatCurrency(p.total_vendido)}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: BRAND.textPrimary }}>{formatCurrency(p.total_vendido)}</div>
                 </div>
               ))}
             </div>
@@ -737,7 +758,7 @@ function Dashboard() {
             Ubicacion de Clientes
           </div>
           {profitLoading ? (
-            <div style={{ height: 300, borderRadius: 12, background: 'rgba(148,163,184,0.05)' }} />
+            <div style={{ height: 300, borderRadius: 12, background: 'rgba(59,130,246,0.05)' }} />
           ) : (
             <VenezuelaMap clientes={profit?.clientes_ubicacion || []} />
           )}
