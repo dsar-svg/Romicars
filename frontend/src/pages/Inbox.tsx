@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Search, Send, MessageSquare, Bot, CheckCheck, Paperclip, Phone, PanelRightOpen, PanelRightClose, FileText, X, UserCheck, UserPlus, Trash2, Pin, CircleDot, AlertTriangle, Star, Inbox as InboxIcon } from 'lucide-react';
+import { Search, Send, MessageSquare, Bot, CheckCheck, Paperclip, Phone, PanelRightOpen, PanelRightClose, FileText, X, UserCheck, UserPlus, Trash2, Pin, CircleDot, AlertTriangle, Star, Inbox as InboxIcon, Sparkles } from 'lucide-react';
 import { clientesApi, mensajesApi } from '../services/api';
 import { connectSocket, getSocket } from '../services/socket';
 import { toast } from '../components/Toast';
@@ -648,8 +648,8 @@ function Inbox() {
                 onMouseEnter={e => { if (!filtroIA) { e.currentTarget.style.background = t.hoverBg; e.currentTarget.style.borderColor = 'rgba(139,92,246,0.3)'; } }}
                 onMouseLeave={e => { if (!filtroIA) { e.currentTarget.style.background = t.subtleBg; e.currentTarget.style.borderColor = t.borderCard; } }}
               >
-                <Bot size={13} />
-                IA
+                <Sparkles size={13} />
+                Analizados
               </button>
             </div>
 
@@ -687,7 +687,7 @@ function Inbox() {
               {[
                 { key: 'sin_asignar', label: 'Sin Asignar', icon: UserPlus, color: '#F59E0B' },
                 { key: 'mis_chats', label: 'Mis Chats', icon: UserCheck, color: '#3B82F6' },
-                { key: 'bot', label: 'Bot', icon: Bot, color: '#8b5cf6' },
+                { key: 'bot', label: 'En Bot', icon: Bot, color: '#8b5cf6' },
               ].map(f => {
                 const active = filtroAtencion === f.key;
                 return (

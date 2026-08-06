@@ -10,6 +10,10 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LineCh
 import api from '../services/api';
 import VenezuelaMap from '../components/VenezuelaMap';
 import { useTheme } from '../hooks/useTheme';
+import {
+  DEMO_ANALYTICS, DEMO_TENDENCIAS, DEMO_RESPUESTA,
+  DEMO_AGENTES, DEMO_DEMANDA, DEMO_AI_INSIGHTS, DEMO_INSIGHTS, DEMO_PROFIT,
+} from '../data/demo';
 
 interface AnalyticsData {
   total_leads: number;
@@ -201,27 +205,57 @@ function Dashboard() {
   const [profit, setProfit] = useState<ProfitData | null>(null);
   const [loading, setLoading] = useState(true);
   const [profitLoading, setProfitLoading] = useState(true);
-  const [profitError, setProfitError] = useState(false);
   const [activeTab, setActiveTab] = useState<'mas' | 'menos'>('mas');
 
   useEffect(() => {
     Promise.all([
-      api.get('/analytics').then(r => setData(r.data)),
-      api.get('/analytics/tendencias').then(r => setTendencias(r.data)),
-      api.get('/analytics/respuesta').then(r => setRespuesta(r.data)),
-      api.get('/analytics/agentes').then(r => setAgentes(r.data.agentes)),
-      api.get('/analytics/demanda').then(r => setDemanda(r.data)),
-      api.get('/analytics/insights').then(r => setInsights(r.data.insights)),
-    ]).catch(() => {}).finally(() => setLoading(false));
+      api.get('/analytics').then(r => {
+        const d = r.data;
+        setData(d.total_leads === 0 ? DEMO_ANALYTICS : d);
+      }),
+      api.get('/analytics/tendencias').then(r => {
+        const d = r.data;
+        setTendencias(!d.tendencias || d.tendencias.length === 0 ? DEMO_TENDENCIAS : d);
+      }),
+      api.get('/analytics/respuesta').then(r => {
+        const d = r.data;
+        setRespuesta(d.total_conversaciones === 0 ? DEMO_RESPUESTA : d);
+      }),
+      api.get('/analytics/agentes').then(r => {
+        const a = r.data.agentes;
+        setAgentes(!a || a.length === 0 ? DEMO_AGENTES : a);
+      }),
+      api.get('/analytics/demanda').then(r => {
+        const d = r.data;
+        setDemanda(d.total_con_busqueda === 0 ? DEMO_DEMANDA : d);
+      }),
+      api.get('/analytics/insights').then(r => {
+        const d = r.data.insights;
+        setInsights(!d || d.length === 0 ? DEMO_INSIGHTS : d);
+      }),
+    ]).catch(() => {
+      setData(DEMO_ANALYTICS);
+      setTendencias(DEMO_TENDENCIAS);
+      setRespuesta(DEMO_RESPUESTA);
+      setAgentes(DEMO_AGENTES);
+      setDemanda(DEMO_DEMANDA);
+      setInsights(DEMO_INSIGHTS);
+    }).finally(() => setLoading(false));
 
     api.get('/analytics/ai-insights')
-      .then(r => setAiInsights(r.data.insights))
-      .catch(() => {})
+      .then(r => {
+        const d = r.data.insights;
+        setAiInsights(!d || d.length === 0 ? DEMO_AI_INSIGHTS : d);
+      })
+      .catch(() => setAiInsights(DEMO_AI_INSIGHTS))
       .finally(() => setAiLoading(false));
 
     api.get('/analytics/profit')
-      .then(r => setProfit(r.data))
-      .catch(() => setProfitError(true))
+      .then(r => {
+        const d = r.data;
+        setProfit(!d.productos_mas_vendidos || d.productos_mas_vendidos.length === 0 ? DEMO_PROFIT : d);
+      })
+      .catch(() => setProfit(DEMO_PROFIT))
       .finally(() => setProfitLoading(false));
   }, []);
 
