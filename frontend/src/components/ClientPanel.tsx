@@ -3,6 +3,7 @@ import { X, Phone, Car, ShoppingCart, Bell, FileText, History, Save } from 'luci
 import { clientesApi, mensajesApi } from '../services/api';
 import { connectSocket } from '../services/socket';
 import { toast } from './Toast';
+import { useTheme } from '../hooks/useTheme';
 import type { Cliente, Mensaje } from '../types';
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function ClientPanel({ cliente: initial, onClose }: Props) {
+  const t = useTheme();
   const [cliente, setCliente] = useState<Cliente>(initial);
   const [saving, setSaving] = useState(false);
   const [historial, setHistorial] = useState<Mensaje[]>([]);
@@ -78,7 +80,7 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
       <div style={{
         padding: '16px 16px', borderBottom: '1px solid var(--outline)',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        background: '#FAFBFC',
+        background: t.surfaceDim,
       }}>
         <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
           <FileText size={16} /> Ficha del Cliente
@@ -172,7 +174,7 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
           display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, cursor: 'pointer',
           padding: '10px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--outline)',
           transition: 'border-color 0.2s, background 0.2s',
-          background: cliente.acepta_promos ? '#ECFDF5' : '#fff',
+          background: cliente.acepta_promos ? t.greenBg : t.bgCard,
           borderColor: cliente.acepta_promos ? '#6EE7B7' : 'var(--outline)',
         }}>
           <input
@@ -188,7 +190,7 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
 
         {cliente.resumen_busqueda && (
           <div style={{
-            padding: '12px 14px', background: '#F0F4FF', borderRadius: 10, fontSize: 13,
+            padding: '12px 14px', background: t.blueBg, borderRadius: 10, fontSize: 13,
             border: '1px solid var(--outline)', borderLeft: '3px solid var(--primary)',
           }}>
             <div style={{ fontWeight: 600, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--primary)' }}>
@@ -216,7 +218,7 @@ export default function ClientPanel({ cliente: initial, onClose }: Props) {
               historial.slice(-20).reverse().map((msg, i) => (
                 <div key={msg.id} className="fade-in" style={{
                   padding: '8px 10px', marginBottom: 6, borderRadius: 8,
-                  background: msg.remitente === 'agente' ? '#FEF2F2' : msg.remitente === 'bot' ? 'var(--surface-dim)' : 'var(--surface-card)',
+                  background: msg.remitente === 'agente' ? t.redBg : msg.remitente === 'bot' ? t.subtleBg : t.bgCard,
                   border: '1px solid var(--outline)',
                   animationDelay: `${i * 30}ms`,
                 }}>

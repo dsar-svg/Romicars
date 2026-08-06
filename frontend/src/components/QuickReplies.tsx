@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Zap, Command } from 'lucide-react';
 import { snippetsApi } from '../services/api';
+import { useTheme } from '../hooks/useTheme';
 import { toast } from './Toast';
 import type { Snippet } from '../types';
 
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function QuickReplies({ onSelect, onClose }: Props) {
+  const t = useTheme();
   const [snippets, setSnippets] = useState<Snippet[]>([]);
   const [search, setSearch] = useState('');
   const [selectedIdx, setSelectedIdx] = useState(0);
@@ -85,7 +87,7 @@ export default function QuickReplies({ onSelect, onClose }: Props) {
   return (
     <div ref={panelRef} style={{
       position: 'absolute', bottom: '100%', left: 0, right: 0, marginBottom: 6,
-      background: '#fff', borderRadius: 14, boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+      background: t.surfaceCard, borderRadius: 14, boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
       border: '1px solid #e5e7eb', maxHeight: 320, display: 'flex', flexDirection: 'column',
       zIndex: 50, overflow: 'hidden',
     }}>

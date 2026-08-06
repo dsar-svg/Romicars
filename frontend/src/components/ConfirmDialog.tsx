@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { AlertTriangle, Trash2, Info } from 'lucide-react';
+import { useTheme } from '../hooks/useTheme';
 
 interface Props {
   titulo: string;
@@ -15,6 +16,7 @@ export default function ConfirmDialog({
   titulo, mensaje, onConfirmar, onCancelar,
   tipo = 'peligro', textoConfirmar = 'Aceptar', textoCancelar = 'Cancelar',
 }: Props) {
+  const t = useTheme();
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -37,7 +39,7 @@ export default function ConfirmDialog({
       zIndex: 99999, backdropFilter: 'blur(2px)',
     }} onClick={onCancelar}>
       <div ref={dialogRef} onClick={e => e.stopPropagation()} style={{
-        background: '#fff', borderRadius: 16, padding: 0,
+        background: t.surfaceCard, borderRadius: 16, padding: 0,
         width: 380, maxWidth: '90vw', boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
         animation: 'confirmSlideIn 0.2s ease-out',
         overflow: 'hidden',
@@ -71,11 +73,11 @@ export default function ConfirmDialog({
         }}>
           <button onClick={onCancelar} style={{
             padding: '10px 20px', borderRadius: 10, fontSize: 14, fontWeight: 600,
-            border: '1px solid #e5e7eb', background: '#fff', color: '#374151',
+            border: '1px solid var(--outline)', background: t.surfaceCard, color: t.textPrimary,
             cursor: 'pointer', transition: 'all 0.15s',
           }}
             onMouseEnter={e => e.currentTarget.style.background = '#f9fafb'}
-            onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+            onMouseLeave={e => e.currentTarget.style.background = t.surfaceCard}
           >
             {textoCancelar}
           </button>

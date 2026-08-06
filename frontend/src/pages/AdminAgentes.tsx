@@ -75,7 +75,7 @@ export default function AdminAgentes() {
       </div>
 
       {error && (
-        <p style={{ color: '#DC2626', fontSize: 13, padding: '10px 14px', background: '#FEF2F2', borderRadius: 8, marginBottom: 18 }}>
+        <p style={{ color: t.redText, fontSize: 13, padding: '10px 14px', background: t.redBg, borderRadius: 8, marginBottom: 18 }}>
           {error}
         </p>
       )}

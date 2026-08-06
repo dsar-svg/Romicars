@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Send, Trash2, StickyNote } from 'lucide-react';
 import { notasApi } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../hooks/useTheme';
 import { toast } from './Toast';
 import ConfirmDialog from './ConfirmDialog';
 import type { NotaInterna } from '../types';
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export default function InternalNotes({ clienteId, onClose }: Props) {
+  const t = useTheme();
   const { agente } = useAuth();
   const [notas, setNotas] = useState<NotaInterna[]>([]);
   const [nuevaNota, setNuevaNota] = useState('');
@@ -57,7 +59,7 @@ export default function InternalNotes({ clienteId, onClose }: Props) {
 
   return (
     <div style={{
-      width: 320, background: '#fff', borderLeft: '1px solid #e5e7eb',
+      width: 320, background: t.surfaceCard, borderLeft: '1px solid var(--outline)',
       display: 'flex', flexDirection: 'column', flexShrink: 0,
     }}>
       <div style={{
@@ -89,7 +91,7 @@ export default function InternalNotes({ clienteId, onClose }: Props) {
         ) : notas.length === 0 ? (
           <div style={{ padding: 40, textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>
             <div style={{
-              width: 48, height: 48, borderRadius: 12, background: '#FEF3C7',
+              width: 48, height: 48, borderRadius: 12, background: t.amberBg,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto 12px',
             }}>
@@ -144,7 +146,7 @@ export default function InternalNotes({ clienteId, onClose }: Props) {
         )}
       </div>
 
-      <div style={{ padding: '12px 14px', borderTop: '1px solid #e5e7eb', background: '#fff' }}>
+      <div style={{ padding: '12px 14px', borderTop: '1px solid var(--outline)', background: t.surfaceCard }}>
         <div style={{ display: 'flex', gap: 8 }}>
           <textarea
             value={nuevaNota}

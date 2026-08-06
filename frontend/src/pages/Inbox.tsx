@@ -578,7 +578,7 @@ function Inbox() {
           display: 'flex', flexDirection: 'column', flexShrink: 0,
         }}>
           {/* Búsqueda + filtros rápidos */}
-          <div style={{ padding: '16px 16px 12px', borderBottom: '1px solid #e0e8f0' }}>
+          <div style={{ padding: '16px 16px 12px', borderBottom: `1px solid ${t.borderCard}` }}>
             <div style={{ position: 'relative', marginBottom: 10 }}>
               <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#8896ab', pointerEvents: 'none' }} />
               <input
@@ -727,7 +727,7 @@ function Inbox() {
                             <div style={{
                               position: 'absolute', bottom: -1, right: -1,
                               width: 16, height: 16, borderRadius: '50%',
-                              background: '#fff',
+                              background: t.bgCard,
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
                               boxShadow: '0 0 0 1.5px #fff',
                             }}>
@@ -851,7 +851,7 @@ function Inbox() {
               <>
                 {/* Chat Header */}
                 <div style={{
-                  padding: '12px 20px', borderBottom: '1px solid #e0e8f0',
+                  padding: '12px 20px', borderBottom: `1px solid ${t.borderCard}`,
                   background: t.bgCard,
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -989,7 +989,7 @@ function Inbox() {
                 </div>
 
                 {searchMode && (
-                  <div style={{ padding: '8px 20px', borderBottom: '1px solid #e0e8f0', background: t.bgCard }}>
+                  <div style={{ padding: '8px 20px', borderBottom: `1px solid ${t.borderCard}`, background: t.bgCard }}>
                     <input autoFocus
                       value={searchMsg}
                       onChange={e => setSearchMsg(e.target.value)}
@@ -1315,7 +1315,7 @@ function Inbox() {
                 {/* Pending attachment preview */}
                 {pendingAttach && (
                   <div style={{
-                    padding: '8px 20px', background: t.redBg, borderTop: '1px solid #e0e8f0',
+                    padding: '8px 20px', background: t.redBg, borderTop: `1px solid ${t.borderCard}`,
                     display: 'flex', alignItems: 'center', gap: 10, fontSize: 13,
                   }}>
                     {pendingAttach._loading ? (
@@ -1339,7 +1339,7 @@ function Inbox() {
                 {/* Input */}
                 <div style={{
                   padding: '12px 20px',
-                  borderTop: pendingAttach ? 'none' : '1px solid #e0e8f0',
+                  borderTop: pendingAttach ? 'none' : `1px solid ${t.borderCard}`,
                   background: t.bgCard,
                   display: 'flex', gap: 8, alignItems: 'center',
                 }}>

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Smile } from 'lucide-react';
+import { useTheme } from '../hooks/useTheme';
 
 const categories = [
   {
@@ -33,6 +34,7 @@ interface EmojiPickerProps {
 }
 
 export default function EmojiPicker({ onSelect }: EmojiPickerProps) {
+  const t = useTheme();
   const [open, setOpen] = useState(false);
   const [cat, setCat] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
@@ -55,7 +57,7 @@ export default function EmojiPicker({ onSelect }: EmojiPickerProps) {
       <button onClick={() => setOpen(!open)} style={{
         width: 36, height: 36, borderRadius: '50%',
         border: open ? '2px solid #b51822' : '1px solid #e0e8f0',
-        background: open ? 'rgba(181,24,34,0.08)' : '#fff',
+        background: open ? 'rgba(181,24,34,0.08)' : t.surfaceCard,
         display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
         flexShrink: 0,
       }}>
@@ -65,7 +67,7 @@ export default function EmojiPicker({ onSelect }: EmojiPickerProps) {
         <div style={{
           position: 'absolute', bottom: 44, right: 0, zIndex: 100,
           width: 280, maxHeight: 300,
-          background: '#fff', borderRadius: 12,
+          background: t.surfaceCard, borderRadius: 12,
           boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
           border: '1px solid #e0e8f0',
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
