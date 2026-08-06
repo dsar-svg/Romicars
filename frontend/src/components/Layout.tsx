@@ -10,8 +10,8 @@ declare global {
 }
 
 const navItems = [
-  { path: '/inbox', label: 'Inbox', icon: MessageSquare },
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/inbox', label: 'Inbox', icon: MessageSquare },
   { path: '/campanas', label: 'Campañas', icon: Send },
 ];
 

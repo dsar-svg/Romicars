@@ -9,18 +9,7 @@ import {
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LineChart, Line, CartesianGrid, Legend } from 'recharts';
 import api from '../services/api';
 import VenezuelaMap from '../components/VenezuelaMap';
-
-function useTheme() {
-  const [dark, setDark] = useState(() => document.documentElement.getAttribute('data-theme') === 'dark');
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      setDark(document.documentElement.getAttribute('data-theme') === 'dark');
-    });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-    return () => observer.disconnect();
-  }, []);
-  return dark;
-}
+import { useTheme } from '../hooks/useTheme';
 
 interface AnalyticsData {
   total_leads: number;
@@ -197,8 +186,8 @@ function makeStyles(T: typeof BRAND_DARK) {
 }
 
 function Dashboard() {
-  const dark = useTheme();
-  const T = dark ? BRAND_DARK : BRAND_LIGHT;
+  const theme = useTheme();
+  const T = theme.dark ? BRAND_DARK : BRAND_LIGHT;
   const styles = makeStyles(T);
 
   const [data, setData] = useState<AnalyticsData | null>(null);

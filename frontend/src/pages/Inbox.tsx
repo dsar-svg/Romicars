@@ -18,6 +18,7 @@ import TypingIndicator from '../components/TypingIndicator';
 import InternalNotes from '../components/InternalNotes';
 import QuickReplies from '../components/QuickReplies';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { useTheme } from '../hooks/useTheme';
 
 const canalIcono: Record<string, string> = {
   whatsapp: '/icons.svg#whatsapp',
@@ -61,6 +62,7 @@ function Inbox() {
   const { clienteId } = useParams();
   const navigate = useNavigate();
   const { agente } = useAuth();
+  const t = useTheme();
   const prevClienteId = useRef<string | undefined>(undefined);
   const currentClienteId = useRef<number | null>(null);
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -569,10 +571,10 @@ function Inbox() {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.4; }
         }
-      `}</style><div style={{ display: 'flex', height: '100%', overflow: 'hidden', background: '#f6f9fc' }}>
+      `}</style><div style={{ display: 'flex', height: '100%', overflow: 'hidden', background: t.bgPage }}>
         {/* Left panel — lista conversaciones */}
         <div style={{
-          width: 350, background: '#fff', borderRight: '1px solid #e0e8f0',
+          width: 350, background: t.bgCard, borderRight: '1px solid' + t.borderCard,
           display: 'flex', flexDirection: 'column', flexShrink: 0,
         }}>
           {/* Búsqueda + filtros rápidos */}
@@ -585,10 +587,10 @@ function Inbox() {
                 onChange={e => setSearchTerm(e.target.value)}
                 style={{
                   width: '100%', padding: '9px 12px 9px 36px', borderRadius: 8, fontSize: 13,
-                  border: '1px solid #e0e8f0', background: '#f6f9fc', outline: 'none',
-                  fontFamily: "'Inter', sans-serif",
-                }}
-              />
+                    border: '1px solid' + t.borderCard, background: t.bgInput, outline: 'none',
+                    fontFamily: "'Inter', sans-serif",
+                  }}
+                />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <div style={{ display: 'flex', gap: 4 }}>
@@ -603,7 +605,7 @@ function Inbox() {
                       padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
                       background: canalFiltro === f.key ? (f.key === 'todos' ? '#002045' : '#b51822') : 'transparent',
                       color: canalFiltro === f.key ? '#fff' : '#8896ab',
-                      border: canalFiltro === f.key ? 'none' : '1px solid #e0e8f0',
+                      border: canalFiltro === f.key ? 'none' : '1px solid' + t.borderCard,
                       cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                       display: 'flex', alignItems: 'center', gap: 4,
                     }}>
@@ -620,7 +622,7 @@ function Inbox() {
                     padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
                     background: filtroIA ? '#b51822' : 'transparent',
                     color: filtroIA ? '#fff' : '#8896ab',
-                    border: filtroIA ? 'none' : '1px solid #e0e8f0',
+                    border: filtroIA ? 'none' : '1px solid' + t.borderCard,
                     cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                     display: 'flex', alignItems: 'center', gap: 4,
                   }}>
@@ -640,7 +642,7 @@ function Inbox() {
                       padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
                       background: urgenciaFiltro === f.key ? (f.key === 'urgentes' ? '#b51822' : '#002045') : 'transparent',
                       color: urgenciaFiltro === f.key ? '#fff' : '#8896ab',
-                      border: urgenciaFiltro === f.key ? 'none' : '1px solid #e0e8f0',
+                      border: urgenciaFiltro === f.key ? 'none' : '1px solid' + t.borderCard,
                       cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                       display: 'flex', alignItems: 'center', gap: 4,
                     }}>
@@ -665,7 +667,7 @@ function Inbox() {
                         ? (f.key === 'sin_asignar' ? '#D97706' : f.key === 'mis_chats' ? '#002045' : '#b51822')
                         : 'transparent',
                       color: filtroAtencion === f.key ? '#fff' : '#8896ab',
-                      border: filtroAtencion === f.key ? 'none' : '1px solid #e0e8f0',
+                      border: filtroAtencion === f.key ? 'none' : '1px solid' + t.borderCard,
                       cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                       display: 'flex', alignItems: 'center', gap: 4,
                     }}>
@@ -707,7 +709,7 @@ function Inbox() {
                         transition: 'all 0.15s',
                         animationDelay: `${i * 30}ms`,
                       }}
-                      onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#f6f9fc'; setHoveredChat(cliente.id); }}
+                      onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = t.bgPage; setHoveredChat(cliente.id); }}
                       onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent'; setHoveredChat(null); }}
                     >
                       <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
@@ -800,12 +802,12 @@ function Inbox() {
                               </span>
                             )}
                             {cliente.modo_atencion === 'transfiriendo' && (
-                              <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, color: '#fff', background: '#D97706' }}>
+                              <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, color: '#fff', background: t.amberText }}>
                                 Pendiente
                               </span>
                             )}
                             {cliente.modo_atencion === 'bot' && (
-                              <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, color: '#fff', background: '#6B7280', display: 'flex', alignItems: 'center', gap: 3 }}>
+                              <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, color: '#fff', background: t.grayText, display: 'flex', alignItems: 'center', gap: 3 }}>
                                 <Bot size={9} /> Bot
                               </span>
                             )}
@@ -844,13 +846,13 @@ function Inbox() {
 
         {/* Centro — conversación */}
         <div style={{ display: 'flex', flex: 1 }}>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#f6f9fc', position: 'relative' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: t.bgPage, position: 'relative' }}>
             {selectedCliente ? (
               <>
                 {/* Chat Header */}
                 <div style={{
                   padding: '12px 20px', borderBottom: '1px solid #e0e8f0',
-                  background: '#fff',
+                  background: t.bgCard,
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -934,7 +936,7 @@ function Inbox() {
                       {selectedCliente?.telefono && (
                         <a href={`tel:${selectedCliente.telefono}`} style={{
                           width: 34, height: 34, borderRadius: '50%',
-                          border: '1px solid #e0e8f0', background: '#fff',
+                          border: '1px solid' + t.borderCard, background: t.bgCard,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           cursor: 'pointer', textDecoration: 'none',
                         }} title="Llamar">
@@ -943,13 +945,13 @@ function Inbox() {
                       )}
                       <button
                         onClick={() => selectedCliente?.telefono && window.open(`https://wa.me/${selectedCliente.telefono.replace(/[^0-9]/g, '')}`, '_blank')}
-                        style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid #e0e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                        style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid' + t.borderCard, background: t.bgCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                         title="Abrir WhatsApp">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                       </button>
                       <button
                         onClick={() => setSearchMode(!searchMode)}
-                        style={{ width: 34, height: 34, borderRadius: '50%', border: searchMode ? '2px solid #b51822' : '1px solid #e0e8f0', background: searchMode ? 'rgba(181,24,34,0.08)' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                        style={{ width: 34, height: 34, borderRadius: '50%', border: searchMode ? '2px solid #b51822' : '1px solid' + t.borderCard, background: searchMode ? 'rgba(181,24,34,0.08)' : t.bgCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                         title={searchMode ? 'Cerrar búsqueda' : 'Buscar en conversación'}>
                         <Search size={14} style={{ color: '#b51822' }} />
                       </button>
@@ -957,8 +959,8 @@ function Inbox() {
                         onClick={() => setShowPanel(!showPanel)}
                         style={{
                           width: 34, height: 34, borderRadius: '50%',
-                          border: showPanel ? '2px solid #b51822' : '1px solid #e0e8f0',
-                          background: showPanel ? 'rgba(181,24,34,0.08)' : '#fff',
+                          border: showPanel ? '2px solid #b51822' : '1px solid' + t.borderCard,
+                          background: showPanel ? 'rgba(181,24,34,0.08)' : t.bgCard,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           cursor: 'pointer', transition: 'all 0.15s',
                         }}
@@ -973,8 +975,8 @@ function Inbox() {
                         onClick={() => setShowNotes(!showNotes)}
                         style={{
                           width: 34, height: 34, borderRadius: '50%',
-                          border: showNotes ? '2px solid #D97706' : '1px solid #e0e8f0',
-                          background: showNotes ? '#FEF3C7' : '#fff',
+                          border: showNotes ? '2px solid #D97706' : '1px solid' + t.borderCard,
+                          background: showNotes ? t.amberBg : t.bgCard,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           cursor: 'pointer',
                         }}
@@ -987,7 +989,7 @@ function Inbox() {
                 </div>
 
                 {searchMode && (
-                  <div style={{ padding: '8px 20px', borderBottom: '1px solid #e0e8f0', background: '#fff' }}>
+                  <div style={{ padding: '8px 20px', borderBottom: '1px solid #e0e8f0', background: t.bgCard }}>
                     <input autoFocus
                       value={searchMsg}
                       onChange={e => setSearchMsg(e.target.value)}
@@ -1023,7 +1025,7 @@ function Inbox() {
                     <>
                       {pinnedMsgs.length > 0 && (
                         <div style={{
-                          marginBottom: 12, padding: '8px 12px', background: '#FEF3C7',
+                          marginBottom: 12, padding: '8px 12px', background: t.amberBg,
                           borderRadius: 8, border: '1px solid #FDE68A',
                           display: 'flex', alignItems: 'center', gap: 8,
                         }}>
@@ -1126,14 +1128,14 @@ function Inbox() {
                             {activeMsgMenu === msg.id && (
                               <div style={{
                                 position: 'absolute', top: 28, [isAgent ? 'left' : 'right']: 0,
-                                background: '#fff', borderRadius: 8, boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                                background: t.surfaceCard, borderRadius: 8, boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
                                 zIndex: 20, minWidth: 140, padding: '4px 0', color: '#002045',
                               }} onClick={e => e.stopPropagation()}>
                                 <button onClick={() => handleCopyMessage(msg)} style={{
                                   display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
                                   border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
                                 }}
-                                  onMouseEnter={e => e.currentTarget.style.background = '#f6f9fc'}
+                                  onMouseEnter={e => e.currentTarget.style.background = t.bgPage}
                                   onMouseLeave={e => e.currentTarget.style.background = 'none'}
                                 >
                                   Copiar
@@ -1142,7 +1144,7 @@ function Inbox() {
                                   display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
                                   border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
                                 }}
-                                  onMouseEnter={e => e.currentTarget.style.background = '#f6f9fc'}
+                                  onMouseEnter={e => e.currentTarget.style.background = t.bgPage}
                                   onMouseLeave={e => e.currentTarget.style.background = 'none'}
                                 >
                                   {msg.pinned ? 'Desfijar' : 'Fijar'}
@@ -1313,11 +1315,11 @@ function Inbox() {
                 {/* Pending attachment preview */}
                 {pendingAttach && (
                   <div style={{
-                    padding: '8px 20px', background: '#fff5f5', borderTop: '1px solid #e0e8f0',
+                    padding: '8px 20px', background: t.redBg, borderTop: '1px solid #e0e8f0',
                     display: 'flex', alignItems: 'center', gap: 10, fontSize: 13,
                   }}>
                     {pendingAttach._loading ? (
-                      <div style={{ width: 36, height: 36, borderRadius: 4, background: '#f0f2f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 4, background: t.subtleBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <span className="msg-spinner" style={{ borderColor: '#8896ab', borderTopColor: 'transparent', width: 14, height: 14, borderWidth: 2 }} />
                       </div>
                     ) : pendingAttach.tipo === 'imagen' && pendingAttach.url
@@ -1338,7 +1340,7 @@ function Inbox() {
                 <div style={{
                   padding: '12px 20px',
                   borderTop: pendingAttach ? 'none' : '1px solid #e0e8f0',
-                  background: '#fff',
+                  background: t.bgCard,
                   display: 'flex', gap: 8, alignItems: 'center',
                 }}>
                   <input ref={fileInputRef} type="file" hidden accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
@@ -1364,7 +1366,7 @@ function Inbox() {
                       }
                     }}
                   />
-                  <button onClick={() => fileInputRef.current?.click()} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid #e0e8f0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+                  <button onClick={() => fileInputRef.current?.click()} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid' + t.borderCard, background: t.bgCard, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
                     <Paperclip size={14} style={{ color: '#8896ab' }} />
                   </button>
                   {selectedCliente && <AudioRecorder clienteId={selectedCliente.id} />}
@@ -1394,11 +1396,11 @@ function Inbox() {
                       placeholder="Type a message..."
                     style={{
                       width: '100%', padding: '10px 14px', borderRadius: 8, fontSize: 13,
-                      border: '1px solid #e0e8f0', background: '#f6f9fc', outline: 'none',
+                      border: '1px solid' + t.borderCard, background: t.bgInput, outline: 'none',
                       fontFamily: "'Inter', sans-serif",
                     }}
                     onFocus={e => e.currentTarget.style.borderColor = '#b51822'}
-                    onBlur={e => e.currentTarget.style.borderColor = '#e0e8f0'}
+                    onBlur={e => e.currentTarget.style.borderColor = t.borderCard}
                     />
                   </div>
                   <EmojiPicker onSelect={emoji => setNuevoMensaje(prev => prev + emoji)} />
@@ -1452,14 +1454,14 @@ function Inbox() {
       {msgContextMenu && (
         <div style={{
           position: 'fixed', left: Math.min(msgContextMenu.x, window.innerWidth - 200), top: Math.min(msgContextMenu.y, window.innerHeight - 120),
-          background: '#fff', borderRadius: 8, boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+          background: t.surfaceCard, borderRadius: 8, boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
           zIndex: 9999, minWidth: 160, padding: '4px 0',
         }} onClick={e => e.stopPropagation()}>
           <button onClick={() => handlePinMessage(msgContextMenu.msg)} style={{
             display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
             border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
           }}
-            onMouseEnter={e => e.currentTarget.style.background = '#f6f9fc'}
+            onMouseEnter={e => e.currentTarget.style.background = t.bgPage}
             onMouseLeave={e => e.currentTarget.style.background = 'none'}
           >
             {msgContextMenu.msg.pinned ? 'Desfijar mensaje' : 'Fijar mensaje'}
@@ -1480,14 +1482,14 @@ function Inbox() {
       {chatContextMenu && (
         <div style={{
           position: 'fixed', left: Math.min(chatContextMenu.x, window.innerWidth - 220), top: Math.min(chatContextMenu.y, window.innerHeight - 120),
-          background: '#fff', borderRadius: 8, boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+          background: t.surfaceCard, borderRadius: 8, boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
           zIndex: 9999, minWidth: 180, padding: '4px 0',
         }} onClick={e => e.stopPropagation()}>
           <button onClick={() => handlePinChat(chatContextMenu.cliente)} style={{
             display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
             border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
           }}
-            onMouseEnter={e => e.currentTarget.style.background = '#f6f9fc'}
+            onMouseEnter={e => e.currentTarget.style.background = t.bgPage}
             onMouseLeave={e => e.currentTarget.style.background = 'none'}
           >
             {chatContextMenu.cliente.pinned ? 'Desfijar chat' : 'Fijar chat'}

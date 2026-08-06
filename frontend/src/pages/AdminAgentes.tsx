@@ -1,8 +1,10 @@
 import { useState, useEffect, FormEvent } from 'react';
 import api from '../services/api';
+import { useTheme } from '../hooks/useTheme';
 import type { Agente, Rol } from '../types';
 
 export default function AdminAgentes() {
+  const t = useTheme();
   const [agentes, setAgentes] = useState<Agente[]>([]);
   const [roles, setRoles] = useState<Rol[]>([]);
   const [showForm, setShowForm] = useState(false);
@@ -136,8 +138,8 @@ export default function AdminAgentes() {
                 <td style={{ padding: '12px 16px' }}>
                   <span style={{
                     display: 'inline-block', padding: '2px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600,
-                    background: a.rol_nombre === 'superadmin' ? '#FEF3C7' : '#E0E7FF',
-                    color: a.rol_nombre === 'superadmin' ? '#92400E' : '#3730A3',
+                    background: a.rol_nombre === 'superadmin' ? t.badgeSuperadmin.bg : t.badgeAgente.bg,
+                    color: a.rol_nombre === 'superadmin' ? t.badgeSuperadmin.text : t.badgeAgente.text,
                   }}>
                     {a.rol_nombre}
                   </span>
@@ -158,7 +160,7 @@ export default function AdminAgentes() {
                     style={{
                       padding: '4px 12px', borderRadius: 6, border: '1px solid var(--outline)',
                       background: 'var(--surface-card)', fontSize: 12, cursor: 'pointer',
-                      color: a.activo ? '#EF4444' : '#22C55E', fontWeight: 500,
+                      color: a.activo ? t.redText : t.greenText, fontWeight: 500,
                     }}
                   >
                     {a.activo ? 'Desactivar' : 'Activar'}

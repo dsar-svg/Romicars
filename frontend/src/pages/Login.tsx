@@ -18,7 +18,7 @@ export default function Login() {
     setLoading(true);
     try {
       await login(email, password);
-      navigate('/inbox', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (err: any) {
       setError(err.response?.data?.error || 'Error al iniciar sesión');
     } finally {

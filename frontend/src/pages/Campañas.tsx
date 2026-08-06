@@ -3,6 +3,7 @@ import { Send, Filter, History, AlertCircle, Target, ChevronDown, ChevronUp, Che
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from '../components/Toast';
 import api from '../services/api';
+import { useTheme } from '../hooks/useTheme';
 
 interface Campania {
   id: number;
@@ -26,14 +27,8 @@ interface CampaniaLog {
   enviado_en: string | null;
 }
 
-const estadoEstilos: Record<string, { color: string; bg: string; label: string }> = {
-  completada: { color: '#059669', bg: '#ECFDF5', label: 'Completada' },
-  enviando: { color: '#D97706', bg: '#FFFBEB', label: 'Enviando' },
-  borrador: { color: '#6B7280', bg: '#F3F4F6', label: 'Borrador' },
-  cancelada: { color: '#DC2626', bg: '#FEF2F2', label: 'Cancelada' },
-};
-
 function Campañas() {
+  const t = useTheme();
   const { agente } = useAuth();
   const [campanias, setCampanias] = useState<Campania[]>([]);
   const [nombre, setNombre] = useState('');
@@ -47,6 +42,13 @@ function Campañas() {
   const [expandedCampana, setExpandedCampana] = useState<number | null>(null);
   const [campaniaLogs, setCampaniaLogs] = useState<Record<number, CampaniaLog[]>>({});
   const [loadingLog, setLoadingLog] = useState(false);
+
+  const estadoEstilos: Record<string, { color: string; bg: string; label: string }> = {
+    completada: { color: t.greenText, bg: t.greenBg, label: 'Completada' },
+    enviando: { color: t.amberText, bg: t.amberBg, label: 'Enviando' },
+    borrador: { color: t.grayText, bg: t.grayBg, label: 'Borrador' },
+    cancelada: { color: t.redText, bg: t.redBg, label: 'Cancelada' },
+  };
 
   useEffect(() => { api.get('/campanias').then(r => setCampanias(r.data)).catch(() => {}); }, []);
 
@@ -159,12 +161,12 @@ function Campañas() {
 
         {previewCount > 0 && (
           <div className="fade-in" style={{
-            padding: '12px 16px', background: '#ECFDF5', borderRadius: 10, marginBottom: 24,
+            padding: '12px 16px', background: t.greenBg, borderRadius: 10, marginBottom: 24,
             display: 'flex', alignItems: 'center', gap: 10, fontSize: 13,
-            border: '1px solid #A7F3D0',
+            border: `1px solid ${t.greenText}30`,
           }}>
-            <Target size={18} style={{ color: '#059669' }} />
-            <strong style={{ color: '#059669', fontSize: 15 }}>{previewCount} destinatarios</strong>
+            <Target size={18} style={{ color: t.greenText }} />
+            <strong style={{ color: t.greenText, fontSize: 15 }}>{previewCount} destinatarios</strong>
             <span style={{ color: 'var(--text-primary)' }}>coinciden con los filtros seleccionados</span>
           </div>
         )}
@@ -304,15 +306,15 @@ function Campañas() {
                                 <td style={{ padding: '10px 16px', color: 'var(--text-secondary)' }}>{log.telefono}</td>
                                 <td style={{ padding: '10px 16px' }}>
                                   {log.estado === 'enviado' ? (
-                                    <span style={{ color: '#059669', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                    <span style={{ color: t.greenText, display: 'flex', alignItems: 'center', gap: 4 }}>
                                       <CheckCircle2 size={14} /> Enviado
                                     </span>
                                   ) : log.estado === 'error' ? (
-                                    <span style={{ color: '#DC2626', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                    <span style={{ color: t.redText, display: 'flex', alignItems: 'center', gap: 4 }}>
                                       <XCircle size={14} /> Error
                                     </span>
                                   ) : (
-                                    <span style={{ color: '#D97706' }}>Pendiente</span>
+                                    <span style={{ color: t.amberText }}>Pendiente</span>
                                   )}
                                 </td>
                                 <td style={{ padding: '10px 16px', color: 'var(--text-secondary)', fontSize: 12 }}>
