@@ -25,10 +25,7 @@ interface AnalyticsData {
   };
 }
 
-interface TendenciaData {
-  tendencias: { fecha: string; leads: number; ventas: number }[];
-}
-
+interface TendenciaData { tendencias: { fecha: string; leads: number; ventas: number }[]; }
 interface RespuestaData {
   promedio_general_segundos: number;
   por_canal: { canal: string; promedio_segundos: number; total_conversaciones: number }[];
@@ -36,17 +33,7 @@ interface RespuestaData {
   respuestas_rapidas: number;
   respuestas_lentas: number;
 }
-
-interface AgenteData {
-  id: number;
-  nombre: string;
-  chats_asignados: number;
-  ventas_cerradas: number;
-  no_ventas: number;
-  tasa_conversion: number;
-  tiempo_respuesta_promedio: number;
-}
-
+interface AgenteData { id: number; nombre: string; chats_asignados: number; ventas_cerradas: number; no_ventas: number; tasa_conversion: number; tiempo_respuesta_promedio: number; }
 interface DemandaData {
   busquedas_populares: { termino: string; total: number }[];
   marcas_populares: { marca: string; total: number }[];
@@ -54,15 +41,7 @@ interface DemandaData {
   busquedas_sin_venta: number;
   total_con_busqueda: number;
 }
-
-interface InsightData {
-  tipo: string;
-  titulo: string;
-  descripcion: string;
-  prioridad: string;
-  accion: string;
-}
-
+interface InsightData { tipo: string; titulo: string; descripcion: string; prioridad: string; accion: string; }
 interface ProfitData {
   productos_mas_vendidos: { co_art: string; art_des: string; total_vendido: number; cantidad_vendida: number; existencias: number }[];
   productos_menos_vendidos: { co_art: string; art_des: string; total_vendido: number; cantidad_vendida: number; existencias: number }[];
@@ -74,16 +53,74 @@ interface ProfitData {
 function formatCurrency(n: number): string {
   return new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(n);
 }
-
-function formatNumber(n: number): string {
-  return new Intl.NumberFormat('es-VE').format(n);
-}
-
+function formatNumber(n: number): string { return new Intl.NumberFormat('es-VE').format(n); }
 function formatTime(seconds: number): string {
   if (seconds < 60) return `${seconds}s`;
   if (seconds < 3600) return `${Math.round(seconds / 60)}min`;
   return `${Math.round(seconds / 3600)}h`;
 }
+
+const styles = {
+  page: {
+    minHeight: '100vh',
+    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
+    padding: '32px',
+    color: '#e2e8f0',
+  } as React.CSSProperties,
+  header: {
+    marginBottom: 32,
+  } as React.CSSProperties,
+  title: {
+    fontSize: 32,
+    fontWeight: 800,
+    color: '#f8fafc',
+    letterSpacing: '-0.03em',
+    fontFamily: "'Hanken Grotesk', sans-serif",
+    margin: 0,
+  } as React.CSSProperties,
+  subtitle: {
+    color: '#94a3b8',
+    marginTop: 6,
+    fontSize: 14,
+    fontWeight: 500,
+  } as React.CSSProperties,
+  glassCard: {
+    background: 'rgba(30, 41, 59, 0.7)',
+    backdropFilter: 'blur(16px)',
+    border: '1px solid rgba(148, 163, 184, 0.1)',
+    borderRadius: 16,
+    padding: 24,
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    boxShadow: '0 4px 24px rgba(0, 0, 0, 0.2)',
+  } as React.CSSProperties,
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: 700,
+    color: '#f1f5f9',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 20,
+  } as React.CSSProperties,
+  iconBadge: (gradient: string) => ({
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    background: gradient,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: `0 4px 12px ${gradient.includes('#') ? gradient.match(/#[a-f0-9]+/i)?.[0] || '#000' : '#000'}33`,
+  }) as React.CSSProperties,
+  insightCard: (bg: string, border: string) => ({
+    padding: 20,
+    borderRadius: 16,
+    background: bg,
+    border: `1px solid ${border}`,
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    cursor: 'default',
+  }) as React.CSSProperties,
+};
 
 function Dashboard() {
   const [data, setData] = useState<AnalyticsData | null>(null);
@@ -125,72 +162,108 @@ function Dashboard() {
   const maxFunnel = data ? Math.max(...data.funnel.map(f => f.valor), 1) : 1;
   const productosMostrados = activeTab === 'mas' ? (profit?.productos_mas_vendidos || []) : (profit?.productos_menos_vendidos || []);
 
-  const insightConfig: Record<string, { icon: any; color: string; bg: string }> = {
-    alerta: { icon: AlertTriangle, color: '#EF4444', bg: '#FEF2F2' },
-    oportunidad: { icon: Target, color: '#F59E0B', bg: '#FFFBEB' },
-    tendencia: { icon: TrendingUp, color: '#3B82F6', bg: '#EFF6FF' },
-    sugerencia: { icon: Lightbulb, color: '#10B981', bg: '#ECFDF5' },
+  const insightStyles: Record<string, { gradient: string; border: string; iconColor: string }> = {
+    alerta: { gradient: 'linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(220,38,38,0.05) 100%)', border: 'rgba(239,68,68,0.3)', iconColor: '#f87171' },
+    oportunidad: { gradient: 'linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(217,119,6,0.05) 100%)', border: 'rgba(245,158,11,0.3)', iconColor: '#fbbf24' },
+    tendencia: { gradient: 'linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(37,99,235,0.05) 100%)', border: 'rgba(59,130,246,0.3)', iconColor: '#60a5fa' },
+    sugerencia: { gradient: 'linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(5,150,105,0.05) 100%)', border: 'rgba(16,185,129,0.3)', iconColor: '#34d399' },
+  };
+
+  const insightIcons: Record<string, any> = {
+    alerta: AlertTriangle,
+    oportunidad: Target,
+    tendencia: TrendingUp,
+    sugerencia: Zap,
   };
 
   return (
-    <div style={{ padding: '24px 32px', maxWidth: 1440, margin: '0 auto' }}>
+    <div style={styles.page}>
       {/* Header */}
-      <div className="fade-in-up" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-        <div>
-          <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.03em', fontFamily: "'Hanken Grotesk', sans-serif" }}>
-            Dashboard
-          </h1>
-          <p style={{ color: 'var(--text-secondary)', marginTop: 4, fontSize: 13 }}>Inteligencia de negocio para tu tienda de autopartes</p>
-        </div>
-        <div style={{ padding: '8px 16px', background: 'var(--surface-card)', borderRadius: 20, border: '1px solid var(--outline)', fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#10B981', animation: 'pulse 2s infinite' }} />
-          Tiempo real
+      <div style={styles.header}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <h1 style={styles.title}>Dashboard</h1>
+            <p style={styles.subtitle}>Inteligencia de negocio para tu tienda de autopartes</p>
+          </div>
+          <div style={{
+            padding: '10px 20px', borderRadius: 12,
+            background: 'rgba(16, 185, 129, 0.1)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            fontSize: 13, fontWeight: 600, color: '#34d399',
+            display: 'flex', alignItems: 'center', gap: 8,
+          }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 8px #34d399', animation: 'pulse 2s infinite' }} />
+            Tiempo real
+          </div>
         </div>
       </div>
 
-      {/* AI Insights Section */}
+      {/* AI Insights */}
       {(aiLoading || aiInsights.length > 0) && (
-        <div className="fade-in-up" style={{ marginBottom: 24, animationDelay: '100ms' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-            <Brain size={18} style={{ color: '#8B5CF6' }} />
-            <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Insights IA</h2>
-            {aiLoading && (
-              <span style={{ fontSize: 11, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span className="msg-spinner" style={{ width: 12, height: 12 }} /> Analizando datos...
-              </span>
-            )}
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 10,
+              background: 'linear-gradient(135deg, #8b5cf6, #a78bfa)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(139,92,246,0.3)',
+            }}>
+              <Brain size={18} color="#fff" />
+            </div>
+            <div>
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f8fafc', margin: 0 }}>Insights IA</h2>
+              {aiLoading && <span style={{ fontSize: 12, color: '#94a3b8' }}>Analizando datos con GPT-4o-mini...</span>}
+            </div>
           </div>
           {aiLoading ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
               {[1,2,3].map(i => (
-                <div key={i} className="skeleton" style={{ height: 140, borderRadius: 14 }} />
+                <div key={i} style={{
+                  ...styles.glassCard,
+                  height: 160,
+                  background: 'rgba(30, 41, 59, 0.4)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <div className="msg-spinner" style={{ width: 24, height: 24, borderColor: '#8b5cf6', borderTopColor: 'transparent' }} />
+                </div>
               ))}
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(aiInsights.length, 3)}, 1fr)`, gap: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(aiInsights.length, 3)}, 1fr)`, gap: 16 }}>
               {aiInsights.slice(0, 3).map((insight, i) => {
-                const cfg = insightConfig[insight.tipo] || insightConfig.sugerencia;
-                const Icon = cfg.icon;
+                const s = insightStyles[insight.tipo] || insightStyles.sugerencia;
+                const Icon = insightIcons[insight.tipo] || Zap;
                 return (
-                  <div key={i} className="fade-in-up" style={{
-                    padding: 18, borderRadius: 14, background: cfg.bg,
-                    border: `1px solid ${cfg.color}22`, animationDelay: `${i * 60 + 100}ms`,
-                    transition: 'transform 0.15s',
-                  }}
-                    onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-                    onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                  <div key={i}
+                    style={styles.insightCard(s.gradient, s.border)}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.3)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                      <Icon size={16} style={{ color: cfg.color }} />
-                      <span style={{ fontSize: 10, fontWeight: 700, color: cfg.color, textTransform: 'uppercase', letterSpacing: '0.05em', padding: '2px 6px', borderRadius: 4, background: `${cfg.color}15` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                      <Icon size={16} style={{ color: s.iconColor }} />
+                      <span style={{
+                        fontSize: 10, fontWeight: 700, color: s.iconColor,
+                        textTransform: 'uppercase', letterSpacing: '0.08em',
+                        padding: '3px 8px', borderRadius: 6,
+                        background: `${s.iconColor}18`,
+                      }}>
                         {insight.prioridad}
                       </span>
-                      <span style={{ fontSize: 9, color: 'var(--text-secondary)', marginLeft: 'auto' }}>IA</span>
+                      <span style={{
+                        marginLeft: 'auto', fontSize: 9, fontWeight: 700,
+                        color: '#a78bfa', padding: '2px 6px', borderRadius: 4,
+                        background: 'rgba(139,92,246,0.15)',
+                      }}>IA</span>
                     </div>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>{insight.titulo}</p>
-                    <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.45, marginBottom: 10 }}>{insight.descripcion}</p>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: cfg.color, display: 'flex', alignItems: 'flex-start', gap: 4 }}>
-                      <Zap size={11} style={{ marginTop: 1, flexShrink: 0 }} />
+                    <p style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 8, lineHeight: 1.3 }}>{insight.titulo}</p>
+                    <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.5, marginBottom: 14 }}>{insight.descripcion}</p>
+                    <div style={{
+                      fontSize: 12, fontWeight: 600, color: s.iconColor,
+                      display: 'flex', alignItems: 'flex-start', gap: 6,
+                      padding: '8px 10px', borderRadius: 8,
+                      background: `${s.iconColor}10`,
+                    }}>
+                      <Zap size={12} style={{ marginTop: 1, flexShrink: 0 }} />
                       <span>{insight.accion}</span>
                     </div>
                   </div>
@@ -201,36 +274,38 @@ function Dashboard() {
         </div>
       )}
 
-      {/* Rule-based Insights (fallback) */}
+      {/* Fallback rule-based insights */}
       {!aiLoading && aiInsights.length === 0 && insights.length > 0 && (
-        <div className="fade-in-up" style={{ marginBottom: 24, animationDelay: '100ms' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-            <Brain size={18} style={{ color: '#8B5CF6' }} />
-            <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Insights y Sugerencias</h2>
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 10,
+              background: 'linear-gradient(135deg, #64748b, #94a3b8)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Brain size={18} color="#fff" />
+            </div>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f8fafc', margin: 0 }}>Insights</h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(insights.length, 3)}, 1fr)`, gap: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(insights.length, 3)}, 1fr)`, gap: 16 }}>
             {insights.slice(0, 3).map((insight, i) => {
-              const cfg = insightConfig[insight.tipo] || insightConfig.sugerencia;
-              const Icon = cfg.icon;
+              const s = insightStyles[insight.tipo] || insightStyles.sugerencia;
+              const Icon = insightIcons[insight.tipo] || Zap;
               return (
-                <div key={i} className="fade-in-up" style={{
-                  padding: 18, borderRadius: 14, background: cfg.bg,
-                  border: `1px solid ${cfg.color}22`, animationDelay: `${i * 60 + 100}ms`,
-                  transition: 'transform 0.15s',
-                }}
-                  onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-                  onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                <div key={i} style={styles.insightCard(s.gradient, s.border)}
+                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.3)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                    <Icon size={16} style={{ color: cfg.color }} />
-                    <span style={{ fontSize: 11, fontWeight: 700, color: cfg.color, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                    <Icon size={16} style={{ color: s.iconColor }} />
+                    <span style={{ fontSize: 10, fontWeight: 700, color: s.iconColor, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '3px 8px', borderRadius: 6, background: `${s.iconColor}18` }}>
                       {insight.prioridad}
                     </span>
                   </div>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>{insight.titulo}</p>
-                  <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: 8 }}>{insight.descripcion}</p>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: cfg.color, display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <Zap size={11} /> {insight.accion}
+                  <p style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 8 }}>{insight.titulo}</p>
+                  <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.5, marginBottom: 14 }}>{insight.descripcion}</p>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: s.iconColor, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px', borderRadius: 8, background: `${s.iconColor}10` }}>
+                    <Zap size={12} /> {insight.accion}
                   </div>
                 </div>
               );
@@ -239,27 +314,36 @@ function Dashboard() {
         </div>
       )}
 
-      {/* KPIs Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      {/* KPIs */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
         {[
-          { label: 'Total Leads', value: data?.total_leads ?? 0, icon: Users, color: '#3B82F6', gradient: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)' },
-          { label: 'Tasa Conversion', value: `${data?.tasa_conversion ?? 0}%`, icon: TrendingUp, color: '#10B981', gradient: 'linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)' },
-          { label: 'Chats Activos', value: data?.chats_activos ?? 0, icon: MessageCircle, color: '#F59E0B', gradient: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)' },
-          { label: 'Facturado (30d)', value: profit ? formatCurrency(profit.total_facturado) : '—', icon: DollarSign, color: '#EF4444', gradient: 'linear-gradient(135deg, #FEF2F2 0%, #FECACA 100%)', sub: profit ? `${formatNumber(profit.facturas_periodo)} facturas` : undefined },
+          { label: 'Total Leads', value: data?.total_leads ?? 0, icon: Users, gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)', shadow: '#3b82f6' },
+          { label: 'Conversion', value: `${data?.tasa_conversion ?? 0}%`, icon: TrendingUp, gradient: 'linear-gradient(135deg, #10b981, #059669)', shadow: '#10b981' },
+          { label: 'Chats Activos', value: data?.chats_activos ?? 0, icon: MessageCircle, gradient: 'linear-gradient(135deg, #f59e0b, #d97706)', shadow: '#f59e0b' },
+          { label: 'Facturado (30d)', value: profit ? formatCurrency(profit.total_facturado) : '—', icon: DollarSign, gradient: 'linear-gradient(135deg, #ef4444, #dc2626)', shadow: '#ef4444', sub: profit ? `${formatNumber(profit.facturas_periodo)} facturas` : undefined },
         ].map((kpi, i) => {
           const Icon = kpi.icon;
           return (
-            <div key={kpi.label} className="card fade-in-up" style={{ padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 14, animationDelay: `${i * 50}ms`, cursor: 'default', transition: 'transform 0.15s, box-shadow 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--sombra-md)'; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--sombra-sm)'; }}
+            <div key={kpi.label} style={{
+              ...styles.glassCard,
+              display: 'flex', alignItems: 'center', gap: 16,
+              animationDelay: `${i * 60}ms`,
+            }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = `0 12px 40px ${kpi.shadow}22`; e.currentTarget.style.borderColor = `${kpi.shadow}44`; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.2)'; e.currentTarget.style.borderColor = 'rgba(148,163,184,0.1)'; }}
             >
-              <div style={{ width: 44, height: 44, borderRadius: 11, background: kpi.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Icon size={20} style={{ color: kpi.color }} />
+              <div style={{
+                width: 52, height: 52, borderRadius: 14,
+                background: kpi.gradient,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: `0 4px 16px ${kpi.shadow}44`,
+              }}>
+                <Icon size={24} color="#fff" />
               </div>
               <div>
-                <div style={{ color: 'var(--text-secondary)', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{kpi.label}</div>
-                <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', marginTop: 1, letterSpacing: '-0.03em', fontFamily: "'Hanken Grotesk', sans-serif" }}>{kpi.value}</div>
-                {kpi.sub && <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>{kpi.sub}</div>}
+                <div style={{ color: '#94a3b8', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{kpi.label}</div>
+                <div style={{ fontSize: 28, fontWeight: 800, color: '#f8fafc', marginTop: 2, fontFamily: "'Hanken Grotesk', sans-serif", letterSpacing: '-0.03em' }}>{kpi.value}</div>
+                {kpi.sub && <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{kpi.sub}</div>}
               </div>
             </div>
           );
@@ -268,23 +352,33 @@ function Dashboard() {
 
       {/* Lead Metrics Mini */}
       {leads && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 28 }}>
           {[
-            { label: 'Nuevos Hoy', value: leads.nuevos_hoy, icon: UserPlus, color: '#3B82F6' },
-            { label: 'Pendientes', value: leads.pendientes_respuesta, icon: Clock, color: '#F59E0B' },
-            { label: 'Urgencia Alta', value: leads.por_urgencia.Alta, icon: AlertTriangle, color: '#EF4444' },
-            { label: 'Sin Asignar', value: leads.por_asignacion.sin_asignar, icon: Headphones, color: '#8B5CF6' },
-            { label: 'Resueltos', value: leads.por_estado.resuelto, icon: CheckCircle, color: '#10B981' },
-          ].map((item, i) => {
+            { label: 'Nuevos Hoy', value: leads.nuevos_hoy, icon: UserPlus, color: '#3b82f6' },
+            { label: 'Pendientes', value: leads.pendientes_respuesta, icon: Clock, color: '#f59e0b' },
+            { label: 'Urgencia Alta', value: leads.por_urgencia.Alta, icon: AlertTriangle, color: '#ef4444' },
+            { label: 'Sin Asignar', value: leads.por_asignacion.sin_asignar, icon: Headphones, color: '#a78bfa' },
+            { label: 'Resueltos', value: leads.por_estado.resuelto, icon: CheckCircle, color: '#34d399' },
+          ].map((item) => {
             const Icon = item.icon;
             return (
-              <div key={item.label} className="fade-in-up" style={{ padding: '14px 16px', borderRadius: 10, background: 'var(--surface-card)', border: '1px solid var(--outline)', display: 'flex', alignItems: 'center', gap: 10, animationDelay: `${i * 30 + 200}ms` }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: `${item.color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Icon size={15} style={{ color: item.color }} />
+              <div key={item.label} style={{
+                ...styles.glassCard,
+                padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 12,
+              }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = `${item.color}44`; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'rgba(148,163,184,0.1)'; }}
+              >
+                <div style={{
+                  width: 38, height: 38, borderRadius: 10,
+                  background: `linear-gradient(135deg, ${item.color}30, ${item.color}10)`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Icon size={17} style={{ color: item.color }} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.03em' }}>{item.label}</div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)' }}>{formatNumber(item.value)}</div>
+                  <div style={{ fontSize: 10, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.label}</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: '#f1f5f9', fontFamily: "'Hanken Grotesk', sans-serif" }}>{formatNumber(item.value)}</div>
                 </div>
               </div>
             );
@@ -292,131 +386,144 @@ function Dashboard() {
         </div>
       )}
 
-      {/* Charts Row 1: Tendencias + Respuesta */}
+      {/* Charts Row 1: Trends + Response */}
       {loading ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 24 }}>
-          <div className="skeleton" style={{ height: 280, borderRadius: 12 }} />
-          <div className="skeleton" style={{ height: 280, borderRadius: 12 }} />
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 28 }}>
+          {[1,2].map(i => <div key={i} style={{ ...styles.glassCard, height: 300 }} />)}
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 24 }}>
-          {/* Lead Trends */}
-          <div className="card fade-in-up" style={{ padding: 22, animationDelay: '300ms' }}>
-            <h3 style={{ color: 'var(--text-primary)', marginBottom: 18, fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg, #3B82F6, #2563EB)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <TrendingUp size={14} color="#fff" />
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 28 }}>
+          {/* Trends */}
+          <div style={styles.glassCard}>
+            <div style={styles.sectionTitle}>
+              <div style={styles.iconBadge('linear-gradient(135deg, #3b82f6, #2563eb)')}>
+                <TrendingUp size={16} color="#fff" />
               </div>
-              Leads en los ultimos 30 dias
-            </h3>
+              Leads — Ultimos 30 dias
+            </div>
             {tendencias && tendencias.tendencias.length > 0 ? (
-              <ResponsiveContainer width="100%" height={220}>
+              <ResponsiveContainer width="100%" height={240}>
                 <LineChart data={tendencias.tendencias}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--outline)" opacity={0.3} />
-                  <XAxis dataKey="fecha" tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} tickFormatter={v => v.slice(5)} interval={6} />
-                  <YAxis tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} />
-                  <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid var(--outline)', fontSize: 12 }} />
-                  <Legend wrapperStyle={{ fontSize: 11 }} />
-                  <Line type="monotone" dataKey="leads" stroke="#3B82F6" strokeWidth={2} dot={false} name="Leads" />
-                  <Line type="monotone" dataKey="ventas" stroke="#10B981" strokeWidth={2} dot={false} name="Ventas" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.1)" />
+                  <XAxis dataKey="fecha" tick={{ fontSize: 10, fill: '#64748b' }} tickFormatter={v => v.slice(5)} interval={6} />
+                  <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
+                  <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid rgba(148,163,184,0.2)', background: '#1e293b', color: '#e2e8f0', fontSize: 12 }} />
+                  <Legend wrapperStyle={{ fontSize: 11, color: '#94a3b8' }} />
+                  <Line type="monotone" dataKey="leads" stroke="#60a5fa" strokeWidth={2.5} dot={{ fill: '#60a5fa', r: 3 }} activeDot={{ r: 5 }} name="Leads" />
+                  <Line type="monotone" dataKey="ventas" stroke="#34d399" strokeWidth={2.5} dot={{ fill: '#34d399', r: 3 }} activeDot={{ r: 5 }} name="Ventas" />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-secondary)' }}>
-                <TrendingUp size={32} style={{ opacity: 0.1, marginBottom: 8 }} />
-                <p style={{ fontSize: 12, fontWeight: 600 }}>Sin datos de tendencias</p>
+              <div style={{ textAlign: 'center', padding: '50px 0', color: '#475569' }}>
+                <TrendingUp size={40} style={{ opacity: 0.2, marginBottom: 10 }} />
+                <p style={{ fontSize: 13, fontWeight: 600 }}>Sin datos de tendencias</p>
               </div>
             )}
           </div>
 
-          {/* Tiempo de Respuesta */}
-          <div className="card fade-in-up" style={{ padding: 22, animationDelay: '350ms' }}>
-            <h3 style={{ color: 'var(--text-primary)', marginBottom: 18, fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg, #F59E0B, #D97706)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Timer size={14} color="#fff" />
+          {/* Response Time */}
+          <div style={styles.glassCard}>
+            <div style={styles.sectionTitle}>
+              <div style={styles.iconBadge('linear-gradient(135deg, #f59e0b, #d97706)')}>
+                <Timer size={16} color="#fff" />
               </div>
               Tiempo de Respuesta
-            </h3>
+            </div>
             {respuesta ? (
               <div>
-                <div style={{ textAlign: 'center', marginBottom: 16 }}>
-                  <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--text-primary)', fontFamily: "'Hanken Grotesk', sans-serif" }}>
+                <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                  <div style={{
+                    fontSize: 42, fontWeight: 800,
+                    background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                    fontFamily: "'Hanken Grotesk', sans-serif",
+                  }}>
                     {formatTime(respuesta.promedio_general_segundos)}
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>Promedio general</div>
+                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>Promedio general</div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
-                  <div style={{ padding: 10, borderRadius: 8, background: '#ECFDF5', textAlign: 'center' }}>
-                    <div style={{ fontSize: 18, fontWeight: 800, color: '#10B981' }}>{respuesta.respuestas_rapidas}</div>
-                    <div style={{ fontSize: 10, color: '#059669' }}>{'< 5 min'}</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 18 }}>
+                  <div style={{ padding: 14, borderRadius: 12, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', textAlign: 'center' }}>
+                    <div style={{ fontSize: 22, fontWeight: 800, color: '#34d399' }}>{respuesta.respuestas_rapidas}</div>
+                    <div style={{ fontSize: 10, color: '#6ee7b7', fontWeight: 600 }}>{'< 5 min'}</div>
                   </div>
-                  <div style={{ padding: 10, borderRadius: 8, background: '#FEF2F2', textAlign: 'center' }}>
-                    <div style={{ fontSize: 18, fontWeight: 800, color: '#EF4444' }}>{respuesta.respuestas_lentas}</div>
-                    <div style={{ fontSize: 10, color: '#DC2626' }}>{'> 1 hora'}</div>
+                  <div style={{ padding: 14, borderRadius: 12, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', textAlign: 'center' }}>
+                    <div style={{ fontSize: 22, fontWeight: 800, color: '#f87171' }}>{respuesta.respuestas_lentas}</div>
+                    <div style={{ fontSize: 10, color: '#fca5a5', fontWeight: 600 }}>{'> 1 hora'}</div>
                   </div>
                 </div>
                 {respuesta.por_canal.length > 0 && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {respuesta.por_canal.map(c => (
-                      <div key={c.canal} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11 }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>{c.canal}</span>
-                        <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{formatTime(c.promedio_segundos)}</span>
+                      <div key={c.canal} style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '8px 12px', borderRadius: 8,
+                        background: 'rgba(148,163,184,0.05)',
+                      }}>
+                        <span style={{ fontSize: 12, color: '#94a3b8', textTransform: 'capitalize' }}>{c.canal}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>{formatTime(c.promedio_segundos)}</span>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '30px 0', color: 'var(--text-secondary)' }}>
-                <Timer size={32} style={{ opacity: 0.1, marginBottom: 8 }} />
-                <p style={{ fontSize: 12, fontWeight: 600 }}>Sin datos de respuesta</p>
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#475569' }}>
+                <Timer size={36} style={{ opacity: 0.2, marginBottom: 8 }} />
+                <p style={{ fontSize: 12, fontWeight: 600 }}>Sin datos</p>
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* Charts Row 2: Conversion por Canal + Embudo */}
+      {/* Charts Row 2: Channel + Funnel */}
       {!loading && data && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
-          {/* Conversion por Canal */}
-          <div className="card fade-in-up" style={{ padding: 22, animationDelay: '400ms' }}>
-            <h3 style={{ color: 'var(--text-primary)', marginBottom: 18, fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg, #EF4444, #DC2626)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <PieChart size={14} color="#fff" />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 28 }}>
+          {/* Channel */}
+          <div style={styles.glassCard}>
+            <div style={styles.sectionTitle}>
+              <div style={styles.iconBadge('linear-gradient(135deg, #ef4444, #dc2626)')}>
+                <PieChart size={16} color="#fff" />
               </div>
               Conversion por Canal
-            </h3>
-            <ResponsiveContainer width="100%" height={200}>
+            </div>
+            <ResponsiveContainer width="100%" height={220}>
               <BarChart data={data.traffic}>
-                <XAxis dataKey="canal" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                <YAxis tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} />
-                <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid var(--outline)', fontSize: 12 }} />
-                <Bar dataKey="total" radius={[6, 6, 0, 0]} barSize={40}>
+                <XAxis dataKey="canal" tick={{ fontSize: 12, fill: '#94a3b8' }} />
+                <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
+                <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid rgba(148,163,184,0.2)', background: '#1e293b', color: '#e2e8f0', fontSize: 12 }} />
+                <Bar dataKey="total" radius={[8, 8, 0, 0]} barSize={44}>
                   {data.traffic.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
 
-          {/* Embudo */}
-          <div className="card fade-in-up" style={{ padding: 22, animationDelay: '450ms' }}>
-            <h3 style={{ color: 'var(--text-primary)', marginBottom: 18, fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <BarChart3 size={14} color="#fff" />
+          {/* Funnel */}
+          <div style={styles.glassCard}>
+            <div style={styles.sectionTitle}>
+              <div style={styles.iconBadge('linear-gradient(135deg, #8b5cf6, #7c3aed)')}>
+                <BarChart3 size={16} color="#fff" />
               </div>
               Embudo de Ventas
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {data.funnel.map((item) => {
                 const pct = maxFunnel > 0 ? (item.valor / maxFunnel) * 100 : 0;
                 return (
                   <div key={item.etapa}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{item.etapa}</span>
-                      <span style={{ fontSize: 14, fontWeight: 800, color: item.color }}>{formatNumber(item.valor)}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>{item.etapa}</span>
+                      <span style={{ fontSize: 16, fontWeight: 800, color: item.color, fontFamily: "'Hanken Grotesk', sans-serif" }}>{formatNumber(item.valor)}</span>
                     </div>
-                    <div style={{ height: 8, background: 'var(--surface-dim)', borderRadius: 4, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${pct}%`, background: item.color, borderRadius: 4, transition: 'width 1s ease' }} />
+                    <div style={{ height: 10, background: 'rgba(148,163,184,0.1)', borderRadius: 5, overflow: 'hidden' }}>
+                      <div style={{
+                        height: '100%', width: `${pct}%`,
+                        background: `linear-gradient(90deg, ${item.color}, ${item.color}aa)`,
+                        borderRadius: 5, transition: 'width 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                        boxShadow: `0 0 12px ${item.color}44`,
+                      }} />
                     </div>
                   </div>
                 );
@@ -426,92 +533,126 @@ function Dashboard() {
         </div>
       )}
 
-      {/* Charts Row 3: Agentes + Demanda */}
+      {/* Charts Row 3: Agents + Demand */}
       {!loading && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
-          {/* Rendimiento Agentes */}
-          <div className="card fade-in-up" style={{ padding: 22, animationDelay: '500ms' }}>
-            <h3 style={{ color: 'var(--text-primary)', marginBottom: 16, fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg, #10B981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Star size={14} color="#fff" />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 28 }}>
+          {/* Agents */}
+          <div style={styles.glassCard}>
+            <div style={styles.sectionTitle}>
+              <div style={styles.iconBadge('linear-gradient(135deg, #10b981, #059669)')}>
+                <Star size={16} color="#fff" />
               </div>
               Rendimiento por Agente
-            </h3>
+            </div>
             {agentes.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {agentes.map((a, i) => (
-                  <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, background: i % 2 === 0 ? 'var(--surface-dim)' : 'transparent' }}>
-                    <div style={{ width: 28, height: 28, borderRadius: '50%', background: `hsl(${i * 60}, 60%, 50%)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
+                  <div key={a.id} style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '12px 14px', borderRadius: 12,
+                    background: 'rgba(148,163,184,0.05)',
+                    border: '1px solid rgba(148,163,184,0.08)',
+                    transition: 'all 0.2s',
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(148,163,184,0.1)'; e.currentTarget.style.borderColor = 'rgba(148,163,184,0.15)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(148,163,184,0.05)'; e.currentTarget.style.borderColor = 'rgba(148,163,184,0.08)'; }}
+                  >
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 10,
+                      background: `linear-gradient(135deg, hsl(${i * 72}, 70%, 50%), hsl(${i * 72}, 70%, 40%))`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 13, fontWeight: 700, color: '#fff',
+                    }}>
                       {a.nombre.charAt(0).toUpperCase()}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{a.nombre}</div>
-                      <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>
-                        {a.chats_asignados} chats · {a.ventas_cerradas} ventas · {formatTime(a.tiempo_respuesta_promedio)} resp.
+                      <div style={{ fontSize: 13, fontWeight: 600, color: '#f1f5f9' }}>{a.nombre}</div>
+                      <div style={{ fontSize: 11, color: '#64748b' }}>
+                        {a.chats_asignados} chats · {a.ventas_cerradas} ventas · {formatTime(a.tiempo_respuesta_promedio)}
                       </div>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 16, fontWeight: 800, color: a.tasa_conversion > 20 ? '#10B981' : a.tasa_conversion > 10 ? '#F59E0B' : '#EF4444' }}>
+                    <div style={{
+                      padding: '6px 12px', borderRadius: 8,
+                      background: a.tasa_conversion > 20 ? 'rgba(16,185,129,0.15)' : a.tasa_conversion > 10 ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)',
+                      textAlign: 'center',
+                    }}>
+                      <div style={{
+                        fontSize: 18, fontWeight: 800,
+                        color: a.tasa_conversion > 20 ? '#34d399' : a.tasa_conversion > 10 ? '#fbbf24' : '#f87171',
+                        fontFamily: "'Hanken Grotesk', sans-serif",
+                      }}>
                         {a.tasa_conversion}%
                       </div>
-                      <div style={{ fontSize: 9, color: 'var(--text-secondary)' }}>conversion</div>
+                      <div style={{ fontSize: 9, color: '#64748b' }}>conversion</div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '30px 0', color: 'var(--text-secondary)' }}>
-                <Users size={32} style={{ opacity: 0.1, marginBottom: 8 }} />
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#475569' }}>
+                <Users size={36} style={{ opacity: 0.2, marginBottom: 8 }} />
                 <p style={{ fontSize: 12, fontWeight: 600 }}>Sin datos de agentes</p>
               </div>
             )}
           </div>
 
-          {/* Demanda de Productos */}
-          <div className="card fade-in-up" style={{ padding: 22, animationDelay: '550ms' }}>
-            <h3 style={{ color: 'var(--text-primary)', marginBottom: 16, fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg, #F59E0B, #D97706)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Eye size={14} color="#fff" />
+          {/* Product Demand */}
+          <div style={styles.glassCard}>
+            <div style={styles.sectionTitle}>
+              <div style={styles.iconBadge('linear-gradient(135deg, #f59e0b, #d97706)')}>
+                <Eye size={16} color="#fff" />
               </div>
               Demanda de Productos
-            </h3>
+            </div>
             {demanda ? (
               <div>
                 {demanda.busquedas_populares.length > 0 && (
-                  <div style={{ marginBottom: 14 }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Lo que buscan los clientes</div>
-                    {demanda.busquedas_populares.slice(0, 5).map((b, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--outline)' }}>
-                        <span style={{ fontSize: 12, color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.termino}</span>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: '#3B82F6', marginLeft: 8 }}>{b.total}</span>
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#64748b', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Lo que buscan</div>
+                    {demanda.busquedas_populares.slice(0, 4).map((b, i) => (
+                      <div key={i} style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '8px 0', borderBottom: '1px solid rgba(148,163,184,0.08)',
+                      }}>
+                        <span style={{ fontSize: 12, color: '#e2e8f0', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.termino}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#60a5fa', marginLeft: 8 }}>{b.total}</span>
                       </div>
                     ))}
                   </div>
                 )}
                 {demanda.marcas_populares.length > 0 && (
                   <div>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Marcas mas buscadas</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#64748b', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Marcas</div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                      {demanda.marcas_populares.slice(0, 6).map((m, i) => (
-                        <span key={i} style={{ padding: '4px 10px', borderRadius: 12, background: 'var(--surface-dim)', fontSize: 11, fontWeight: 600, color: 'var(--text-primary)' }}>
-                          {m.marca} <span style={{ color: '#3B82F6', marginLeft: 4 }}>{m.total}</span>
+                      {demanda.marcas_populares.slice(0, 5).map((m, i) => (
+                        <span key={i} style={{
+                          padding: '5px 12px', borderRadius: 8,
+                          background: 'rgba(96,165,250,0.1)',
+                          border: '1px solid rgba(96,165,250,0.2)',
+                          fontSize: 12, fontWeight: 600, color: '#93c5fd',
+                        }}>
+                          {m.marca} <span style={{ color: '#60a5fa', marginLeft: 4 }}>{m.total}</span>
                         </span>
                       ))}
                     </div>
                   </div>
                 )}
                 {demanda.busquedas_sin_venta > 0 && (
-                  <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 8, background: '#FEF2F2', border: '1px solid #FECACA' }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#DC2626' }}>
-                      {demanda.busquedas_sin_venta} busquedas sin venta ({demanda.total_con_busqueda > 0 ? Math.round((demanda.busquedas_sin_venta / demanda.total_con_busqueda) * 100) : 0}%)
+                  <div style={{
+                    marginTop: 14, padding: '12px 14px', borderRadius: 10,
+                    background: 'rgba(239,68,68,0.1)',
+                    border: '1px solid rgba(239,68,68,0.2)',
+                  }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#f87171' }}>
+                      {demanda.busquedas_sin_venta} busquedas sin venta
                     </div>
-                    <div style={{ fontSize: 10, color: '#991B1B', marginTop: 2 }}>Clientes buscaron pero no compraron</div>
+                    <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>Clientes buscaron pero no compraron</div>
                   </div>
                 )}
               </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '30px 0', color: 'var(--text-secondary)' }}>
-                <Package size={32} style={{ opacity: 0.1, marginBottom: 8 }} />
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#475569' }}>
+                <Package size={36} style={{ opacity: 0.2, marginBottom: 8 }} />
                 <p style={{ fontSize: 12, fontWeight: 600 }}>Sin datos de demanda</p>
               </div>
             )}
@@ -520,77 +661,89 @@ function Dashboard() {
       )}
 
       {/* Bottom Row: Products + Map */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <div className="card fade-in-up" style={{ padding: 22, animationDelay: '600ms' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <h3 style={{ color: 'var(--text-primary)', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg, #3B82F6, #2563EB)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Package size={14} color="#fff" />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div style={styles.glassCard}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+            <div style={styles.sectionTitle}>
+              <div style={styles.iconBadge('linear-gradient(135deg, #3b82f6, #2563eb)')}>
+                <Package size={16} color="#fff" />
               </div>
               Productos Profit
-            </h3>
-            <div style={{ display: 'flex', gap: 3, background: 'var(--surface-dim)', borderRadius: 7, padding: 3 }}>
+            </div>
+            <div style={{ display: 'flex', gap: 4, background: 'rgba(148,163,184,0.08)', borderRadius: 8, padding: 4 }}>
               {[
-                { key: 'mas' as const, label: 'Top', icon: ArrowUp, color: '#10B981' },
-                { key: 'menos' as const, label: 'Bajo', icon: ArrowDown, color: '#EF4444' },
+                { key: 'mas' as const, label: 'Top', icon: ArrowUp, color: '#34d399' },
+                { key: 'menos' as const, label: 'Bajo', icon: ArrowDown, color: '#f87171' },
               ].map(tab => {
                 const Icon = tab.icon;
                 return (
-                  <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{ padding: '4px 10px', borderRadius: 5, fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer', background: activeTab === tab.key ? 'var(--surface-card)' : 'transparent', color: activeTab === tab.key ? 'var(--text-primary)' : 'var(--text-secondary)', boxShadow: activeTab === tab.key ? 'var(--sombra-sm)' : 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <Icon size={10} style={{ color: tab.color }} />{tab.label}
+                  <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
+                    padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 600,
+                    border: 'none', cursor: 'pointer',
+                    background: activeTab === tab.key ? 'rgba(148,163,184,0.15)' : 'transparent',
+                    color: activeTab === tab.key ? '#f1f5f9' : '#64748b',
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    transition: 'all 0.2s',
+                  }}>
+                    <Icon size={12} style={{ color: tab.color }} />{tab.label}
                   </button>
                 );
               })}
             </div>
           </div>
           {profitLoading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[1,2,3,4,5].map(i => <div key={i} className="skeleton" style={{ height: 36, borderRadius: 8 }} />)}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[1,2,3,4,5].map(i => <div key={i} style={{ height: 40, borderRadius: 8, background: 'rgba(148,163,184,0.05)' }} />)}</div>
           ) : profitError ? (
-            <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--text-secondary)' }}>
-              <ShoppingCart size={32} style={{ opacity: 0.1, marginBottom: 8 }} />
+            <div style={{ textAlign: 'center', padding: '30px 0', color: '#475569' }}>
+              <ShoppingCart size={36} style={{ opacity: 0.2, marginBottom: 8 }} />
               <p style={{ fontSize: 12, fontWeight: 600 }}>Profit no conectado</p>
-              <p style={{ fontSize: 11, marginTop: 4 }}>Configura PROFIT_API_URL en el .env</p>
+              <p style={{ fontSize: 11, marginTop: 4, color: '#64748b' }}>Configura PROFIT_API_URL</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {productosMostrados.slice(0, 6).map((p, i) => (
-                <div key={p.co_art} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: i % 2 === 0 ? 'var(--surface-dim)' : 'transparent' }}>
-                  <div style={{ width: 24, height: 24, borderRadius: 6, background: activeTab === 'mas' ? '#3B82F618' : '#EF444418', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: activeTab === 'mas' ? '#3B82F6' : '#EF4444', flexShrink: 0 }}>{i + 1}</div>
+                <div key={p.co_art} style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '10px 12px', borderRadius: 10,
+                  background: 'rgba(148,163,184,0.03)',
+                  transition: 'background 0.15s',
+                }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(148,163,184,0.08)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(148,163,184,0.03)'}
+                >
+                  <div style={{
+                    width: 28, height: 28, borderRadius: 7,
+                    background: activeTab === 'mas' ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.15)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 11, fontWeight: 800,
+                    color: activeTab === 'mas' ? '#34d399' : '#f87171',
+                  }}>{i + 1}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.art_des}</div>
-                    <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>{formatNumber(p.cantidad_vendida)} uds</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: '#e2e8f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.art_des}</div>
+                    <div style={{ fontSize: 10, color: '#64748b' }}>{formatNumber(p.cantidad_vendida)} uds</div>
                   </div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>{formatCurrency(p.total_vendido)}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>{formatCurrency(p.total_vendido)}</div>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        <div className="card fade-in-up" style={{ padding: 22, animationDelay: '650ms' }}>
-          <h3 style={{ color: 'var(--text-primary)', marginBottom: 16, fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg, #EF4444, #DC2626)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <MapPin size={14} color="#fff" />
+        <div style={styles.glassCard}>
+          <div style={styles.sectionTitle}>
+            <div style={styles.iconBadge('linear-gradient(135deg, #ef4444, #dc2626)')}>
+              <MapPin size={16} color="#fff" />
             </div>
             Ubicacion de Clientes
-          </h3>
+          </div>
           {profitLoading ? (
-            <div className="skeleton" style={{ height: 280, borderRadius: 12 }} />
+            <div style={{ height: 300, borderRadius: 12, background: 'rgba(148,163,184,0.05)' }} />
           ) : (
             <VenezuelaMap clientes={profit?.clientes_ubicacion || []} />
           )}
         </div>
       </div>
     </div>
-  );
-}
-
-function Lightbulb(props: any) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
-      <path d="M9 18h6"/><path d="M10 22h4"/>
-    </svg>
   );
 }
 
