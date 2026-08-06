@@ -702,7 +702,7 @@ function Inbox() {
                       className="fade-in-up"
                       style={{
                         padding: '14px 16px',
-                        borderBottom: '1px solid #f0f2f5',
+                        borderBottom: `1px solid ${t.borderCard}`,
                         cursor: 'pointer',
                         background: isSelected ? 'rgba(181,24,34,0.06)' : 'transparent',
                         borderLeft: isSelected ? '3px solid #b51822' : '3px solid transparent',
@@ -729,7 +729,7 @@ function Inbox() {
                               width: 16, height: 16, borderRadius: '50%',
                               background: t.bgCard,
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              boxShadow: '0 0 0 1.5px #fff',
+                              boxShadow: '0 0 0 1.5px var(--surface-card)',
                             }}>
                               <svg width={10} height={10}>
                                 <use href={canalIcono[canal] || '/icons.svg#chat'} />
@@ -741,7 +741,7 @@ function Inbox() {
                               position: 'absolute', top: -3, right: -3,
                               width: 14, height: 14, borderRadius: '50%',
                               background: '#DC2626',
-                              border: '2px solid #fff',
+                              border: '2px solid var(--surface-card)',
                               boxShadow: '0 0 0 1px rgba(220,38,38,0.5)',
                             }} />
                           )}
@@ -758,7 +758,7 @@ function Inbox() {
                               <strong style={{
                                 fontSize: 14,
                                 fontWeight: unreadChats.has(cliente.id) ? 700 : 600,
-                                color: unreadChats.has(cliente.id) ? '#b51822' : '#002045',
+                                color: unreadChats.has(cliente.id) ? '#b51822' : t.textPrimary,
                                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                               }}>
                                 {cliente.nombre || cliente.telefono || 'Sin nombre'}
@@ -1094,17 +1094,17 @@ function Inbox() {
                             padding: '10px 14px',
                             position: 'relative',
                             background: isBot
-                              ? 'linear-gradient(135deg, #f8f9fc 0%, #f0f2f8 100%)'
+                              ? t.subtleBg
                               : isAgent
                                 ? 'linear-gradient(135deg, #0a1e3d 0%, #1a365d 100%)'
-                                : 'linear-gradient(135deg, #e8f0fe 0%, #dbeafe 100%)',
-                            border: isBot ? '1px solid #e2e8f0' : isAgent ? 'none' : '1px solid #c7d2fe',
+                                : t.blueBg,
+                            border: isBot ? `1px solid${t.borderCard}` : isAgent ? 'none' : `1px solid${t.borderCard}`,
                             borderRadius: isAgent
                               ? '16px 16px 4px 16px'
                               : '16px 16px 16px 4px',
                             fontSize: 13,
                             lineHeight: 1.5,
-                            color: isBot ? 'var(--text-primary)' : isAgent ? '#fff' : '#1e293b',
+                            color: isBot ? 'var(--text-primary)' : isAgent ? '#fff' : t.textPrimary,
                             boxShadow: isBot
                               ? '0 1px 3px rgba(0,0,0,0.06)'
                               : isAgent
@@ -1129,7 +1129,7 @@ function Inbox() {
                               <div style={{
                                 position: 'absolute', top: 28, [isAgent ? 'left' : 'right']: 0,
                                 background: t.surfaceCard, borderRadius: 8, boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                                zIndex: 20, minWidth: 140, padding: '4px 0', color: '#002045',
+                                zIndex: 20, minWidth: 140, padding: '4px 0', color: t.textPrimary,
                               }} onClick={e => e.stopPropagation()}>
                                 <button onClick={() => handleCopyMessage(msg)} style={{
                                   display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
@@ -1154,7 +1154,7 @@ function Inbox() {
                                   border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
                                   color: '#DC2626',
                                 }}
-                                  onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'}
+                                  onMouseEnter={e => e.currentTarget.style.background = t.redBg}
                                   onMouseLeave={e => e.currentTarget.style.background = 'none'}
                                 >
                                   Eliminar
@@ -1178,7 +1178,7 @@ function Inbox() {
                                     setGalleryIndex(idx >= 0 ? idx : 0);
                                   }} />
                                 {msg.contenido && (
-                                  <div style={{ fontSize: 12, color: isBot ? 'var(--text-secondary)' : isAgent ? 'rgba(255,255,255,0.75)' : 'rgba(0,32,69,0.6)', marginBottom: 4, fontStyle: 'italic' }}>
+                                  <div style={{ fontSize: 12, color: isBot ? 'var(--text-secondary)' : isAgent ? 'rgba(255,255,255,0.75)' : t.textSecondary, marginBottom: 4, fontStyle: 'italic' }}>
                                     {msg.contenido}
                                   </div>
                                 )}
@@ -1188,12 +1188,12 @@ function Inbox() {
                               <div style={{
                                 display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', marginBottom: 4,
                                 borderRadius: 8,
-                                background: isAgent ? 'rgba(255,255,255,0.1)' : 'rgba(0,32,69,0.04)',
-                                border: `1px solid ${isAgent ? 'rgba(255,255,255,0.15)' : 'rgba(0,32,69,0.1)'}`,
+                                background: isAgent ? 'rgba(255,255,255,0.1)' : t.subtleBg,
+                                border: `1px solid ${isAgent ? 'rgba(255,255,255,0.15)' : t.borderCard}`,
                               }}>
                                 <div style={{
                                   width: 38, height: 38, borderRadius: 8, flexShrink: 0,
-                                  background: isAgent ? '#8896ab' : '#f0f2f5',
+                                  background: isAgent ? '#8896ab' : t.subtleBg,
                                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 }}>
                                   <span className="msg-spinner" style={{ borderColor: isAgent ? 'rgba(255,255,255,0.6)' : '#8896ab', borderTopColor: 'transparent', width: 16, height: 16, borderWidth: 2 }} />
@@ -1201,12 +1201,12 @@ function Inbox() {
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                   <div style={{
                                     fontSize: 13, fontWeight: 600,
-                                    color: isAgent ? '#fff' : '#002045',
+                                    color: isAgent ? '#fff' : t.textPrimary,
                                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                                   }}>
                                     {msg.contenido}
                                   </div>
-                                  <div style={{ fontSize: 11, color: isAgent ? 'rgba(255,255,255,0.6)' : '#8896ab', marginTop: 2 }}>
+                                  <div style={{ fontSize: 11, color: isAgent ? 'rgba(255,255,255,0.6)' : t.textMuted, marginTop: 2 }}>
                                     Subiendo...
                                   </div>
                                 </div>
@@ -1223,7 +1223,7 @@ function Inbox() {
                                 <FileCard url={msg.url_multimedia} isAgent={isAgent} />
                               )}
                                 {msg.contenido && (
-                                  <div style={{ fontSize: 12, color: isBot ? 'var(--text-secondary)' : isAgent ? 'rgba(255,255,255,0.75)' : 'rgba(0,32,69,0.6)', marginTop: 4, fontStyle: 'italic' }}>
+                                  <div style={{ fontSize: 12, color: isBot ? 'var(--text-secondary)' : isAgent ? 'rgba(255,255,255,0.75)' : t.textSecondary, marginTop: 4, fontStyle: 'italic' }}>
                                     {msg.contenido}
                                   </div>
                                 )}
@@ -1232,7 +1232,7 @@ function Inbox() {
                             {msg.tipo === 'audio' && msg.url_multimedia && !msg._uploading && (
                               <><AudioPlayer src={msg.url_multimedia} isAgent={isAgent} />
                                 {msg.contenido && (
-                                  <div style={{ fontSize: 12, color: isBot ? 'var(--text-secondary)' : isAgent ? 'rgba(255,255,255,0.75)' : 'rgba(0,32,69,0.6)', marginTop: 4, fontStyle: 'italic' }}>
+                                  <div style={{ fontSize: 12, color: isBot ? 'var(--text-secondary)' : isAgent ? 'rgba(255,255,255,0.75)' : t.textSecondary, marginTop: 4, fontStyle: 'italic' }}>
                                     {msg.contenido}
                                   </div>
                                 )}
@@ -1245,7 +1245,7 @@ function Inbox() {
                                   setGalleryIndex(idx >= 0 ? idx : 0);
                                 }} />
                                 {msg.contenido && (
-                                  <div style={{ fontSize: 12, color: isBot ? 'var(--text-secondary)' : isAgent ? 'rgba(255,255,255,0.75)' : 'rgba(0,32,69,0.6)', marginTop: 4, fontStyle: 'italic' }}>
+                                  <div style={{ fontSize: 12, color: isBot ? 'var(--text-secondary)' : isAgent ? 'rgba(255,255,255,0.75)' : t.textSecondary, marginTop: 4, fontStyle: 'italic' }}>
                                     {msg.contenido}
                                   </div>
                                 )}
@@ -1258,7 +1258,7 @@ function Inbox() {
                             )}
                             <div style={{
                               fontSize: 10, marginTop: 5,
-                              color: isBot ? 'var(--text-secondary)' : isAgent ? 'rgba(255,255,255,0.6)' : 'rgba(0,32,69,0.5)',
+                              color: isBot ? 'var(--text-secondary)' : isAgent ? 'rgba(255,255,255,0.6)' : t.textMuted,
                               textAlign: 'right',
                               display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 3,
                             }}>
@@ -1471,7 +1471,7 @@ function Inbox() {
             border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
             color: '#DC2626',
           }}
-            onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'}
+            onMouseEnter={e => e.currentTarget.style.background = t.redBg}
             onMouseLeave={e => e.currentTarget.style.background = 'none'}
           >
             Eliminar mensaje
@@ -1499,7 +1499,7 @@ function Inbox() {
             border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
             color: '#DC2626',
           }}
-            onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'}
+            onMouseEnter={e => e.currentTarget.style.background = t.redBg}
             onMouseLeave={e => e.currentTarget.style.background = 'none'}
           >
             Eliminar chat
