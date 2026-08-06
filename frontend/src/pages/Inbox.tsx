@@ -65,6 +65,7 @@ function Inbox() {
   const t = useTheme();
   const prevClienteId = useRef<string | undefined>(undefined);
   const currentClienteId = useRef<number | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const idsRef = useRef<Set<number>>(new Set());
@@ -287,7 +288,12 @@ function Inbox() {
       });
     });
 
+    pollRef.current = setInterval(() => {
+      clientesApi.getAll().then(setClientes).catch(() => {});
+    }, 15000);
+
     return () => {
+      clearInterval(pollRef.current);
       socket.off('message:new');
       socket.off('chat:updated');
       socket.off('cliente:updated');

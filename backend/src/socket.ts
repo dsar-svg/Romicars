@@ -60,7 +60,7 @@ export function setupSocket(httpServer: HttpServer): Server {
           [data.contenido, data.cliente_id]
         );
 
-        io.to(`chat:${data.cliente_id}`).emit('message:new', msg);
+        io.emit('message:new', msg);
         io.emit('chat:updated', { cliente_id: data.cliente_id });
       } catch (error) {
         console.error('Error al enviar mensaje:', error);

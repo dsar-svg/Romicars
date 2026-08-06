@@ -112,7 +112,7 @@ router.post('/enviar', async (req: Request, res: Response) => {
       await query('UPDATE clientes SET sla_inicio = NULL WHERE id = ?', [cliente_id]);
     }
 
-    getIO().to(`chat:${cliente_id}`).emit('message:new', msg);
+    getIO().emit('message:new', msg);
     getIO().emit('chat:updated', { cliente_id });
 
     if (remitente === 'agente') {

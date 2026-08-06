@@ -95,7 +95,7 @@ router.post('/facebook', async (req: Request, res: Response) => {
           [message || (urlMultimedia || msgTipo), clienteId]
         );
 
-        getIO().to(`chat:${clienteId}`).emit('message:new', msg);
+        getIO().emit('message:new', msg);
         getIO().emit('chat:updated', { cliente_id: clienteId });
       }
     }
@@ -243,7 +243,7 @@ router.post('/whatsapp', async (req: Request, res: Response) => {
       [message || (urlMultimedia || msgTipo), clienteId]
     );
 
-    getIO().to(`chat:${clienteId}`).emit('message:new', msg);
+    getIO().emit('message:new', msg);
     getIO().emit('chat:updated', { cliente_id: clienteId });
 
     res.sendStatus(200);
