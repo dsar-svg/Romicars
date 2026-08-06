@@ -59,7 +59,15 @@ export default function AdminAgentes() {
   };
 
   return (
-    <div style={{ padding: 32, maxWidth: 900 }}>
+    <div style={{
+      padding: 32,
+      maxWidth: 900,
+      background: t.bgCard,
+      backdropFilter: 'blur(16px)',
+      border: '1px solid' + t.borderCard,
+      borderRadius: 16,
+      boxShadow: t.shadowCard,
+    }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
         <h1 style={{ margin: 0, fontSize: 22, color: 'var(--text-primary)' }}>Administrar Agentes</h1>
         <button
@@ -81,7 +89,15 @@ export default function AdminAgentes() {
       )}
 
       {showForm && (
-        <form onSubmit={handleCreate} className="card" style={{ padding: 24, marginBottom: 28 }}>
+        <form onSubmit={handleCreate} style={{
+          padding: 24,
+          marginBottom: 28,
+          background: t.bgCard,
+          backdropFilter: 'blur(16px)',
+          border: '1px solid' + t.borderCard,
+          borderRadius: 16,
+          boxShadow: t.shadowCard,
+        }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
             <div>
               <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Nombre</label>
@@ -118,7 +134,14 @@ export default function AdminAgentes() {
         </form>
       )}
 
-      <div className="card" style={{ overflow: 'hidden' }}>
+      <div style={{
+        overflow: 'hidden',
+        background: t.bgCard,
+        backdropFilter: 'blur(16px)',
+        border: '1px solid' + t.borderCard,
+        borderRadius: 16,
+        boxShadow: t.shadowCard,
+      }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
           <thead>
             <tr style={{ background: 'var(--surface-dim)', borderBottom: '1px solid var(--outline)' }}>
