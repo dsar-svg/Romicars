@@ -812,7 +812,7 @@ function Inbox() {
                               </span>
                             )}
                             {cliente.modo_atencion === 'agente' && (
-                              <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, color: '#fff', background: '#002045', display: 'flex', alignItems: 'center', gap: 3 }}>
+                              <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, color: '#fff', background: t.subtleBg, display: 'flex', alignItems: 'center', gap: 3 }}>
                                 <UserCheck size={9} /> Agente
                               </span>
                             )}
@@ -821,13 +821,13 @@ function Inbox() {
                               background: getUrgenciaColor(cliente.urgencia),
                             }} />
                           </div>
-                          <div style={{ fontSize: 13, color: '#5a6a7c', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.3 }}>
+                          <div style={{ fontSize: 13, color: t.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.3 }}>
                             {cliente.ultimo_remitente === 'agente'
-                              ? <><span style={{ color: '#b51822', fontWeight: 600 }}>tú: </span>{cliente.ultimo_mensaje}</>
+                              ? <><span style={{ color: t.textPrimary, fontWeight: 600 }}>tú: </span>{cliente.ultimo_mensaje}</>
                               : (cliente.ultimo_mensaje || 'Sin mensajes')}
                           </div>
                           {cliente.resumen_busqueda && (
-                            <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#b51822' }}>
+                            <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: t.textSecondary }}>
                               <Bot size={11} />
                               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {cliente.resumen_busqueda}
@@ -1134,6 +1134,7 @@ function Inbox() {
                                 <button onClick={() => handleCopyMessage(msg)} style={{
                                   display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
                                   border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
+                                  color: t.textPrimary,
                                 }}
                                   onMouseEnter={e => e.currentTarget.style.background = t.bgPage}
                                   onMouseLeave={e => e.currentTarget.style.background = 'none'}
@@ -1143,6 +1144,7 @@ function Inbox() {
                                 <button onClick={() => handlePinMessage(msg)} style={{
                                   display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
                                   border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, textAlign: 'left',
+                                  color: t.textPrimary,
                                 }}
                                   onMouseEnter={e => e.currentTarget.style.background = t.bgPage}
                                   onMouseLeave={e => e.currentTarget.style.background = 'none'}
