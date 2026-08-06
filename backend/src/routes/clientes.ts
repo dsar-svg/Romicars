@@ -188,7 +188,7 @@ router.get('/:id/sla', async (req: Request, res: Response) => {
   try {
     const [cliente] = await query(
       `SELECT sla_inicio, estado_conversacion,
-        TIMESTAMPDIFF(MINUTE, sla_inicio, NOW()) as minutos_transcurridos
+        CASE WHEN sla_inicio IS NOT NULL THEN TIMESTAMPDIFF(MINUTE, sla_inicio, NOW()) ELSE 0 END as minutos_transcurridos
        FROM clientes WHERE id = ?`,
       [req.params.id]
     ) as any[];
@@ -196,7 +196,7 @@ router.get('/:id/sla', async (req: Request, res: Response) => {
     res.json({
       sla_inicio: cliente.sla_inicio,
       estado_conversacion: cliente.estado_conversacion,
-      minutos_transcurridos: cliente.minutos_transcurridos,
+      minutos_transcurridos: cliente.minutos_transcurridos || 0,
     });
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener información de SLA' });

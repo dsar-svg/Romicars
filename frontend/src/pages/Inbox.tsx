@@ -876,10 +876,22 @@ function Inbox() {
                             const cfg = config[estado];
                             const isActive = selectedCliente.estado_conversacion === estado;
                             return (
-                              <button key={estado} onClick={() => {
-                                clientesApi.updateStatus(selectedCliente.id, estado);
-                                setSelectedCliente(prev => prev ? { ...prev, estado_conversacion: estado } : prev);
-                                refrescarClienteEnLista(selectedCliente.id);
+                              <button key={estado} onClick={async () => {
+                                try {
+                                  const updated = await clientesApi.updateStatus(selectedCliente.id, estado);
+                                  setSelectedCliente(updated);
+                                  refrescarClienteEnLista(selectedCliente.id);
+                                  if (estado === 'resuelto' || estado === 'cerrado') {
+                                    setSlaData(null);
+                                  } else if (updated.sla_inicio) {
+                                    const diff = Math.floor((Date.now() - new Date(updated.sla_inicio).getTime()) / 60000);
+                                    setSlaData({ minutos: diff, estado: updated.estado_conversacion });
+                                  } else {
+                                    setSlaData({ minutos: 0, estado: updated.estado_conversacion });
+                                  }
+                                } catch {
+                                  toast('error', 'Error al cambiar estado');
+                                }
                               }} style={{
                                 padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600,
                                 background: isActive ? cfg.color : 'transparent',
@@ -900,7 +912,7 @@ function Inbox() {
                             );
                           })}
                         </div>
-                        {slaData && slaData.estado !== 'resuelto' && slaData.estado !== 'cerrado' && (
+                        {slaData && slaData.minutos > 0 && slaData.estado !== 'resuelto' && slaData.estado !== 'cerrado' && (
                           <div style={{
                             display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 6,
                             padding: '3px 10px', borderRadius: 12,
