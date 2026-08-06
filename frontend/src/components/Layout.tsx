@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { MessageSquare, LayoutDashboard, Send, Shield, Menu, ChevronLeft, LogOut, Sun, Moon } from 'lucide-react';
+import { MessageSquare, LayoutDashboard, Send, Shield, Settings, Menu, ChevronLeft, LogOut, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { connectSocket } from '../services/socket';
 import type { Mensaje } from '../types';
@@ -17,6 +17,7 @@ const navItems = [
 
 const adminItems = [
   { path: '/admin/agentes', label: 'Admin Agentes', icon: Shield },
+  { path: '/admin/config', label: 'Configuración', icon: Settings },
 ];
 
 function Layout() {

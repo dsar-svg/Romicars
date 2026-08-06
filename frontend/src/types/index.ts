@@ -72,6 +72,24 @@ export interface Snippet {
   created_at: string;
 }
 
+export interface Faq {
+  id: number;
+  categoria: string | null;
+  pregunta: string;
+  respuesta: string;
+  activo: boolean;
+}
+
+export interface AdminSnippet {
+  id: number;
+  agente_id: number | null;
+  agente_nombre: string | null;
+  atajo: string;
+  contenido: string;
+  categoria: string;
+  created_at: string;
+}
+
 export interface Rol {
   id: number;
   nombre: string;

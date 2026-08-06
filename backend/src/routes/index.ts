@@ -9,6 +9,8 @@ import agentesRouter from './agentes';
 import profitRouter from './profit';
 import notasRouter from './notas';
 import snippetsRouter from './snippets';
+import faqsRouter from './faqs';
+import adminSnippetsRouter from './admin-snippets';
 
 const router = Router();
 
@@ -22,5 +24,7 @@ router.use('/agentes', agentesRouter);
 router.use('/profit', profitRouter);
 router.use('/notas', notasRouter);
 router.use('/snippets', snippetsRouter);
+router.use('/faqs', faqsRouter);
+router.use('/admin/snippets', adminSnippetsRouter);
 
 export default router;

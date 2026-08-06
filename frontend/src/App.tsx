@@ -4,6 +4,7 @@ import Inbox from './pages/Inbox';
 import Dashboard from './pages/Dashboard';
 import Campañas from './pages/Campañas';
 import AdminAgentes from './pages/AdminAgentes';
+import AdminConfig from './pages/AdminConfig';
 import Login from './pages/Login';
 import Layout from './components/Layout';
 import type { ReactNode } from 'react';
@@ -39,6 +40,9 @@ function AppRoutes() {
         <Route path="/campanas" element={<Campañas />} />
         <Route path="/admin/agentes" element={
           <AdminRoute><AdminAgentes /></AdminRoute>
+        } />
+        <Route path="/admin/config" element={
+          <AdminRoute><AdminConfig /></AdminRoute>
         } />
       </Route>
     </Routes>
