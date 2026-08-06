@@ -10,6 +10,18 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LineCh
 import api from '../services/api';
 import VenezuelaMap from '../components/VenezuelaMap';
 
+function useTheme() {
+  const [dark, setDark] = useState(() => document.documentElement.getAttribute('data-theme') === 'dark');
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setDark(document.documentElement.getAttribute('data-theme') === 'dark');
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  }, []);
+  return dark;
+}
+
 interface AnalyticsData {
   total_leads: number;
   chats_activos: number;
@@ -60,90 +72,135 @@ function formatTime(seconds: number): string {
   return `${Math.round(seconds / 3600)}h`;
 }
 
-const BRAND = {
+const BRAND_DARK = {
   primaryDark: '#1A365D',
   primaryMed: '#2B6CB0',
   primary: '#3B82F6',
   primaryLight: '#60A5FA',
   secondary: '#EF4444',
   secondaryDark: '#B51822',
-  bgDark: '#0d1a2e',
-  bgMid: '#142440',
-  surfaceGlass: 'rgba(26, 54, 93, 0.45)',
-  borderGlass: 'rgba(59, 130, 246, 0.12)',
-  shadowGlass: '0 4px 24px rgba(13, 26, 46, 0.6)',
+  bgPage: 'linear-gradient(135deg, #0d1a2e 0%, #142440 50%, #0d1a2e 100%)',
+  bgCard: 'rgba(26, 54, 93, 0.45)',
+  borderCard: 'rgba(59, 130, 246, 0.12)',
+  shadowCard: '0 4px 24px rgba(13, 26, 46, 0.6)',
   textPrimary: '#eaf1ff',
   textSecondary: '#94a3b8',
   textMuted: '#64748b',
-  green: '#10b981',
+  hoverBg: 'rgba(59,130,246,0.1)',
+  hoverBorder: 'rgba(59,130,246,0.15)',
+  subtleBg: 'rgba(59,130,246,0.05)',
+  subtleBorder: 'rgba(59,130,246,0.08)',
+  rowBg: 'rgba(59,130,246,0.03)',
+  gridStroke: 'rgba(59,130,246,0.1)',
+  tooltipBg: '#142440',
+  tooltipBorder: 'rgba(59,130,246,0.2)',
+  loaderBg: 'rgba(26, 54, 93, 0.35)',
+  tagBg: 'rgba(96,165,250,0.1)',
+  tagBorder: 'rgba(96,165,250,0.2)',
+  tagText: '#93c5fd',
   greenLight: '#34d399',
-  amber: '#f59e0b',
   amberLight: '#fbbf24',
 };
 
-const styles = {
-  page: {
-    minHeight: '100vh',
-    background: `linear-gradient(135deg, ${BRAND.bgDark} 0%, ${BRAND.bgMid} 50%, ${BRAND.bgDark} 100%)`,
-    padding: '32px',
-    color: BRAND.textPrimary,
-  } as React.CSSProperties,
-  header: {
-    marginBottom: 32,
-  } as React.CSSProperties,
-  title: {
-    fontSize: 32,
-    fontWeight: 800,
-    color: BRAND.textPrimary,
-    letterSpacing: '-0.03em',
-    fontFamily: "'Hanken Grotesk', sans-serif",
-    margin: 0,
-  } as React.CSSProperties,
-  subtitle: {
-    color: BRAND.textSecondary,
-    marginTop: 6,
-    fontSize: 14,
-    fontWeight: 500,
-  } as React.CSSProperties,
-  glassCard: {
-    background: BRAND.surfaceGlass,
-    backdropFilter: 'blur(16px)',
-    border: `1px solid ${BRAND.borderGlass}`,
-    borderRadius: 16,
-    padding: 24,
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    boxShadow: BRAND.shadowGlass,
-  } as React.CSSProperties,
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: 700,
-    color: BRAND.textPrimary,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 20,
-  } as React.CSSProperties,
-  iconBadge: (gradient: string) => ({
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    background: gradient,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: `0 4px 12px ${gradient.includes('#') ? gradient.match(/#[a-f0-9]+/i)?.[0] || '#000' : '#000'}33`,
-  }) as React.CSSProperties,
-  insightCard: (bg: string, border: string) => ({
-    padding: 20,
-    borderRadius: 16,
-    background: bg,
-    border: `1px solid ${border}`,
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    cursor: 'default',
-  }) as React.CSSProperties,
+const BRAND_LIGHT = {
+  primaryDark: '#1A365D',
+  primaryMed: '#2B6CB0',
+  primary: '#1A365D',
+  primaryLight: '#2B6CB0',
+  secondary: '#E53E3E',
+  secondaryDark: '#B51822',
+  bgPage: 'linear-gradient(135deg, #f5f7fa 0%, #e8edf5 50%, #f5f7fa 100%)',
+  bgCard: 'rgba(255, 255, 255, 0.85)',
+  borderCard: 'rgba(26, 54, 93, 0.08)',
+  shadowCard: '0 4px 24px rgba(0, 0, 0, 0.06)',
+  textPrimary: '#0d1c2e',
+  textSecondary: '#43474e',
+  textMuted: '#74777f',
+  hoverBg: 'rgba(26,54,93,0.06)',
+  hoverBorder: 'rgba(26,54,93,0.12)',
+  subtleBg: 'rgba(26,54,93,0.04)',
+  subtleBorder: 'rgba(26,54,93,0.08)',
+  rowBg: 'rgba(26,54,93,0.02)',
+  gridStroke: 'rgba(26,54,93,0.08)',
+  tooltipBg: '#ffffff',
+  tooltipBorder: 'rgba(26,54,93,0.15)',
+  loaderBg: 'rgba(26, 54, 93, 0.06)',
+  tagBg: 'rgba(26,54,93,0.06)',
+  tagBorder: 'rgba(26,54,93,0.12)',
+  tagText: '#2B6CB0',
+  greenLight: '#38a169',
+  amberLight: '#d69e2e',
 };
 
+function makeStyles(T: typeof BRAND_DARK) {
+  return {
+    page: {
+      minHeight: '100vh',
+      background: T.bgPage,
+      padding: '32px',
+      color: T.textPrimary,
+    } as React.CSSProperties,
+    header: {
+      marginBottom: 32,
+    } as React.CSSProperties,
+    title: {
+      fontSize: 32,
+      fontWeight: 800,
+      color: T.textPrimary,
+      letterSpacing: '-0.03em',
+      fontFamily: "'Hanken Grotesk', sans-serif",
+      margin: 0,
+    } as React.CSSProperties,
+    subtitle: {
+      color: T.textSecondary,
+      marginTop: 6,
+      fontSize: 14,
+      fontWeight: 500,
+    } as React.CSSProperties,
+    glassCard: {
+      background: T.bgCard,
+      backdropFilter: 'blur(16px)',
+      border: `1px solid ${T.borderCard}`,
+      borderRadius: 16,
+      padding: 24,
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      boxShadow: T.shadowCard,
+    } as React.CSSProperties,
+    sectionTitle: {
+      fontSize: 15,
+      fontWeight: 700,
+      color: T.textPrimary,
+      display: 'flex',
+      alignItems: 'center',
+      gap: 10,
+      marginBottom: 20,
+    } as React.CSSProperties,
+    iconBadge: (gradient: string) => ({
+      width: 32,
+      height: 32,
+      borderRadius: 10,
+      background: gradient,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: `0 4px 12px ${gradient.includes('#') ? gradient.match(/#[a-f0-9]+/i)?.[0] || '#000' : '#000'}33`,
+    }) as React.CSSProperties,
+    insightCard: (bg: string, border: string) => ({
+      padding: 20,
+      borderRadius: 16,
+      background: bg,
+      border: `1px solid ${border}`,
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      cursor: 'default',
+    }) as React.CSSProperties,
+  };
+}
+
 function Dashboard() {
+  const dark = useTheme();
+  const T = dark ? BRAND_DARK : BRAND_LIGHT;
+  const styles = makeStyles(T);
+
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [tendencias, setTendencias] = useState<TendenciaData | null>(null);
   const [respuesta, setRespuesta] = useState<RespuestaData | null>(null);
@@ -210,10 +267,10 @@ function Dashboard() {
             padding: '10px 20px', borderRadius: 12,
             background: 'rgba(16,185,129,0.1)',
             border: '1px solid rgba(16,185,129,0.3)',
-            fontSize: 13, fontWeight: 600, color: BRAND.greenLight,
+            fontSize: 13, fontWeight: 600, color: T.greenLight,
             display: 'flex', alignItems: 'center', gap: 8,
           }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: BRAND.greenLight, boxShadow: `0 0 8px ${BRAND.greenLight}`, animation: 'pulse 2s infinite' }} />
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: T.greenLight, boxShadow: `0 0 8px ${T.greenLight}`, animation: 'pulse 2s infinite' }} />
             Tiempo real
           </div>
         </div>
@@ -232,8 +289,8 @@ function Dashboard() {
               <Brain size={18} color="#fff" />
             </div>
             <div>
-              <h2 style={{ fontSize: 18, fontWeight: 700, color: BRAND.textPrimary, margin: 0 }}>Insights IA</h2>
-              {aiLoading && <span style={{ fontSize: 12, color: BRAND.textSecondary }}>Analizando datos con GPT-4o-mini...</span>}
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: T.textPrimary, margin: 0 }}>Insights IA</h2>
+              {aiLoading && <span style={{ fontSize: 12, color: T.textSecondary }}>Analizando datos con GPT-4o-mini...</span>}
             </div>
           </div>
           {aiLoading ? (
@@ -276,8 +333,8 @@ function Dashboard() {
                         background: 'rgba(139,92,246,0.15)',
                       }}>IA</span>
                     </div>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: BRAND.textPrimary, marginBottom: 8, lineHeight: 1.3 }}>{insight.titulo}</p>
-                    <p style={{ fontSize: 12, color: BRAND.textSecondary, lineHeight: 1.5, marginBottom: 14 }}>{insight.descripcion}</p>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: T.textPrimary, marginBottom: 8, lineHeight: 1.3 }}>{insight.titulo}</p>
+                    <p style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.5, marginBottom: 14 }}>{insight.descripcion}</p>
                     <div style={{
                       fontSize: 12, fontWeight: 600, color: s.iconColor,
                       display: 'flex', alignItems: 'flex-start', gap: 6,
@@ -306,7 +363,7 @@ function Dashboard() {
             }}>
               <Brain size={18} color="#fff" />
             </div>
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: BRAND.textPrimary, margin: 0 }}>Insights</h2>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: T.textPrimary, margin: 0 }}>Insights</h2>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(insights.length, 3)}, 1fr)`, gap: 16 }}>
             {insights.slice(0, 3).map((insight, i) => {
@@ -323,8 +380,8 @@ function Dashboard() {
                       {insight.prioridad}
                     </span>
                   </div>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: BRAND.textPrimary, marginBottom: 8 }}>{insight.titulo}</p>
-                  <p style={{ fontSize: 12, color: BRAND.textSecondary, lineHeight: 1.5, marginBottom: 14 }}>{insight.descripcion}</p>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: T.textPrimary, marginBottom: 8 }}>{insight.titulo}</p>
+                  <p style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.5, marginBottom: 14 }}>{insight.descripcion}</p>
                   <div style={{ fontSize: 12, fontWeight: 600, color: s.iconColor, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px', borderRadius: 8, background: `${s.iconColor}10` }}>
                     <Zap size={12} /> {insight.accion}
                   </div>
@@ -362,9 +419,9 @@ function Dashboard() {
                 <Icon size={24} color="#fff" />
               </div>
               <div>
-                <div style={{ color: BRAND.textSecondary, fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{kpi.label}</div>
-                <div style={{ fontSize: 28, fontWeight: 800, color: BRAND.textPrimary, marginTop: 2, fontFamily: "'Hanken Grotesk', sans-serif", letterSpacing: '-0.03em' }}>{kpi.value}</div>
-                {kpi.sub && <div style={{ fontSize: 11, color: BRAND.textMuted, marginTop: 2 }}>{kpi.sub}</div>}
+                <div style={{ color: T.textSecondary, fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{kpi.label}</div>
+                <div style={{ fontSize: 28, fontWeight: 800, color: T.textPrimary, marginTop: 2, fontFamily: "'Hanken Grotesk', sans-serif", letterSpacing: '-0.03em' }}>{kpi.value}</div>
+                {kpi.sub && <div style={{ fontSize: 11, color: T.textMuted, marginTop: 2 }}>{kpi.sub}</div>}
               </div>
             </div>
           );
@@ -398,8 +455,8 @@ function Dashboard() {
                   <Icon size={17} style={{ color: item.color }} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 10, color: BRAND.textMuted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.label}</div>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: BRAND.textPrimary, fontFamily: "'Hanken Grotesk', sans-serif" }}>{formatNumber(item.value)}</div>
+                  <div style={{ fontSize: 10, color: T.textMuted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.label}</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: T.textPrimary, fontFamily: "'Hanken Grotesk', sans-serif" }}>{formatNumber(item.value)}</div>
                 </div>
               </div>
             );
@@ -426,16 +483,16 @@ function Dashboard() {
               <ResponsiveContainer width="100%" height={240}>
                 <LineChart data={tendencias.tendencias}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(59,130,246,0.1)" />
-                  <XAxis dataKey="fecha" tick={{ fontSize: 10, fill: BRAND.textMuted }} tickFormatter={v => v.slice(5)} interval={6} />
-                  <YAxis tick={{ fontSize: 10, fill: BRAND.textMuted }} />
-                  <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid rgba(59,130,246,0.2)', background: BRAND.bgMid, color: BRAND.textPrimary, fontSize: 12 }} />
-                  <Legend wrapperStyle={{ fontSize: 11, color: BRAND.textSecondary }} />
+                  <XAxis dataKey="fecha" tick={{ fontSize: 10, fill: T.textMuted }} tickFormatter={v => v.slice(5)} interval={6} />
+                  <YAxis tick={{ fontSize: 10, fill: T.textMuted }} />
+                  <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid rgba(59,130,246,0.2)', background: T.tooltipBg, color: T.textPrimary, fontSize: 12 }} />
+                  <Legend wrapperStyle={{ fontSize: 11, color: T.textSecondary }} />
                   <Line type="monotone" dataKey="leads" stroke="#60a5fa" strokeWidth={2.5} dot={{ fill: '#60a5fa', r: 3 }} activeDot={{ r: 5 }} name="Leads" />
                   <Line type="monotone" dataKey="ventas" stroke="#34d399" strokeWidth={2.5} dot={{ fill: '#34d399', r: 3 }} activeDot={{ r: 5 }} name="Ventas" />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div style={{ textAlign: 'center', padding: '50px 0', color: BRAND.textMuted }}>
+              <div style={{ textAlign: 'center', padding: '50px 0', color: T.textMuted }}>
                 <TrendingUp size={40} style={{ opacity: 0.2, marginBottom: 10 }} />
                 <p style={{ fontSize: 13, fontWeight: 600 }}>Sin datos de tendencias</p>
               </div>
@@ -461,7 +518,7 @@ function Dashboard() {
                   }}>
                     {formatTime(respuesta.promedio_general_segundos)}
                   </div>
-                  <div style={{ fontSize: 12, color: BRAND.textMuted, marginTop: 4 }}>Promedio general</div>
+                  <div style={{ fontSize: 12, color: T.textMuted, marginTop: 4 }}>Promedio general</div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 18 }}>
                   <div style={{ padding: 14, borderRadius: 12, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', textAlign: 'center' }}>
@@ -481,15 +538,15 @@ function Dashboard() {
                         padding: '8px 12px', borderRadius: 8,
                         background: 'rgba(59,130,246,0.05)',
                       }}>
-                        <span style={{ fontSize: 12, color: BRAND.textSecondary, textTransform: 'capitalize' }}>{c.canal}</span>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: BRAND.textPrimary }}>{formatTime(c.promedio_segundos)}</span>
+                        <span style={{ fontSize: 12, color: T.textSecondary, textTransform: 'capitalize' }}>{c.canal}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: T.textPrimary }}>{formatTime(c.promedio_segundos)}</span>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: BRAND.textMuted }}>
+              <div style={{ textAlign: 'center', padding: '40px 0', color: T.textMuted }}>
                 <Timer size={36} style={{ opacity: 0.2, marginBottom: 8 }} />
                 <p style={{ fontSize: 12, fontWeight: 600 }}>Sin datos</p>
               </div>
@@ -511,9 +568,9 @@ function Dashboard() {
             </div>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={data.traffic}>
-                <XAxis dataKey="canal" tick={{ fontSize: 12, fill: BRAND.textSecondary }} />
-                <YAxis tick={{ fontSize: 10, fill: BRAND.textMuted }} />
-                <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid rgba(59,130,246,0.2)', background: BRAND.bgMid, color: BRAND.textPrimary, fontSize: 12 }} />
+                <XAxis dataKey="canal" tick={{ fontSize: 12, fill: T.textSecondary }} />
+                <YAxis tick={{ fontSize: 10, fill: T.textMuted }} />
+                <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid rgba(59,130,246,0.2)', background: T.tooltipBg, color: T.textPrimary, fontSize: 12 }} />
                 <Bar dataKey="total" radius={[8, 8, 0, 0]} barSize={44}>
                   {data.traffic.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                 </Bar>
@@ -535,7 +592,7 @@ function Dashboard() {
                 return (
                   <div key={item.etapa}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: BRAND.textPrimary }}>{item.etapa}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: T.textPrimary }}>{item.etapa}</span>
                       <span style={{ fontSize: 16, fontWeight: 800, color: item.color, fontFamily: "'Hanken Grotesk', sans-serif" }}>{formatNumber(item.valor)}</span>
                     </div>
                     <div style={{ height: 10, background: 'rgba(59,130,246,0.1)', borderRadius: 5, overflow: 'hidden' }}>
@@ -587,8 +644,8 @@ function Dashboard() {
                       {a.nombre.charAt(0).toUpperCase()}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: BRAND.textPrimary }}>{a.nombre}</div>
-                      <div style={{ fontSize: 11, color: BRAND.textMuted }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: T.textPrimary }}>{a.nombre}</div>
+                      <div style={{ fontSize: 11, color: T.textMuted }}>
                         {a.chats_asignados} chats · {a.ventas_cerradas} ventas · {formatTime(a.tiempo_respuesta_promedio)}
                       </div>
                     </div>
@@ -604,13 +661,13 @@ function Dashboard() {
                       }}>
                         {a.tasa_conversion}%
                       </div>
-                      <div style={{ fontSize: 9, color: BRAND.textMuted }}>conversion</div>
+                      <div style={{ fontSize: 9, color: T.textMuted }}>conversion</div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: BRAND.textMuted }}>
+              <div style={{ textAlign: 'center', padding: '40px 0', color: T.textMuted }}>
                 <Users size={36} style={{ opacity: 0.2, marginBottom: 8 }} />
                 <p style={{ fontSize: 12, fontWeight: 600 }}>Sin datos de agentes</p>
               </div>
@@ -629,13 +686,13 @@ function Dashboard() {
               <div>
                 {demanda.busquedas_populares.length > 0 && (
                   <div style={{ marginBottom: 16 }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: BRAND.textMuted, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Lo que buscan</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Lo que buscan</div>
                     {demanda.busquedas_populares.slice(0, 4).map((b, i) => (
                       <div key={i} style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                         padding: '8px 0', borderBottom: '1px solid rgba(59,130,246,0.08)',
                       }}>
-                        <span style={{ fontSize: 12, color: BRAND.textPrimary, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.termino}</span>
+                        <span style={{ fontSize: 12, color: T.textPrimary, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.termino}</span>
                         <span style={{ fontSize: 13, fontWeight: 700, color: '#60a5fa', marginLeft: 8 }}>{b.total}</span>
                       </div>
                     ))}
@@ -643,7 +700,7 @@ function Dashboard() {
                 )}
                 {demanda.marcas_populares.length > 0 && (
                   <div>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: BRAND.textMuted, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Marcas</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: T.textMuted, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Marcas</div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                       {demanda.marcas_populares.slice(0, 5).map((m, i) => (
                         <span key={i} style={{
@@ -667,12 +724,12 @@ function Dashboard() {
                     <div style={{ fontSize: 12, fontWeight: 700, color: '#f87171' }}>
                       {demanda.busquedas_sin_venta} busquedas sin venta
                     </div>
-                    <div style={{ fontSize: 11, color: BRAND.textSecondary, marginTop: 4 }}>Clientes buscaron pero no compraron</div>
+                    <div style={{ fontSize: 11, color: T.textSecondary, marginTop: 4 }}>Clientes buscaron pero no compraron</div>
                   </div>
                 )}
               </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: BRAND.textMuted }}>
+              <div style={{ textAlign: 'center', padding: '40px 0', color: T.textMuted }}>
                 <Package size={36} style={{ opacity: 0.2, marginBottom: 8 }} />
                 <p style={{ fontSize: 12, fontWeight: 600 }}>Sin datos de demanda</p>
               </div>
@@ -702,7 +759,7 @@ function Dashboard() {
                     padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 600,
                     border: 'none', cursor: 'pointer',
                     background: activeTab === tab.key ? 'rgba(59,130,246,0.15)' : 'transparent',
-                    color: activeTab === tab.key ? BRAND.textPrimary : BRAND.textMuted,
+                    color: activeTab === tab.key ? T.textPrimary : T.textMuted,
                     display: 'flex', alignItems: 'center', gap: 5,
                     transition: 'all 0.2s',
                   }}>
@@ -715,10 +772,10 @@ function Dashboard() {
           {profitLoading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[1,2,3,4,5].map(i => <div key={i} style={{ height: 40, borderRadius: 8, background: 'rgba(59,130,246,0.05)' }} />)}</div>
           ) : profitError ? (
-            <div style={{ textAlign: 'center', padding: '30px 0', color: BRAND.textMuted }}>
+            <div style={{ textAlign: 'center', padding: '30px 0', color: T.textMuted }}>
               <ShoppingCart size={36} style={{ opacity: 0.2, marginBottom: 8 }} />
               <p style={{ fontSize: 12, fontWeight: 600 }}>Profit no conectado</p>
-              <p style={{ fontSize: 11, marginTop: 4, color: BRAND.textMuted }}>Configura PROFIT_API_URL</p>
+              <p style={{ fontSize: 11, marginTop: 4, color: T.textMuted }}>Configura PROFIT_API_URL</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -740,10 +797,10 @@ function Dashboard() {
                     color: activeTab === 'mas' ? '#34d399' : '#f87171',
                   }}>{i + 1}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: BRAND.textPrimary, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.art_des}</div>
-                    <div style={{ fontSize: 10, color: BRAND.textMuted }}>{formatNumber(p.cantidad_vendida)} uds</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: T.textPrimary, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.art_des}</div>
+                    <div style={{ fontSize: 10, color: T.textMuted }}>{formatNumber(p.cantidad_vendida)} uds</div>
                   </div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: BRAND.textPrimary }}>{formatCurrency(p.total_vendido)}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: T.textPrimary }}>{formatCurrency(p.total_vendido)}</div>
                 </div>
               ))}
             </div>
