@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   Users, TrendingUp, MessageCircle, DollarSign,
   BarChart3, PieChart, Package, MapPin,
-  ArrowUp, ArrowDown, ShoppingCart, UserPlus, Clock,
+  ArrowUp, ArrowDown, UserPlus, Clock,
   AlertTriangle, CheckCircle, Headphones, Brain,
   Zap, Target, Timer, Star, Eye,
 } from 'lucide-react';
@@ -303,10 +303,10 @@ function Dashboard() {
       {(aiLoading || aiInsights.length > 0) && (
         <div style={{
           marginBottom: 32, padding: 28, borderRadius: 20,
-          background: T.dark
+          background: theme.dark
             ? 'linear-gradient(135deg, rgba(10,18,32,0.95) 0%, rgba(15,28,48,0.95) 100%)'
             : 'linear-gradient(135deg, #1A365D 0%, #0f1f3a 100%)',
-          border: T.dark ? '1px solid rgba(59,130,246,0.2)' : '1px solid rgba(255,255,255,0.15)',
+          border: theme.dark ? '1px solid rgba(59,130,246,0.2)' : '1px solid rgba(255,255,255,0.15)',
           boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
           position: 'relative', overflow: 'hidden',
         }}>

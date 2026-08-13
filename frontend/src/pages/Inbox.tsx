@@ -293,7 +293,7 @@ function Inbox() {
     }, 15000);
 
     return () => {
-      clearInterval(pollRef.current);
+      clearInterval(pollRef.current ?? undefined);
       socket.off('message:new');
       socket.off('chat:updated');
       socket.off('cliente:updated');

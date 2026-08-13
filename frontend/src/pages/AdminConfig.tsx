@@ -114,7 +114,7 @@ export default function AdminConfig() {
     !search || s.atajo.toLowerCase().includes(search.toLowerCase()) || s.contenido.toLowerCase().includes(search.toLowerCase()) || (s.agente_nombre || '').toLowerCase().includes(search.toLowerCase())
   );
 
-  const faqCategorias = [...new Set(faqs.map(f => f.categoria).filter(Boolean))];
+  const faqCategorias = [...new Set(faqs.map(f => f.categoria).filter((c): c is string => Boolean(c)))];
   const snCategorias = [...new Set(snippets.map(s => s.categoria).filter(Boolean))];
 
   const glassBg = t.dark ? 'rgba(13,26,46,0.6)' : 'rgba(255,255,255,0.7)';
@@ -230,7 +230,7 @@ export default function AdminConfig() {
                   <label style={{ display: 'block', marginBottom: 6, fontSize: 12, fontWeight: 600, color: t.textSecondary, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     <Tag size={11} style={{ marginRight: 4, verticalAlign: 'middle' }} /> Categoría
                   </label>
-                  <input value={faqCategoria} onChange={e => setFaqCategoria(e.target.value)} placeholder="ej: Envíos, Pagos, Productos..." style={inputStyle} list="faq-cats" />
+                  <input value={faqCategoria || ''} onChange={e => setFaqCategoria(e.target.value)} placeholder="ej: Envíos, Pagos, Productos..." style={inputStyle} list="faq-cats" />
                   <datalist id="faq-cats">{faqCategorias.map(c => <option key={c} value={c} />)}</datalist>
                 </div>
                 <div>

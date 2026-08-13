@@ -51,51 +51,23 @@ const VENEZUELA_COORDS: [number, number][] = [
 // Líneas de frontera internas (estados) — coordenadas simplificadas
 const FRONTERAS_ESTADOS: [number, number][][] = [
   // Zulia - Falcón - Lara
-  [-72.4, 11.0], [-72.0, 10.8], [-71.6, 10.5], [-71.0, 10.2],
+  [[-72.4, 11.0], [-72.0, 10.8], [-71.6, 10.5], [-71.0, 10.2]],
   // Falcón - Yaracuy - Carabobo
-  [-70.6, 10.4], [-70.0, 10.2], [-69.5, 10.0],
+  [[-70.6, 10.4], [-70.0, 10.2], [-69.5, 10.0]],
   // Lara - Portuguesa - Barinas
-  [-70.0, 9.8], [-69.5, 9.5], [-69.0, 9.2],
+  [[-70.0, 9.8], [-69.5, 9.5], [-69.0, 9.2]],
   // Trujillo - Mérida - Táchira
-  [-71.2, 9.5], [-71.0, 9.0], [-70.8, 8.5],
+  [[-71.2, 9.5], [-71.0, 9.0], [-70.8, 8.5]],
   // Aragua - Miranda - Guárico
-  [-67.5, 10.0], [-67.0, 9.8], [-66.5, 9.5],
+  [[-67.5, 10.0], [-67.0, 9.8], [-66.5, 9.5]],
   // Anzoátegui - Sucre - Monagas
-  [-64.0, 10.5], [-63.5, 10.2], [-63.0, 10.0],
+  [[-64.0, 10.5], [-63.5, 10.2], [-63.0, 10.0]],
   // Bolívar - Delta Amacuro
-  [-62.0, 9.5], [-61.5, 9.0], [-61.0, 8.5],
+  [[-62.0, 9.5], [-61.5, 9.0], [-61.0, 8.5]],
   // Amazonas - Bolívar
-  [-65.0, 6.0], [-64.5, 5.5], [-64.0, 5.0],
+  [[-65.0, 6.0], [-64.5, 5.5], [-64.0, 5.0]],
   // Cojedes - Portuguesa - Yaracuy
-  [-68.5, 9.5], [-68.0, 9.2], [-67.5, 9.0],
-];
-
-// Centros de los estados (para labels)
-const ESTADOS_CENTROS: { nombre: string; lat: number; lng: number }[] = [
-  { nombre: 'Zulia', lat: 10.0, lng: -71.5 },
-  { nombre: 'Falcón', lat: 10.8, lng: -69.5 },
-  { nombre: 'Lara', lat: 9.8, lng: -69.5 },
-  { nombre: 'Trujillo', lat: 9.2, lng: -70.5 },
-  { nombre: 'Mérida', lat: 8.5, lng: -71.0 },
-  { nombre: 'Táchira', lat: 8.0, lng: -72.0 },
-  { nombre: 'Barinas', lat: 8.5, lng: -68.0 },
-  { nombre: 'Portuguesa', lat: 9.2, lng: -69.5 },
-  { nombre: 'Cojedes', lat: 9.5, lng: -68.5 },
-  { nombre: 'Yaracuy', lat: 10.0, lng: -68.5 },
-  { nombre: 'Carabobo', lat: 10.0, lng: -68.0 },
-  { nombre: 'Aragua', lat: 10.0, lng: -67.5 },
-  { nombre: 'Guárico', lat: 9.0, lng: -66.5 },
-  { nombre: 'Miranda', lat: 10.2, lng: -66.5 },
-  { nombre: 'Distrito Capital', lat: 10.5, lng: -67.0 },
-  { nombre: 'Vargas', lat: 10.6, lng: -67.2 },
-  { nombre: 'Anzoátegui', lat: 9.5, lng: -64.5 },
-  { nombre: 'Sucre', lat: 10.5, lng: -63.0 },
-  { nombre: 'Monagas', lat: 9.5, lng: -63.0 },
-  { nombre: 'Delta Amacuro', lat: 8.8, lng: -61.5 },
-  { nombre: 'Bolívar', lat: 7.5, lng: -65.0 },
-  { nombre: 'Amazonas', lat: 3.5, lng: -65.0 },
-  { nombre: 'Apure', lat: 6.5, lng: -69.0 },
-  { nombre: 'Nueva Esparta', lat: 11.0, lng: -64.0 },
+  [[-68.5, 9.5], [-68.0, 9.2], [-67.5, 9.0]],
 ];
 
 const VENEZUELA_BOUNDS = {
